@@ -1,0 +1,159 @@
+
+
+        Dump: Id  = F
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> <no params> returning signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = G
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> <no params> returning double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = H
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to procedure <check args = YES> <no params>
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = I
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> <no params> returning pointer to signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = K
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = array [
+			index: type subrange 1 .. 10 of signed long int
+		] of pointer to function <check args = YES> <no params> returning signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = L
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> <no params> returning pointer to function <check args = YES> <no params> returning pointer to function <check args = YES> <no params> returning pointer to signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = Intptrfunptrfunptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to function <check args = YES> <no params> returning pointer to function <check args = YES> <no params> returning pointer to signed long int
+
+
+        Dump: Id  = Single
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = float
+
+
+        Dump: Id  = Real
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = double
+
+
+        Dump: Id  = Char
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = unsigned char
+
+
+        Dump: Id  = T1l90ok
+
+
+        Dump: Id  = Intptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to signed long int
+
+
+        Dump: Id  = Extended
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = long double
+
+
+        Dump: Id  = Byte
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed char
+
+
+        Dump: Id  = Integer
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed long int
+
+
+        Dump: Id  = Word
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed short int
+
+
+        Dump: Id  = Boolean
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed char
+
+
+        Dump: Id  = Intptrfunptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to function <check args = YES> <no params> returning pointer to signed long int

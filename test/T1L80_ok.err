@@ -1,0 +1,397 @@
+
+
+        Dump: Id  = P1
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = P2
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = P3
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to pointer to pointer to double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = P4
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to pointer to pointer to pointer to unsigned char
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = A
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = B
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = float
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = C
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = D
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = unsigned char
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = E
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = signed char
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = F
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = G
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = H
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = I
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = subrange 4 .. 17 of signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = Cycle
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to ...
+
+
+        Dump: Id  = Single
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = float
+
+
+        Dump: Id  = X1
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = array [
+			index: type subrange 1 .. 5 of signed long int
+		] of pointer to unsigned char
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = X2
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = array [
+			index: type subrange 1 .. 5 of signed long int
+		] of array [
+			index: type subrange 1 .. 6 of signed long int
+		] of pointer to pointer to unsigned char
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = X3
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to array [
+			index: type subrange 1 .. 5 of signed long int
+		] of pointer to array [
+			index: type subrange 4 .. 10 of signed long int
+		] of unsigned char
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = Realptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to double
+
+
+        Dump: Id  = Charptrptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to pointer to unsigned char
+
+
+        Dump: Id  = Realptrptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to pointer to double
+
+
+        Dump: Id  = Real
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = double
+
+
+        Dump: Id  = Char
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = unsigned char
+
+
+        Dump: Id  = Intptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to signed long int
+
+
+        Dump: Id  = Charptrptrptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to pointer to pointer to unsigned char
+
+
+        Dump: Id  = Chararrayptrarray
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = array [
+			index: type subrange 1 .. 5 of signed long int
+		] of pointer to array [
+			index: type subrange 4 .. 10 of signed long int
+		] of unsigned char
+
+
+        Dump: Id  = Intptrptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to pointer to signed long int
+
+
+        Dump: Id  = Extended
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = long double
+
+
+        Dump: Id  = Byte
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed char
+
+
+        Dump: Id  = T1l80ok
+
+
+        Dump: Id  = Ia
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = array [
+			index: type subrange 0 .. 9 of signed long int
+		] of signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = Charptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to unsigned char
+
+
+        Dump: Id  = Integer
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed long int
+
+
+        Dump: Id  = Word
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed short int
+
+
+        Dump: Id  = Chararray
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = array [
+			index: type subrange 4 .. 10 of signed long int
+		] of unsigned char
+
+
+        Dump: Id  = Cycle1
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to pointer to pointer to ...
+
+
+        Dump: Id  = Cycle2
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to pointer to pointer to ...
+
+
+        Dump: Id  = Boolean
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed char
+
+
+        Dump: Id  = Raaa
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = array [
+			index: type subrange 1 .. 10 of signed long int
+			index: type subrange 2 .. 9 of signed long int
+			index: type subrange 3 .. 8 of signed long int
+		] of double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = Iaa
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = array [
+			index: type subrange 1 .. 10 of signed long int
+			index: type subrange 2 .. 11 of signed long int
+		] of signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE

@@ -1,0 +1,209 @@
+
+
+        Dump: Id  = A
+
+
+        Dump: Id  = B
+
+
+        Dump: Id  = C
+
+
+        Dump: Id  = D
+
+
+        Dump: Id  = F
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> (
+			value param: id A; type signed long int
+		) returning signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = G
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> (
+			value param: id A; type signed long int
+			value param: id B; type double
+		) returning double
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = H
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to procedure <check args = YES> (
+			value param: id A; type signed long int
+			value param: id B; type signed long int
+			value param: id C; type double
+		)
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = I
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to procedure <check args = YES> (
+			var   param: id A; type signed long int
+		)
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = J
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to function <check args = YES> (
+			var   param: id A; type double
+			var   param: id B; type double
+			value param: id C; type signed long int
+		) returning signed long int
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = K
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to procedure <check args = YES> (
+			value param: id A; type signed long int
+			var   param: id B; type signed long int
+			value param: id C; type signed long int
+			var   param: id D; type signed long int
+		)
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = L
+
+        Dump: Stack.
+            Dump: block num = 1
+	GDECL
+		type = pointer to procedure <check args = YES> (
+			var   param: id A; type pointer to signed long int
+			value param: id F; type pointer to function <check args = YES> (
+			value param: id A; type double
+		) returning signed long int
+		)
+		storage class = <no storage class>
+		reference parameter = FALSE
+		error = FALSE
+
+
+        Dump: Id  = Intfunptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to function <check args = YES> (
+			value param: id A; type double
+		) returning signed long int
+
+
+        Dump: Id  = Intarray
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = array [
+			index: type subrange 1 .. 3 of signed long int
+		] of signed long int
+
+
+        Dump: Id  = Single
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = float
+
+
+        Dump: Id  = Real
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = double
+
+
+        Dump: Id  = Char
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = unsigned char
+
+
+        Dump: Id  = Intptr
+
+        Dump: Stack.
+            Dump: block num = 1
+	TYPENAME
+		type = pointer to signed long int
+
+
+        Dump: Id  = Extended
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = long double
+
+
+        Dump: Id  = Byte
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed char
+
+
+        Dump: Id  = T1l100ok
+
+
+        Dump: Id  = Integer
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed long int
+
+
+        Dump: Id  = Word
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed short int
+
+
+        Dump: Id  = Boolean
+
+        Dump: Stack.
+            Dump: block num = 0
+	TYPENAME
+		type = signed char
