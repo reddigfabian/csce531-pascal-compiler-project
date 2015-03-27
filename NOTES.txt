@@ -120,4 +120,4 @@ BACK END:
 
 
 We need to use the modules, but cant modify them. only exception is to add include
-statements to allow for differnt data types in c (like in scan.l and gram.y)
+statements to allow for different data types in c (like in scan.l and gram.y)
