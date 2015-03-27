@@ -88,7 +88,7 @@ a few miscellaneous utility routines utils.c, and
 a sample Makefile.
 Do not alter the module files (backend-x86.*, symtab.*, types.*, message.*).
 If you feel the need to alter one of these files, then there is a problem, either with your code or with ours.
-If you think there is a bug in the code we gave you, then you are probably wrong, but please let us know anyway. 
+If you think there is a bug in the code we gave you, then you are probably wrong, but please let us know anyway.
 If necessary, we will issue updates in a timely fashion.
 In the test subdirectory are also some test files (Pascal source (.pas) files with names
 starting with the letter "T"). Generally, test file names follow a regular pattern:
@@ -234,16 +234,23 @@ program_heading:
     LEX_PROGRAM new_identifier optional_par_id_list
 
 which is the third production in gram.y. The symbols of the body are given first, followed by the head ("nterm" stands for "nonterminal"). Tracing the parse will be even more useful in Project II. Just remember to recomment that line in defs.h before submitting.
+
 Do I ever need to modify the actual grammar, i.e., alter/add productions? No, not for this installment, at least.
+
 I just edited some code to fix an error, but after re-running, the error is still there, as if I hadn't done anything. WTF? Do you have all the dependencies in your Makefile that you should? If not, your edited source might not be recompiling when you run make.
+
 Do we write the routines to handle id_lists ourselves or are they written somewhere for us? You write the data structure for an id_list and its operations completely, defining the data type (a simple linked list of ST_ID's) and all its operations yourself.
 Besides annotating the grammar, should we modify any of the other skeleton code you gave us? No, with only one exception: if you include in the %union declaration types you've defined in other .h files, you should also include these .h files before including y.tab.h in scan.l.
+
 There doesn't seem to be much to put into tree.c. What's up with that? That depends on how much code you want to include with the grammar. Most of my actions consist of a single function call, so I put these function definitions in tree.c, with prototypes in tree.h. That is stylistically better than putting long reams of code in grammar actions.
+
 Is there anything in the skeleton code that we can ignore? Yes:
 Anything in symtab.h relating to BUCKET's. These are only used for compiling C source code.
 Any functions in backend-x86.h starting with b_alloc ... These are for allocating static initialized data, which we won't do.
 Any values for STORAGE_CLASS except NO_SC. Again, these are for compiling C source code.
+
 How do we issue error messages? Use the error() function in message.h. You call it like you would call printf(), except the final newline is always included. The functions warning() and bug() are called the same way. Bug aborts the compilation after it is called. Use bug to display internal bugs in your code.
+
 How do I install a new thing (variable or type name) into the symbol table? More generally, what do the tags and fields of the ST_DR record mean? When you are ready to install a new variable or type name into the symbol table, you create a new ST_DR (Symbol Table Data Record; use stdr_alloc()), fill in the fields yourself appropriately, then pass it to st_install(). Here is the declaration of ST_DR in symtab.h, followed by an explanation of the fields.
 
 typedef struct st_dr {
