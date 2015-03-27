@@ -33,12 +33,90 @@ SYMBOL TABLE FUNCTIONS:
 
 TYPES MODULE:
     for building and analyzing structures for supporting Pascal types
+    originaly built for a c compiler (effects the function names)
 
     ty_build
         type building functions
 
     ty_build_array, ty_build_ptr, ty_build_func, ty_build_basic (TYPETAG)
-    ty_build_unresolved
+    ty_build_unresolved_ptr, ty_build_subrange
+
+    Pascal basic types equivalent:
+        Pascal   -  C
+        Integer  -  long int
+        Char     -  unsigned char
+        Boolean  -  char (signed)   0=False and 1=True
+        Real     -  double
+        Single   -  float
+
+    typetags
+        TYSIGNEDLONGINT
+        TYPTR            - pointer type
+        TYARRAY          - array types
+        TYFUNC           - func types
+
+    type structure (TYPE)
+                 for an array:
+                 typetag
+                 list of index types - linked list  (1D, 2D, 3D arrays info also)
+                 elementtype     - what type is the element in the array
+
+        ex:
+            var
+            a : array[2..4,3..10] of Real
+            ----------------------------
+            2..4  = subrange of Integer
+            3..10 = subrange of Integer
+                    Integer = base type
+                        call ty_build_basic to get basic type
+                        then ty_build_subrange, include basetype from basic
+                        include upper and lower limits (the 2,4 and the 3,10)
+            typetag = TYARRAY
+            index list = 2 elements = both subranges of Integer
+            element type = Real
+
+        you can assume all index types are integer subranges
+        lowerbound needs to be less than or equal to upperbound
+                                            or symantic error
+
+        cant have an array of functions.
+        TYFUNC, not a data type
+        but can have pointers to function types.
+
+
+        ty_query(TYPE)
+            returns TYPETAG
+
+        depending on typetag (use a switch maybe)
+         ty_query_array
+         ty_query_ptr
+         ty_query_func
+
+BACK END:
+    outputting assembly code (x86)
+    architecture - independent interface
+
+    only need two functions for PART 1:
+
+        b_global_decl(id, align, size)
+            -only put label down, doesnt allocate memory
+
+        b_skip(size)
+            -adds allocated memory
+
+        -----generaly used together (most the time)
+
+    Alignment & size:
+        type    alignment   size
+        -------------------------
+        Char         1        1
+        Boolean      1        1
+        Integer      4        4
+        Real         8        8
+        Single       4        4
+        Pointer      4        4
+
+
 
 
 We need to use the modules, but cant modify them. only exception is to add include
