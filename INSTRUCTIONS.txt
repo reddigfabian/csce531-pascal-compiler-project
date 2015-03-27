@@ -1,0 +1,315 @@
+CSCE 531
+Spring 2015
+Project Part I
+Due Tuesday, March 31, 2015
+
+Process Pascal global type and variable declarations.
+This involves both installing the declarations into the symbol table and
+allocating memory for the variables in the assembly language output file.
+Also, after all declarations have been processed,
+you should dump the symbol table (using st_dump() from symtab.h); to do this,
+change the #if 0 directive in the main() function to #if 1.
+
+Your compiler should read Pascal source code from stdin
+and write the x86 assembly language output to stdout.
+Your compiler executable should be called ppc3.
+You will not have to emit assembly code explicitly,
+but rather call appropriate routines in the back end (backend-x86.c and backend-x86.h).
+Besides altering the gram.y file, put syntax tree-building functions into a new file tree.c,
+with definitions for export in tree.h. Put code-generating routines into a new file encode.c,
+with definitions for export in encode.h. With few exceptions throughout the project,
+all backend routines are called from encode.c (some may be called directly from the grammar).
+No backend routines should be called from tree.c, hence you will not need to include backend-x86.h in tree.c.
+
+To receive 80% of the credit: You must be able to process the following basic Pascal type specifiers:
+Boolean, Integer, Char, Single, and Real.
+The C equivalents of these types are
+char, long, unsigned char, float, and double, respectively.
+You must also be able to handle pointer and array type constructors.
+You may limit the syntax so that array dimensions must always be given as
+subranges with unsigned integer constants as limits.
+A symbol table entry should be made for each id, whether a type name or a variable name.
+The entry should indicate the type of the declaration. You must be able to resolve forward type references,
+as described in class. Routines for building and analyzing types are in the types module (types.h),
+and routines for manipulating the symbol table are in the symbol table module (symtab.h).
+You are required to use these modules, but you are not allowed to modify them.
+For more on these and the other modules, see the Resources section, below.
+
+To receive 90% of the credit:
+In addition to obtaining the 80% level,
+you should also allow procedure and function type modifiers (with no parameters).
+In Pascal, functions are like functions in C; that is, they return a value of some specified type,
+and a call to a function is treated as an expression of that return type.
+Procedures are just like C functions with void return type,
+except that procedure calls are treated as statements rather than
+expressions (how these are called is not relevant for this project installement, though).
+You should add the necessary semantic checks and error messages to support function modifiers
+(it is illegal for a function to return a function, for example).
+You should assume that functions can return only "simple" types, i.e.,
+the basic types listed above and pointer types.
+
+To receive 100% of the credit:
+In addition to obtaining the 90% level, you should allow parameters to functions and procedures.
+Pascal allows two types of parameters: value parameters (for call-by-value, same as in C)
+and var parameters (for call-by-reference, similar to '&' parameters in C++).
+Var parameters are those in a list of parameter names following the var keyword.
+In this stage of the project, you only need to flag which kind a parameter is,
+otherwise you won't treat them differently.
+
+The x86 (actually 32-bit i386) assembly code to be emitted for this assignment is
+generated automatically by calling functions in backend-x86.c, which I discuss briefly in class.
+
+At all levels you are responsible for detecting duplicate declarations.
+At the 100% level, you must also detect duplicate declarations in parameter lists.
+
+Your compiler should be capable of detecting multiple semantic errors in one file.
+You can make arbitrary decisions about how to proceed when errors occur
+(for instance, with a duplicate declaration you might decide to ignore the second declaration).
+The important point is to do something so you can proceed
+(without causing a later bus error, segmentation fault, etc. during compilation).
+
+You may allow the compiler to stop processing with the first syntax error.
+A syntax error is defined with respect to the distributed Pascal grammar (gram.y, see next paragraph).
+
+Resources
+
+The file pas-proj1.zip unzips to a directory pas-proj1 containing the base files for the project,
+as well as some test files for the first installment contained in the test subdirectory.
+The base files include:
+
+a complete lexical scanner scan.l,
+a skeleton yacc/bison parser gram.y,
+a symbol table module symtab.[hc],
+a type module types.[hc],
+a message-generating module message.[hc],
+a sample main routine main.c,
+backend routines for spitting out assembly code backend-x86.[hc],
+a few miscellaneous utility routines utils.c, and
+a sample Makefile.
+Do not alter the module files (backend-x86.*, symtab.*, types.*, message.*).
+If you feel the need to alter one of these files, then there is a problem, either with your code or with ours.
+If you think there is a bug in the code we gave you, then you are probably wrong, but please let us know anyway. 
+If necessary, we will issue updates in a timely fashion.
+In the test subdirectory are also some test files (Pascal source (.pas) files with names
+starting with the letter "T"). Generally, test file names follow a regular pattern:
+
+"T"[1-3]"L"[^_]+"_"(err|ok)".pas"
+
+The digit after the "T" indicates the project installment.
+The text between the "L" and the underscore indicates which level is being tested.
+The text between the underscore and the period indicates whether or not the file contains errors.
+The "err" files are used for testing your compiler's error-reporting,
+and the "ok" files are to test your compiler's actual translation of well-formed Pascal code.
+These are not the only test files that will be used when grading, so do your own testing too.
+
+The pas-proj1 directory also contains a working executable solution to this installment, "ppc3-sol".
+With one exception (see below), your compiler's output (both to stdout and stderr) must match the
+output of pcc3-sol on the same test file. For your convenience, the test subdirectory also contains these outputs.
+The .s files are assembly code (normally sent to stdout), and the .err files contain what would normally be sent to stderr. The one exception to the rule above is that if your compiler is being tested on an input file containing errors ("*_err.pas"), then only your compiler's output to stderr will be inspected, and the output to stdout (i.e., the assembly code) will be ignored. The executable Perl script proj1-test.pl will be used for grading. You may run it yourself with the "--self-test" option in the parent directory. Beforehand, you'll need to hand-edit the script to point to the directory where you keep the test files.
+
+The 80% level functionality will be needed in order to do later parts of the project, so be sure you at least get that much of the assignment completed.
+
+Grading
+
+As with previous assignments, we will grade in a mostly automated fashion, using the Perl script proj1-test.pl. This script first attempts to compile your compiler by executing the "make" command. If the make succeeds, then it will execute your compiler on each of the test files (redirected to stdin), capturing your compiler's output to stdout and stderr separately, and comparing your output with that of the official solution. Running this script yourself is your best determination of how you will score. Generally, anything short of files matching exactly will cause points to be subtracted. However, there are three important things to consider:
+
+As mentioned above, your program's behavior on test files ending in "_err.pas" will only be graded on how they handle errors; the normal assembly output will be ignored.
+For test files ending in "_ok.pas", your program should not generate any semantic error messages (because there aren't any semantic errors in these files). However (just for this installment), the output to stderr contains a dump of the symbol table, which lets us know whether you are installing symbols correctly. So this output will also be compared with the solution.
+In this installment only, the script will make no attempt to assemble, link, or execute your compiler's assembly language output, because you are not yet compiling executable Pascal programs. This will be attempted in future installments, however.
+The directory also includes a file pas-proj1comments.txt which is the comments file produced when I run the script on my own solution. If your comments file looks like this one, then that is a good sign.
+The executable ppc3-sol reads Pascal code from standard input, writes assembly code to standard output, and error messages/symbol table dump to standard error. You may do whatever you wish with this program (it may be useful to run it on tiny Pascal programs).
+
+Platform
+
+The official platform for your compiler development is the Linux machines in our department (e.g., oak.cse.sc.edu, ash.cse.sc.edu, and the like). You may develop code on another platform (GNU/Linux/Unix-like is heavily preferred; I strongly recommend against using Windows), but you must make sure your program ultimately compiles and runs correctly on the official platform, because the testing script proj1-test.pl will evaluate your compiler on this platform.
+
+WARNING: Porting your code from one platform to another can sometimes be a unexpectedly time-consuming task. You should NEVER wait until the last minute to do this. If you develop on a separate platform, you should test your code frequently on the official platform to guard against unpleasant surprises. There will be no extra consideration for projects submitted late because of porting issues. You have been warned.
+
+Suggestions for division of labor within a team
+
+This is merely a suggestion. The first thing you should do as a team is to explore and understand the skeleton code given to you, as well as getting a better feel for the Pascal language and its syntax. All team members should do this, but if the team has more than one person, it may help if, say, one team member studies the grammar (gram.y) while another looks at the symbol table module (reading the comments in symtab.h), while another concentrates on the types module, etc., each reporting to the other team members.
+
+A multiperson team should meet regularly -- at least once or twice a week. Set up a schedule of meetings as soon as possible. Each team member should contribute substantially to the coding effort, and should also understand her or his teammates' contributions as well.
+
+Submission
+
+To receive full credit for the assignment, your team must submit it via CSE Dropbox (Moodle) no later than 11:59 p.m. on the due date. Late submissions will be accepted with penalties described in the syllabus up to one week late. There should be only one submission per team; each team should designate one of its members to submit on behalf of the team. Any number of resubmissions are allowed up to the final deadline, and only the last submission will be graded. This will be true for future project installments as well.
+
+You must turn in all source files (even the ones we gave you) and a Makefile for your compiler.
+
+To turn in this assignment, follow these steps exactly. Any deviation from these instructions will get points taken off.
+
+put your files in a directory called "pas-proj1"
+run "make clean" and remove any other non-program-source files from the directory (important!),
+create a tarball of the directory in its parent (run "tar cvf pas-proj1.tar pas-proj1" from the parent directory),
+gzip it ("gzip pas-proj1.tar").
+Upload pas-proj1.tar.gz to CSE Dropbox.
+The test script will check for extraneous files in your directory and we'll subtract points if we find them. Thus the "make clean" step is crucial. Check your directory by hand just in case.
+Nota Bene ...
+
+You get credit for features successfully implemented. You do not get credit for attempting to do something; you get credit for the things that you can successfully demonstrate work.
+
+Work on and test your system incrementally and back up your system frequently, especially when the due time is approaching! Too many times in the past, a student made seemingly minor code changes to try to improve a stable system, only to find that the altered system crashed completely and was useless. They didn't back up the old system, and they didn't have time to undo the changes before the project was due. They weren't even sure they could remember what the changes were. FAIR WARNING: don't let this happen to you.
+
+As always, you are expected to do your own work on this assignment, although this time, a team counts as a "single person".
+
+Finally: you should adequately document and structure your program. Remember, you or your teammates may be called upon to explain this program orally during a subsequent quiz.
+
+FAQs
+
+This list will probably be updated in the coming days in response to student queries.
+
+How do I run the executable solution? Go to your copy of the directory with the executable and test files and type
+
+     ./ppc3-sol
+
+Then you can start typing in a Pascal program at the keyboard (end with ctrl-D on a new, empty line), seeing the output as you go. To run the executable on one of the test programs as input, type, for example,
+
+     ./ppc3-sol < test/T1L80_ok.pas
+
+How to I capture both output streams (stdout and stderr) into separate files (for example, so that I can get the symbol table dump in a file)? In the bash shell, type
+
+     ./ppc3-sol < test/T1L80_ok.pas > T1L80_ok.s 2> T1L80_ok.err
+
+This puts the standard output (assembly code) into T1L80_ok.s and standard error (the symbol table dump) into T1L80_ok.err. If you are not already running the bash shell, you need to type "bash" beforehand and "exit" afterwards.
+The grammar is huge! Do I have to deal with the whole thing? No, not hardly. For this installment, you will only deal with a small subset of the grammar. You will only need actions for some of the productions headed by the following nonterminals (in order of appearance):
+
+    id_list
+    typename
+    identifier
+    new_identifier
+    new_identifier_1 (LEX_ID production only)
+    simple_decl
+    constant (number production only)
+    number
+    unsigned_number
+    sign
+    type_definition_part
+    type_definition
+    type_denoter
+    type_denoter_1
+    new_ordinal_type
+    subrange_type
+    new_pointer_type
+    pointer_domain_type
+    new_procedural_type
+    optional_procedural_type_formal_parameter_list
+    procedural_type_formal_parameter_list
+    procedural_type_formal_parameter
+    new_structured_type
+    array_type
+    array_index_list
+    ordinal_index_type
+    variable_declaration
+    functiontype
+
+Many of the required actions are just the default actions.
+I've been giving some grammar symbols some types and now I'm getting lots of type conflicts, even in parts of the grammar that I haven't touched. Why is this and what can I do about it? Remember that unless you supply an explicit action for a production, it defaults to the action $$ = $1;, which will cause a type conflict unless $$ and $1 have the same type. The easiest way to suppress the default action is to supply an explicit empty action {}.
+The grammar is still pretty labyrinthine, and it is hard to tell how the Pascal source is being parsed. Is there a way to see what the parser is doing at each step? In defs.h uncomment the compiler directive
+
+    #define YYDEBUG 1
+
+Then run a make. This will make the parser display a complete trace during a parse. Now run
+
+    ./ppc3
+
+with no arguments or redirections. When prompted, type in the tokens of a Pascal program and notice the results. For example, when I typed in the program
+
+  Program Foo;
+     var x : Integer;
+  begin
+  end.
+
+one token per input line (ending with Ctrl-D), I got this trace of the parse. You can ignore the lines starting with "Stack now ..." and "Entering state ..."; they are just the parser's internal bookkeeping. The parts starting with "Reducing stack by rule ... (line ...)" show exactly which production the parser is reducing by and when. For example, look where it says
+
+Reducing stack by rule 7 (line 164):
+   $1 = token LEX_PROGRAM ()
+   $2 = nterm new_identifier ()
+   $3 = nterm optional_par_id_list ()
+-> $$ = nterm program_heading ()
+
+This says that the parser is currently reducing by the production
+
+program_heading:
+    LEX_PROGRAM new_identifier optional_par_id_list
+
+which is the third production in gram.y. The symbols of the body are given first, followed by the head ("nterm" stands for "nonterminal"). Tracing the parse will be even more useful in Project II. Just remember to recomment that line in defs.h before submitting.
+Do I ever need to modify the actual grammar, i.e., alter/add productions? No, not for this installment, at least.
+I just edited some code to fix an error, but after re-running, the error is still there, as if I hadn't done anything. WTF? Do you have all the dependencies in your Makefile that you should? If not, your edited source might not be recompiling when you run make.
+Do we write the routines to handle id_lists ourselves or are they written somewhere for us? You write the data structure for an id_list and its operations completely, defining the data type (a simple linked list of ST_ID's) and all its operations yourself.
+Besides annotating the grammar, should we modify any of the other skeleton code you gave us? No, with only one exception: if you include in the %union declaration types you've defined in other .h files, you should also include these .h files before including y.tab.h in scan.l.
+There doesn't seem to be much to put into tree.c. What's up with that? That depends on how much code you want to include with the grammar. Most of my actions consist of a single function call, so I put these function definitions in tree.c, with prototypes in tree.h. That is stylistically better than putting long reams of code in grammar actions.
+Is there anything in the skeleton code that we can ignore? Yes:
+Anything in symtab.h relating to BUCKET's. These are only used for compiling C source code.
+Any functions in backend-x86.h starting with b_alloc ... These are for allocating static initialized data, which we won't do.
+Any values for STORAGE_CLASS except NO_SC. Again, these are for compiling C source code.
+How do we issue error messages? Use the error() function in message.h. You call it like you would call printf(), except the final newline is always included. The functions warning() and bug() are called the same way. Bug aborts the compilation after it is called. Use bug to display internal bugs in your code.
+How do I install a new thing (variable or type name) into the symbol table? More generally, what do the tags and fields of the ST_DR record mean? When you are ready to install a new variable or type name into the symbol table, you create a new ST_DR (Symbol Table Data Record; use stdr_alloc()), fill in the fields yourself appropriately, then pass it to st_install(). Here is the declaration of ST_DR in symtab.h, followed by an explanation of the fields.
+
+typedef struct st_dr {
+    STDR_TAG tag;
+    union {
+        struct {
+            TYPE type;
+            int val;
+        } econst;
+        struct {
+            TYPE type;
+            STORAGE_CLASS  sc;
+            BOOLEAN is_ref;
+            union {
+                int offset;
+                char * global_func_name;
+            } v;
+            BOOLEAN err;
+        } decl;
+        struct {
+            TYPE type;
+        } typename;
+    } u;
+} ST_DATA_REC, *ST_DR;
+
+This is a variant record, with the tag field telling which member of the union is operative. Possible tag values are:
+ECONST - Enumerated constant. You won't use this, because we are not supporting enumerated types.
+GDECL - Global declaration. Variables declared in the "var" section of the program get this tag.
+LDECL - Local declaration. Used for local variables (starting with Project II)
+PDECL - Parameter declaration. Use this for formal parameters to functions and procedures.
+FDECL - Function or procedure name (starting with Project II).
+TYPENAME - Type name. Use this for installing names defined (to the left of '=') in the "type" section of the Program.
+To summarize, the only tags you will use for Project I are GDECL, PDECL (100% level only), and TYPENAME.
+FIELDS in the union u:
+
+econst - not used (we're not supporting enumerated types)
+decl - used for GDECLs and PDECLs, and later LDECLs and FDECLs. Includes the TYPE of the object, the storage class (always NO_SC), whether or not it is a reference parameter (TRUE for reference parameters, FALSE for everything else). The v union is not used in Project I (starts with Project II). The err field is optionally used to pass up type error info, e.g., whether or not the typetag is TYERROR. You can ignore this if you want.
+typename - use this for installing new type names. This occurs after each type definition.
+Basic types (like Integer) are passed as new_identifiers during parsing, and we never seem to have an opportunity to install them in the symbol table. Isn't this a problem? No, because these basic types are pre-installed during symbol table initialization (st_init_symtab()), before parsing begins.
+What is an unresolved pointer type and what do I with it? When a new data pointer type (i.e., not a pointer to a procedure or function) is defined, it is initially unresolved. That means we defer supplying the object type until all type definitions have been processed. This is Pascal's way of allowing for circular (recursive) types. For example, the following Pascal type definition section is perfectly legal (if not very useful):
+
+   type
+      Foo = ^Bar;
+      Bar = ^Foo;
+
+We don't know the object type of Foo when it is defined, so instead we define it to be an unresolved pointer type, keeping only the ID "Bar". We could build the actual pointer type for Bar, but it is easier instead to leave this unresolved as well, and just wait until the end of the entire "type" section to resolve all unresolved pointers at once (for each, get the id by calling ty_query_ptr(), then look up the id in the symbol table to get the stdr (which must be a TYPENAME), then call ty_resolve_ptr()). You will need to maintain a list of currently unresolved pointer types. This could be a global linked list if you want, using the TYPE_LIST declaration in types.h.
+You don't need to look for cycles or anything like that. Any cycles will be implicit in the type structure by following the type names.
+
+For the 100% portion of the project, are we to create a new struct for "parameter", or is the term "procedural_type_formal_parameter" of type TYPE? Neither; use the PARAM_LIST structure in types.h for building formal parameter lists.
+Do I need to install parameters of procedures/functions into the symbol table? No, not right now. But you do need to put the parameters into a PARAM_LIST that you build up yourself, and include that when building the function type (ty_build_func()). You need to check that all the parameter types are simple and that there are no duplicate names on one list. (In Part II, you will install parameters into the symbol table in the local scope of a procedure/function definition.)
+HELP!!! It's 3:00 in the morning, I've been fiddling with the code for hours and hours now, and I'm still getting a segfault/weird behavior/NULL pointer, etc.... Take three deep breaths, save all your work, log off, and go to bed.
+Okay, I did that, and now it's the next day, and I'm still having problems. Unlike Java, the C language will--happily and without warning--allow you to shoot yourself in the foot. Chances are you trashed some memory doing something, and it didn't show up until way later in some completely unrelated part of the program. In the short term, if you haven't done it already, pepper your code with statements like
+
+  message("I am about to call such-and-such with param value %d\n",...);
+
+or
+
+  msg("After %d for-loop iterations, x == %d",...);
+
+etc. These and other printf-like output functions are defined in message.h and output to stderr, which is unbuffered, so the message is output promptly. At the very least, these statements will help you pin down exactly when the segmentation fault occurs. For the long term, you should be including lots of internal checks in your code -- for example,
+
+  if (what_I_expected_here_is_not_true)
+    bug("I did not expect this value for such-and-such: %d", ...);
+
+The bug() function is also defined in message.h and is extremely useful. It halts your program with your message preceded by an input line number. For example, whenever you use a "->" operator, are your sure the pointer operand is properly initialized and non-NULL? If not, check it with a call to bug() beforehand.
+After you fix the errors, be sure to remove or comment out all the calls to message(), msg(), and msgn() you added to track down the errors. You can and should keep the calls to bug() in the code permanently, however.
+
+How do I use a debugging tool like gdb? I have no idea. In the past, I have found debugging tools generally not worth the effort to learn, so I do not know how to use them. Instead, I follow the advice of the previous FAQ.
+This file was last modified Friday March 13, 2015 at 14:44:31 EDT.

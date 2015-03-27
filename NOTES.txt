@@ -1,0 +1,45 @@
+functions he said we would need for Project part 1:
+
+SYMBOL TABLE FUNCTIONS:
+    st_enter_id
+        enroll/retrieve an ID structure (ST_ID)
+        DOES NOT INSTALL
+
+    st_lookup(id, &block)
+        block = address of an L value?!?!
+        he said make sure you always supply one
+        enter scope, block# increases
+        leave scope, block# decreases
+        project part one, everything is global, so only 1 block (block 1)
+            have to pass in something tho, so it can set that memory address, even if user
+            isnt going to use, otherwise it could trash some random memory and create seg faults
+            just make a unused var and pass in its address
+        return data record (ST_DR) for the id, if installed (otherwise return null)
+
+    st_install
+        installs an id with a data record into the symtab
+
+    st_get_id_str
+        returns actual string (char *) of an ID.
+
+    stdr_alloc
+        allocates a new, uninitalized data record.
+        returns new record
+        call this, then fill in fields of the record, then st_install
+
+    st_get_cur_block
+        probably not used till next project part.
+        returns current block number.
+
+TYPES MODULE:
+    for building and analyzing structures for supporting Pascal types
+
+    ty_build
+        type building functions
+
+    ty_build_array, ty_build_ptr, ty_build_func, ty_build_basic (TYPETAG)
+    ty_build_unresolved
+
+
+We need to use the modules, but cant modify them. only exception is to add include
+statements to allow for differnt data types in c (like in scan.l and gram.y)
