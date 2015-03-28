@@ -121,3 +121,38 @@ BACK END:
 
 We need to use the modules, but cant modify them. only exception is to add include
 statements to allow for different data types in c (like in scan.l and gram.y)
+
+=============================March 16=====================================================================================
+
+type
+
+new identifier      type denoter
+______________  =   ____________;
+
+"Enroll" every (new) identifier into the symbol table:
+    ST_ID st_enter_id(char *str);  <===parameter is text of the identifier
+    ^
+    This function returns a pointer to a symbol table record that acts as "enrollment papers"
+
+      *The symbol table enforces unique identifiers, therefore an identifier must be enrolled as soon as possible when it is found
+        It also allows us to test equality of identifiers by testing pointer equivalence
+
+
+      
+enroll    vs    install
+
+    enroll any # of times
+
+    when you install you produce a symbol table data record(ST_DR), fill in the fields, and call st_install(  )
+
+    EXAMPLE:
+        type
+            IntArray = array[1..10] of Integer; ('array[1..10] of Integer' is a TYPE)
+
+            as soon as you recognize IntArray you enroll is, but once you've processed the entire line, you
+            install IntArray(ST_ID) into the symbol table as a TYPENAME with the corresponding type(TYPE) by calling st_install
+                  mystDR = st_stdr_alloc(); <== new ST_DR
+                  //fill in the fields appropriately
+                    st_install(mystDR);//returns whether or not the install was correct, based on whether or not you are attempting to install a duplicate
+
+=========================================================================================================================
