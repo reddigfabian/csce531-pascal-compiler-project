@@ -46,6 +46,8 @@
 
 %{
 
+#include <stlib.h>
+#include "tree.h"
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
