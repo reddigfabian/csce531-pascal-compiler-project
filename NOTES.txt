@@ -107,6 +107,7 @@ BACK END:
         -----generaly used together (most the time)
 
     Alignment & size:
+        SIMPLE TYPES:
         type    alignment   size
         -------------------------
         Char         1        1
@@ -115,6 +116,60 @@ BACK END:
         Real         8        8
         Single       4        4
         Pointer      4        4
+
+        Alignment required for and array is the same
+        as its element type align requirement
+            (if element is another array, recursive call)
+
+        Size of an array equals
+            (size of the element type) * (product of index type ranges)
+            range 4..6 = 3
+            low..high = high - low + 1
+
+        alignment and size of functions is undefined
+                (compiler error if trying to compute)
+
+        backend knows about type tags, but doesnt know about the symbol table
+
+
+MESSAGE MODULE:
+    all output, except assembly code
+
+    error- outputing compiler errors.
+        semantic error with Pascal source code, not us
+        try to keep parseing to find multiple in one file
+        Possible Semantic errors:
+            duplicate declarations (same id)
+            trying to re-declare
+            calling func with wrong inputs (number or type)
+
+    bug - output bug in our compiler (our code)
+        says "BUG" *our message* then aborts
+    warn- compiler warning
+        something is probably wrong, but still can compile/run
+        (probably wont use this)
+    fatal - fatal errors, runnign out of mem, ect
+    msg
+    msgn
+
+    error and bug used most often
+    all give newline like printf, except msg
+
+
+undeclared pointers:
+    a = Integer;     ty_build_basic(TYSIGNEDLONGINT)
+    ap = ^a;        DONT lookup and build that
+                    ty_build_unresolved_pt()
+    fp = ^foo;
+    foo = array[0..10] of ^bar;
+    bar = Real;
+    ------------------------------
+    Reslove all the unresolved pointer types in on GO, at the end
+    maintain global linked list of unresolved
+        return val of ty_build_unresolved must go onto the list
+        use TYPE_LIST, TLIST_NODE?  -- types.h
+        ty_resolve_ptr for each
+
 
 
 
