@@ -23,7 +23,7 @@ SYMBOL TABLE FUNCTIONS:
         returns actual string (char *) of an ID.
 
     stdr_alloc
-        allocates a new, uninitalized data record.
+        allocates a new, uninitialized data record.
         returns new record
         call this, then fill in fields of the record, then st_install
 
@@ -177,7 +177,7 @@ undeclared pointers:
 We need to use the modules, but cant modify them. only exception is to add include
 statements to allow for different data types in c (like in scan.l and gram.y)
 
-=============================March 16=====================================================================================
+=============================March 16==========================================================================================
 
 type
 
@@ -193,7 +193,7 @@ ______________  =   ____________;
         It also allows us to test equality of identifiers by testing pointer equivalence
 
 
-      
+
 enroll    vs    install
 
     enroll any # of times
@@ -210,4 +210,12 @@ enroll    vs    install
                   //fill in the fields appropriately
                     st_install(mystDR);//returns whether or not the install was correct, based on whether or not you are attempting to install a duplicate
 
-=========================================================================================================================
+===============================================================================================================================
+
+==========================March 18=============================================================================================
+
+Symbol Table - supports storing & retrieving information about user defined identifiers
+
+st_lookup - looks up an identifier in the symbol table by the ST_ID and returns the complete data record (only if it is installed, otherwise returns null)
+
+===============================================================================================================================
