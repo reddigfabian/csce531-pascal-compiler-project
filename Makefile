@@ -29,7 +29,7 @@ LEX = flex
 #yes
 CFLAGS = -g
 #no
-#CFLAGS = 
+#CFLAGS =
 
 #
 # which back end?
@@ -75,4 +75,3 @@ y.output: gram.y
 
 clean:
 	-rm -f ppc3 *.o y.tab.h y.output y.tab.c
-

@@ -164,3 +164,33 @@ Symbol Table - supports storing & retrieving information about user defined iden
 st_lookup - looks up an identifier in the symbol table by the ST_ID and returns the complete data record (only if it is installed, otherwise returns null)
 
 ===============================================================================================================================
+
+
+    id_list
+    typename
+    identifier
+    new_identifier
+    new_identifier_1 (LEX_ID production only)
+    simple_decl
+    constant (number production only)
+    number
+    unsigned_number
+    sign
+    type_definition_part
+    type_definition
+    type_denoter
+    type_denoter_1
+    new_ordinal_type
+    subrange_type
+    new_pointer_type
+    pointer_domain_type
+    new_procedural_type
+    optional_procedural_type_formal_parameter_list
+    procedural_type_formal_parameter_list
+    procedural_type_formal_parameter
+    new_structured_type
+    array_type
+    array_index_list
+    ordinal_index_type
+    variable_declaration
+    functiontype

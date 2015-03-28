@@ -46,13 +46,15 @@
 
 %{
 
-#include <stlib.h>
+#include <stdlib.h>
 #include "tree.h"
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
 void set_yydebug(int);
 void yyerror(const char *);
+
+int myDebug = 0;
 
 /* Like YYERROR but do call yyerror */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -142,6 +144,7 @@ void yyerror(const char *);
 %nonassoc lower_than_error
 %nonassoc error
 
+
 %%
 
 /* Pascal parser starts here */
@@ -164,24 +167,24 @@ optional_par_id_list:
   ;
 
 id_list:
-    new_identifier
-  | id_list ',' new_identifier
+    new_identifier            {if(myDebug){msg("Found in id_list:1---");}}
+  | id_list ',' new_identifier    {if(myDebug){msg("Found in id_list:2---");}}
   ;
 
 typename:
-    LEX_ID
+    LEX_ID          {if(myDebug){msg("Found in typename:1---");}}
   ;
 
 identifier:
-    LEX_ID
+    LEX_ID          {if(myDebug){msg("Found in identifier:1---");}}
   ;
 
 new_identifier:
-    new_identifier_1
+    new_identifier_1    {if(myDebug){msg("Found in new_identifier:1---");}}
   ;
 
 new_identifier_1:
-    LEX_ID
+    LEX_ID              {if(myDebug){msg("Found in new_identifier_1:1---");}}
 /* Standard Pascal constants */
   | p_MAXINT
   | p_FALSE
@@ -250,9 +253,9 @@ any_decl:
   ;
 
 simple_decl:
-    constant_definition_part
-  | type_definition_part
-  | variable_declaration_part
+    constant_definition_part           {if(myDebug){msg("Found in simple_decl:1---");}}
+  | type_definition_part               {if(myDebug){msg("Found in simple_decl:2---");}}
+  | variable_declaration_part          {if(myDebug){msg("Found in simple_decl:3---");}}
   ;
 
 /* constant definition part */
@@ -273,23 +276,23 @@ constant_definition:
 constant:
     identifier
   | sign identifier
-  | number
+  | number                        {if(myDebug){msg("Found in constant:3---");}}
   | constant_literal
   ;
 
 number:
-    sign unsigned_number
-  | unsigned_number
+    sign unsigned_number            {if(myDebug){msg("Found in number:1---");}}
+  | unsigned_number                 {if(myDebug){msg("Found in number:2---");}}
   ;
 
 unsigned_number:
-    LEX_INTCONST
-  | LEX_REALCONST
+    LEX_INTCONST                    {if(myDebug){msg("Found in unsigned_number:1---");}}
+  | LEX_REALCONST                   {if(myDebug){msg("Found in unsigned_number:2---");}}
   ;
 
 sign:
-    '+'
-  | '-'
+    '+'                            {if(myDebug){msg("Found in sign:1---");}}
+  | '-'                            {if(myDebug){msg("Found in sign:2---");}}
   ;
 
 constant_literal:
@@ -309,7 +312,7 @@ string:
   ;
 
 type_definition_part:
-    LEX_TYPE type_definition_list semi
+    LEX_TYPE type_definition_list semi        {if(myDebug){msg("Found in type_definition_part:1---");}}
   ;
 
 type_definition_list:
@@ -318,20 +321,20 @@ type_definition_list:
   ;
 
 type_definition:
-    new_identifier '=' type_denoter
+    new_identifier '=' type_denoter           {if(myDebug){msg("Found in type_definition:1---");}}
   ;
 
 type_denoter:
-    typename
-  | new_ordinal_type
-  | new_pointer_type
-  | new_procedural_type
-  | new_structured_type
+    typename                            {if(myDebug){msg("Found in type_denoter:1---");}}
+  | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");}}
+  | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");}}
+  | new_procedural_type                 {if(myDebug){msg("Found in type_denoter:4---");}}
+  | new_structured_type                 {if(myDebug){msg("Found in type_denoter:5---");}}
   ;
 
 new_ordinal_type:
-    enumerated_type
-  | subrange_type
+    enumerated_type                     {if(myDebug){msg("Found in new_ordinal_type:1---");}}
+  | subrange_type                       {if(myDebug){msg("Found in new_ordinal_type:2---");}}
   ;
 
 enumerated_type:
@@ -348,11 +351,11 @@ enumerator:
   ;
 
 subrange_type:
-    constant LEX_RANGE constant
+    constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");}}
   ;
 
 new_pointer_type:
-    pointer_char pointer_domain_type
+    pointer_char pointer_domain_type    {if(myDebug){msg("Found in new_pointer_type:1---");}}
   ;
 
 pointer_char:
@@ -361,53 +364,53 @@ pointer_char:
   ;
 
 pointer_domain_type:
-    new_identifier
-  | new_procedural_type
+    new_identifier                    {if(myDebug){msg("Found in pointer_domain_type:1---");}}
+  | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");}}
   ;
 
 new_procedural_type:
-    LEX_PROCEDURE optional_procedural_type_formal_parameter_list
-  | LEX_FUNCTION optional_procedural_type_formal_parameter_list functiontype
+    LEX_PROCEDURE optional_procedural_type_formal_parameter_list              {if(myDebug){msg("Found in new_procedural_type:1---");}}
+  | LEX_FUNCTION optional_procedural_type_formal_parameter_list functiontype  {if(myDebug){msg("Found in new_procedural_type:2---");}}
   ;
 
 optional_procedural_type_formal_parameter_list:
-    /* empty */
-  | '(' procedural_type_formal_parameter_list ')'
+    /* empty */                                           {if(myDebug){msg("Found in optional_procedural_type_formal_parameter_list:0---");}}
+  | '(' procedural_type_formal_parameter_list ')'         {if(myDebug){msg("Found in optional_procedural_type_formal_parameter_list:1---");}}
   ;
 
 procedural_type_formal_parameter_list:
-    procedural_type_formal_parameter
-  | procedural_type_formal_parameter_list semi procedural_type_formal_parameter
+    procedural_type_formal_parameter                                              {if(myDebug){msg("Found in procedural_type_formal_parameter_list:1---");}}
+  | procedural_type_formal_parameter_list semi procedural_type_formal_parameter   {if(myDebug){msg("Found in procedural_type_formal_parameter_list:2---");}}
   ;
 
 procedural_type_formal_parameter:
-    id_list
-  | id_list ':' typename
-  | LEX_VAR id_list ':' typename
-  | LEX_VAR id_list
+    id_list                         {if(myDebug){msg("Found in procedural_type_formal_parameter:1---");}}
+  | id_list ':' typename            {if(myDebug){msg("Found in procedural_type_formal_parameter:2---");}}
+  | LEX_VAR id_list ':' typename    {if(myDebug){msg("Found in procedural_type_formal_parameter:3---");}}
+  | LEX_VAR id_list                 {if(myDebug){msg("Found in procedural_type_formal_parameter:4---");}}
   ;
 
 new_structured_type:
-    array_type
-  | set_type
-  | record_type
+    array_type              {if(myDebug){msg("Found in new_structured_type:1---");}}
+  | set_type                {if(myDebug){msg("Found in new_structured_type:2---");}}
+  | record_type             {if(myDebug){msg("Found in new_structured_type:3---");}}
   ;
 
 /* Array */
 
 array_type:
-    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter
+    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}}
   ;
 
 array_index_list:
-    ordinal_index_type
-  | array_index_list ',' ordinal_index_type
+    ordinal_index_type                           {if(myDebug){msg("Found in array_index_list:1---");}}
+  | array_index_list ',' ordinal_index_type      {if(myDebug){msg("Found in array_index_list:2---");}}
   ;
 
 
 ordinal_index_type:
-    new_ordinal_type
-  | typename
+    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");}}
+  | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");}}
   ;
 
 
@@ -488,7 +491,7 @@ variable_declaration_list:
   ;
 
 variable_declaration:
-    id_list ':' type_denoter semi
+    id_list ':' type_denoter semi           {if(myDebug){msg("Found in variable_declaration:1---");}}
   ;
 
 function_declaration:
@@ -512,8 +515,8 @@ directive:
   ;
 
 functiontype:
-    /* empty */
-  | ':' typename
+    /* empty */                     {if(myDebug){msg("Found in functiontype:0---");}}
+    | ':' typename                  {if(myDebug){msg("Found in functiontype:1---");}}
   ;
 
 /* parameter specification section */
