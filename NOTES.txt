@@ -218,6 +218,84 @@ Symbol Table - supports storing & retrieving information about user defined iden
 
 st_lookup - looks up an identifier in the symbol table by the ST_ID and returns the complete data record (only if it is installed, otherwise returns null)
 
+===========================March 30====================================================================================================
+
+we should store stuff on the symantic stack (good for us, not required)
+
+    var
+    a,b,c : Integer        --- a,b,c is an id_list
+
+    Prototype:
+    struct for ListOfIds;
+    ListOfIds addToList(ST_ID, ListOfIds);
+            //makes the added one new root of linked list
+            // and passes a pointer to the new head back out
+    %type <y_listOfIds> id_list  //in preamble of grammar (bison)
+
+    id_list:
+        id              {$$ = addToList($1,NULL);}
+        | id_list , id  {$$ = addToList($3, $1);}
+
+    -------------
+    var_decl:
+        id_list ":" type_denoter
+                    {for each id on the list $1:
+                        st_lookup to see if previously installed
+                            if so, error (duplicate definition)
+                            otherwise, get a new ST_DR
+                                stdr_alloc() (dont call malloc ourselves)
+                                fill in the feilds:
+                                    id is the current id (from for/while loop)
+                                    tag is GDECL
+                                    type is $3
+                                st_install() to install to symbol table
+                            Backend:
+                                computer size and alignment based on type
+                                (should be data types, i.e., not function or procedure types)
+                                b_gloval_decl()
+                                b_skip
+                    }//end for loop
+                    //this should be a couple function calls
+                    //in tree.c/h
+                    //there are not real sysntac trees, that will be in part 2
+                    //of project.  backend stuff in code.c
+                    //anylayzing and computer tree in tree.c
+
+    ST_ID
+        return by st_enter_id()
+        only the id string
+        "enrollment papers"
+        --doesnt care what is already installed in system table
+    ST_DR
+        System table is to keep only one place in memory for each variable
+        for installment
+            contains
+                ST_ID
+                type
+                GDECL,TYPENAME, ect  (how varable is used)
+
+    ***you can here me asking him about the graphing stuff at 1:07:00, lol**
+
+    SYMANTIC ERRORS:
+        a : function : Integer;
+            NOT a DATA type, its a function.
+            there is a data section and a text section of the pacasl compiler
+            so the var section is a data section and functions only in text section
+
+        b: ^function : Integer;  is OK, size=alignment of a pointer type (4bytes)
+
+        WHAT IF:
+            a: function : Integer;   this will error
+            a: ^function:Interger;   but is this a error then?
+
+                depends wheither we install the first error as a "TYERROR"
+                    in TY_build_basic(), then second part will be a duplicate.
+                or if we decide not to install because it isnt allowed. then the second decl
+                    of a will be unique and accepted.
+
+
+
+
 ===============================================================================================================================
 
 
