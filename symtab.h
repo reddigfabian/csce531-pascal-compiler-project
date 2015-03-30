@@ -12,7 +12,7 @@
 typedef void (*user_func)();
 
 /****************************************************************************/
-/* 
+/*
 	definitions for symbol table data record
 */
 
@@ -21,23 +21,27 @@ typedef enum {ECONST, GDECL, LDECL, PDECL, FDECL, TYPENAME} STDR_TAG;
 typedef struct st_dr {
     STDR_TAG tag;
     union {
-	struct {
-	    TYPE type;
-	    int val;
-	} econst;
-	struct {
-	    TYPE type;
-	    STORAGE_CLASS  sc;
-	    BOOLEAN is_ref;
-	    union {
-		int offset;
-		char * global_func_name;
-	    } v;
-	    BOOLEAN err;
-	} decl;
-	struct {
-	    TYPE type;
-	} typename;
+
+    	struct {
+    	    TYPE type;
+    	    int val;
+    	} econst;
+
+    	struct {
+    	    TYPE type;
+    	    STORAGE_CLASS  sc;
+    	    BOOLEAN is_ref;
+    	    union {
+        		int offset;
+        		char * global_func_name;
+    	    } v;
+    	    BOOLEAN err;
+    	} decl;
+
+    	struct {
+    	    TYPE type;
+    	} typename;
+
     } u;
 } ST_DATA_REC, *ST_DR;
 
@@ -57,7 +61,7 @@ void stdr_dump(ST_DR stdr);
 */
 
 /****************************************************************************/
-/* 
+/*
 	definitions to support symtab.c
 
 	symtab.c implements a block structured symbol table for variables,
@@ -69,7 +73,7 @@ void stdr_dump(ST_DR stdr);
 
 /*
 ST_DR: name given to the type of the symbol table data records.
- 
+
 Symbol table does not need to know details of the data records.  Internally
 the symbol table will treat ST_DR as an OPAQUE type. The user simply should
 declare ST_DR to be a pointer to some record. The declaration of ST_DR

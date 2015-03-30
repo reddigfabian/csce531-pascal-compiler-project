@@ -249,3 +249,9 @@ st_lookup - looks up an identifier in the symbol table by the ST_ID and returns 
     ordinal_index_type
     variable_declaration
     functiontype
+
+============================Questions???=================================================================================================================================
+
+What is contained in ST_ID?
+Does the tree need functions for all "base" types?
+Do we need to build a syntax tree for the type portion at all?

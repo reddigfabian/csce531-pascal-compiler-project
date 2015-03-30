@@ -36,9 +36,9 @@ CFLAGS = -g
 #
 BACKEND = backend-x86
 
-PPC3H	= defs.h types.h symtab.h $(BACKEND).h
+PPC3H	= defs.h types.h tree.h symtab.h $(BACKEND).h
 
-PPC3OBJ = main.o message.o symtab.o types.o utils.o gram.o scan.o $(BACKEND).o
+PPC3OBJ = main.o message.o symtab.o types.o tree.o utils.o gram.o scan.o $(BACKEND).o
 
 # ppc3 rules
 #

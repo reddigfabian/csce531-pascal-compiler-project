@@ -30,40 +30,47 @@ typedef struct type_rec
     TYPETAG tag;
     union
     {
-	struct
-	{
-	    INDEX_LIST indices;
-	    struct type_rec *object;
-	} array;
-	struct
-	{
-	    struct type_rec *object;
-	} set;
-	struct
-	{
-	    PARAM_LIST params;
-	    BOOLEAN check_args;
-	    struct type_rec *object;
-	} function;
-	struct
-	{
-	    struct type_rec *object;
-	    ST_ID id;
-	} pointer;
-	struct
-	{
-	    MEMBER_LIST members;
-	} record;
-	struct
-	{
-	    unsigned int num_values;
-	} enumeration;
-	struct
-	{
-	    struct type_rec *base_type;
-	    long low, high;
-	} subrange;
-    } u;	
+    	struct
+    	{
+    	    INDEX_LIST indices;
+    	    struct type_rec *object;
+    	} array;
+
+    	struct
+    	{
+    	    struct type_rec *object;
+    	} set;
+
+    	struct
+    	{
+    	    PARAM_LIST params;
+    	    BOOLEAN check_args;
+    	    struct type_rec *object;
+    	} function;
+
+    	struct
+    	{
+    	    struct type_rec *object;
+    	    ST_ID id;
+    	} pointer;
+
+    	struct
+    	{
+    	    MEMBER_LIST members;
+    	} record;
+
+    	struct
+    	{
+    	    unsigned int num_values;
+    	} enumeration;
+
+    	struct
+    	{
+    	    struct type_rec *base_type;
+    	    long low, high;
+    	} subrange;
+
+    } u;
 } TYPE_REC;
 
 static void print_type();
@@ -204,7 +211,7 @@ TYPE ty_build_basic(TYPETAG tag)
     case TYERROR :		/* Added 11/13/91 -SF */
 	return &basic_error;
 
-    default: 
+    default:
 	bug("illegal tag in \"ty_build_basic\" \n");
     }
 }
@@ -599,7 +606,7 @@ void ty_print_class(STORAGE_CLASS tag)
 	break;
     default:
 	bug("illegal storage class in \"ty_print_class\"");
-	     
+
     }
 }
 
@@ -737,7 +744,7 @@ void print_type(TYPE_REC * typein, BOOLEAN recurse_flag,
         if (object == NULL)
             msgn("unresolved pointer to \"%s\"", st_get_id_str(id));
         else
-        {  
+        {
             msgn("pointer to ");
             print_type(object,recurse_flag,slow,!cycle_check);
         }
@@ -959,7 +966,7 @@ static BOOLEAN test_equality(TYPE_REC * type1, TYPE_REC * type2, int ptr_cnt)
 	}
 	/* Return TRUE iff both parameter list pointers are NULL. */
 	return pl1 == pl2;
-	
+
 	/* The rest of the tags are for basic types, and these tags
 	   determine their types completely. */
     default:
@@ -968,4 +975,3 @@ static BOOLEAN test_equality(TYPE_REC * type1, TYPE_REC * type2, int ptr_cnt)
 
     bug("How did I get here?");
 }
-	    
