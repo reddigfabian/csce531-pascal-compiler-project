@@ -20,12 +20,6 @@ typedef struct tn{
 
 }treeNode, *TN;
 
-TN makeIntConstNode(long intconstant);
-TN makeRealConstNode(double realconstant);
-TN makeIDNode(ST_ID id);
-TN makeTypeNode(ST_ID id, TYPE type);
-
-
 /*
 typedef enum {
     TYVOID, TYFLOAT, TYDOUBLE, TYLONGDOUBLE, TYSIGNEDLONGINT,
