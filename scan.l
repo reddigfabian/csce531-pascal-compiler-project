@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "tree.h"
+
 #include "defs.h"
 #include "types.h"
 #include "symtab.h"

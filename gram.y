@@ -70,6 +70,8 @@ int myDebug = 0;
     int	     y_cint;
     long     y_int;
     double   y_real;
+    ST_ID    y_ST_ID;
+    LD      y_listOfIDs;
 }
 
 %token <y_string> LEX_ID
@@ -144,6 +146,11 @@ int myDebug = 0;
 %nonassoc lower_than_error
 %nonassoc error
 
+/*OUR ADDED ONES*/
+%type <y_listOfIDs> id_list
+%type <y_ST_ID> new_identifier
+
+
 
 %%
 
@@ -167,8 +174,8 @@ optional_par_id_list:
   ;
 
 id_list:
-    new_identifier            {if(myDebug){msg("Found in id_list:1---");}}
-  | id_list ',' new_identifier    {if(myDebug){msg("Found in id_list:2---");}}
+    new_identifier                {if(myDebug){msg("Found in id_list:1---");} $$ = addToList($1, NULL);}
+  | id_list ',' new_identifier    {if(myDebug){msg("Found in id_list:2---");} $$ = addToList($3, $1);}
   ;
 
 typename:
@@ -491,7 +498,24 @@ variable_declaration_list:
   ;
 
 variable_declaration:
-    id_list ':' type_denoter semi           {if(myDebug){msg("Found in variable_declaration:1---");}}
+    id_list ':' type_denoter semi           {if(myDebug){msg("Found in variable_declaration:1---");}
+                                                    /*
+                                              for each id on the list $1:
+                                                  st_lookup to see if previously installed
+                                                      if so, error (duplicate definition)
+                                                      otherwise, get a new ST_DR
+                                                          stdr_alloc() (dont call malloc ourselves)
+                                                          fill in the feilds:
+                                                              id is the current id (from for/while loop)
+                                                              tag is GDECL
+                                                              type is $3
+                                                          st_install() to install to symbol table
+                                                      Backend:
+                                                          computer size and alignment based on type
+                                                          (should be data types, i.e., not function or procedure types)
+                                                          b_gloval_decl()
+                                                          b_skip*/
+                                              }
   ;
 
 function_declaration:

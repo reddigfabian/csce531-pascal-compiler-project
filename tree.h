@@ -20,6 +20,21 @@ typedef struct tn{
 
 }treeNode, *TN;
 
+
+
+typedef struct LoIDs{
+  ST_ID data;
+  struct LoIDs *next;
+}listOfIds, *LD;
+
+TN makeIntConstNode(long intconstant);
+TN makeRealConstNode(double realconstant);
+TN makeIDNode(ST_ID id);
+TN makeTypeNode(ST_ID id, TYPE type);
+
+LD addToList(ST_ID id, LD oldList);
+
+
 /*
 typedef enum {
     TYVOID, TYFLOAT, TYDOUBLE, TYLONGDOUBLE, TYSIGNEDLONGINT,

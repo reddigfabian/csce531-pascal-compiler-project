@@ -270,7 +270,7 @@ we should store stuff on the symantic stack (good for us, not required)
         System table is to keep only one place in memory for each variable
         for installment
             contains
-                ST_ID
+                DOES NOT CONTAIN ST_ID  -- passed sepreately by install function
                 type
                 GDECL,TYPENAME, ect  (how varable is used)
 
