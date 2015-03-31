@@ -78,7 +78,7 @@ int block;
     ST_ID         y_ST_ID;
     LD            y_listOfIDs;
     TYPE          y_type;
-    INDEX_LIST         y_tlist;
+    INDEX_LIST    y_tlist;
 }
 
 /*OUR ADDED ONES*/
