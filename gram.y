@@ -48,13 +48,14 @@
 
 #include <stdlib.h>
 #include "tree.h"
+#include "types.h" //added this for use of TLIST
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
 void set_yydebug(int);
 void yyerror(const char *);
 
-int myDebug = 1;
+int myDebug = 0;
 int block;
 
 /* Like YYERROR but do call yyerror */
@@ -78,14 +79,14 @@ int block;
     ST_ID         y_ST_ID;
     LD            y_listOfIDs;
     TYPE          y_type;
-    INDEX_LIST    y_tlist;
+    INDEX_LIST    y_index_list;
 }
 
 /*OUR ADDED ONES*/
-%type <y_tlist> array_index_list
+%type <y_index_list> array_index_list
 %type <y_listOfIDs> id_list
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
-%type <y_type> type_denoter new_ordinal_type subrange_type array_type
+%type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type new_structured_type
 %type <y_int> constant number unsigned_number enumerator enumerated_type enum_list
 //%type <y_real>
 //%type <y_single>
@@ -352,9 +353,9 @@ type_denoter:
                                           $$ = st_lookup($1,&block)->u.typename.type;
                                         }
   | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");} $$ = $1;}
-  | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");}}
-  | new_procedural_type                 {if(myDebug){msg("Found in type_denoter:4---");}}
-  | new_structured_type                 {if(myDebug){msg("Found in type_denoter:5---");}}
+  | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");} $$ = $1;}
+  | new_procedural_type                 {if(myDebug){msg("Found in type_denoter:4---");} $$ = $1;}
+  | new_structured_type                 {if(myDebug){msg("Found in type_denoter:5---");} $$ = $1;}
   ;
 
 new_ordinal_type:
@@ -425,34 +426,20 @@ new_structured_type:
 
 array_type:
     LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}
-                                                                    ty_build_array(TYARRAY,$3);
-                                                                    /*a : array[2..4,3..10] of Real
-                                                                    ----------------------------
-                                                                    2..4  = subrange of Integer
-                                                                    3..10 = subrange of Integer
-                                                                            Integer = base type
-                                                                                call ty_build_basic to get basic type
-                                                                                then ty_build_subrange, include basetype from basic
-                                                                                include upper and lower limits (the 2,4 and the 3,10)
-                                                                    typetag = TYARRAY
-                                                                    index list = 2 elements = both subranges of Integer
-                                                                    element type = Real
-
-                                                                you can assume all index types are integer subranges
-                                                                lowerbound needs to be less than or equal to upperbound
-                                                                                                    or symantic error*/
+                                                                    $$ = ty_build_array($6,$3);
+                                                                    
                                                                   }
   ;
 
 array_index_list:
-    ordinal_index_type                           {if(myDebug){msg("Found in array_index_list:1---");} addToArraySubList($1, NULL);}
-  | array_index_list ',' ordinal_index_type      {if(myDebug){msg("Found in array_index_list:2---");} addToArraySubList($3, $1);}
+    ordinal_index_type                           {if(myDebug){msg("Found in array_index_list:1---");} $$ = addToArraySubList($1, NULL);}
+  | array_index_list ',' ordinal_index_type      {if(myDebug){msg("Found in array_index_list:2---");} $$ = addToArraySubList($3, $1);}
   ;
 
 
 ordinal_index_type:
-    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");} /*WERE HERE and this is a subrange return (for now)*/}
-  | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");} /*ST_Id*/}
+    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");} $$ = $1; /*WERE HERE and this is a subrange return (for now)*/}
+  | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");} $$ = $1; /*ST_Id*/}
   ;
 
 
@@ -546,7 +533,7 @@ variable_declaration:
                                                   if(!(st_install(tempLD->data,DRtoInstall))){
                                                     bug("st_install failed");
                                                   }else{
-                                                    stdr_dump(DRtoInstall);
+                                                    if(myDebug)stdr_dump(DRtoInstall);
                                                   }
                                                 }
                                                 else{

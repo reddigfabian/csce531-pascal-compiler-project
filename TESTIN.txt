@@ -1,7 +1,9 @@
 Program FUUUUUCK;
 
 var
-  a: Array[0..9] of Integer;
+  a, b, c: Array[0..9] of Integer;
+
+  a : Integer;
 
 begin
 end.

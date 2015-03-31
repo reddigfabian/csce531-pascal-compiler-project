@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "tree.h"
+#include "types.h"
 
 
 
@@ -19,15 +20,18 @@ LD addToList(ST_ID id, LD oldList){
 
 
 /*
-typedef struct arrayListofSubranges{
-  TYPE data;
-  struct arrayListofSubranges *next;
-}aLoSR, *LSR;
+typedef struct tlist {
+    TYPE type;
+    struct tlist *next, *prev;
+} TLIST_NODE, *TYPE_LIST;
+
+typedef struct tlist INDEX, *INDEX_LIST;
 */
-LSR addToArraySubList(TYPE object, LSR oldList){
-  LSR tempEntry = (LSR)malloc(sizeof(aLoSR));
-  tempEntry->data = object;
+INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList){
+  INDEX_LIST tempEntry = (INDEX_LIST)malloc(sizeof(INDEX));
+  tempEntry->type = object;
   tempEntry->next = oldList;
+  tempEntry->prev = NULL;
 
   return tempEntry;
 }
