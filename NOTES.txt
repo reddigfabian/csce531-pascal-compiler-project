@@ -328,8 +328,8 @@ we should store stuff on the symantic stack (good for us, not required)
     variable_declaration
     functiontype
 
-============================Questions???=================================================================================================================================
+============================Assumptions=================================================================================================================================
 
-What is contained in ST_ID?
-Does the tree need functions for all "base" types?
-Do we need to build a syntax tree for the type portion at all?
+A subrange will only ever exist with integer bounds.
+
+It doesn't matter that the symtab dump command outputs the type of pascal variables as their C equivalents (e.g. A real has type double when printed out via msg() command)

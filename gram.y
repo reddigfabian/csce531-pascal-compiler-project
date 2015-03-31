@@ -54,7 +54,7 @@
 void set_yydebug(int);
 void yyerror(const char *);
 
-int myDebug = 0;
+int myDebug = 1;
 int block;
 
 /* Like YYERROR but do call yyerror */
@@ -67,14 +67,29 @@ int block;
 
 /* The union representing a semantic stack entry */
 %union {
-    char *   y_string;
-    int	     y_cint;
-    long     y_int;
-    double   y_real;
-    ST_ID    y_ST_ID;
-    LD       y_listOfIDs;
-    TYPE     y_type;
+    char *        y_string;
+    int	          y_cint;
+    long          y_int;
+    double        y_real;
+
+    float         y_single;
+    unsigned char y_char;
+    signed char   y_bool;
+    ST_ID         y_ST_ID;
+    LD            y_listOfIDs;
+    TYPE          y_type;
 }
+
+/*OUR ADDED ONES*/
+%type <y_listOfIDs> id_list
+%type <y_ST_ID> new_identifier new_identifier_1 typename identifier
+%type <y_type> type_denoter new_ordinal_type subrange_type
+%type <y_int> constant number unsigned_number enumerator enumerated_type enum_list
+//%type <y_real>
+//%type <y_single>
+//%type <y_char>
+//s%type <y_bool>
+
 
 %token <y_string> LEX_ID
 
@@ -148,10 +163,6 @@ int block;
 %nonassoc lower_than_error
 %nonassoc error
 
-/*OUR ADDED ONES*/
-%type <y_listOfIDs> id_list
-%type <y_ST_ID> new_identifier new_identifier_1 typename identifier
-%type <y_type> type_denoter
 
 
 
@@ -284,10 +295,10 @@ constant_definition:
   ;
 
 constant:
-    identifier
-  | sign identifier
+    identifier                    {}
+  | sign identifier               {}
   | number                        {if(myDebug){msg("Found in constant:3---");}}
-  | constant_literal
+  | constant_literal              {}
   ;
 
 number:
@@ -338,7 +349,7 @@ type_denoter:
     typename                            {if(myDebug){msg("Found in type_denoter:1---");}
                                           $$ = st_lookup($1,&block)->u.typename.type;
                                         }
-  | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");}}
+  | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");} $$ = $1;}
   | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");}}
   | new_procedural_type                 {if(myDebug){msg("Found in type_denoter:4---");}}
   | new_structured_type                 {if(myDebug){msg("Found in type_denoter:5---");}}
@@ -346,11 +357,11 @@ type_denoter:
 
 new_ordinal_type:
     enumerated_type                     {if(myDebug){msg("Found in new_ordinal_type:1---");}}
-  | subrange_type                       {if(myDebug){msg("Found in new_ordinal_type:2---");}}
+  | subrange_type                       {if(myDebug){msg("Found in new_ordinal_type:2---");} $$ = $1;}
   ;
 
 enumerated_type:
-    '(' enum_list ')'
+    '(' enum_list ')'           {}
   ;
 
 enum_list:
@@ -359,11 +370,11 @@ enum_list:
   ;
 
 enumerator:
-    new_identifier
+    new_identifier                    {}
   ;
 
 subrange_type:
-    constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");}}
+    constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");} $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3); }
   ;
 
 new_pointer_type:

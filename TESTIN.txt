@@ -1,7 +1,7 @@
 Program FUUUUUCK;
 
 var
-  x, y, z : Integer;
+  a: 4..17;
 
 begin
 end.
