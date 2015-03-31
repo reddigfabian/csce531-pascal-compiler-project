@@ -1,7 +1,7 @@
 Program FUUUUUCK;
 
 var
-  a: 4..17;
+  a: Array[0..9] of Integer;
 
 begin
 end.

@@ -78,12 +78,14 @@ int block;
     ST_ID         y_ST_ID;
     LD            y_listOfIDs;
     TYPE          y_type;
+    INDEX_LIST         y_tlist;
 }
 
 /*OUR ADDED ONES*/
+%type <y_tlist> array_index_list
 %type <y_listOfIDs> id_list
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
-%type <y_type> type_denoter new_ordinal_type subrange_type
+%type <y_type> type_denoter new_ordinal_type subrange_type array_type
 %type <y_int> constant number unsigned_number enumerator enumerated_type enum_list
 //%type <y_real>
 //%type <y_single>
@@ -422,18 +424,35 @@ new_structured_type:
 /* Array */
 
 array_type:
-    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}}
+    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}
+                                                                    ty_build_array(TYARRAY,$3);
+                                                                    /*a : array[2..4,3..10] of Real
+                                                                    ----------------------------
+                                                                    2..4  = subrange of Integer
+                                                                    3..10 = subrange of Integer
+                                                                            Integer = base type
+                                                                                call ty_build_basic to get basic type
+                                                                                then ty_build_subrange, include basetype from basic
+                                                                                include upper and lower limits (the 2,4 and the 3,10)
+                                                                    typetag = TYARRAY
+                                                                    index list = 2 elements = both subranges of Integer
+                                                                    element type = Real
+
+                                                                you can assume all index types are integer subranges
+                                                                lowerbound needs to be less than or equal to upperbound
+                                                                                                    or symantic error*/
+                                                                  }
   ;
 
 array_index_list:
-    ordinal_index_type                           {if(myDebug){msg("Found in array_index_list:1---");}}
-  | array_index_list ',' ordinal_index_type      {if(myDebug){msg("Found in array_index_list:2---");}}
+    ordinal_index_type                           {if(myDebug){msg("Found in array_index_list:1---");} addToArraySubList($1, NULL);}
+  | array_index_list ',' ordinal_index_type      {if(myDebug){msg("Found in array_index_list:2---");} addToArraySubList($3, $1);}
   ;
 
 
 ordinal_index_type:
-    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");}}
-  | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");}}
+    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");} /*WERE HERE and this is a subrange return (for now)*/}
+  | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");} /*ST_Id*/}
   ;
 
 

@@ -27,12 +27,20 @@ typedef struct LoIDs{
   struct LoIDs *next;
 }listOfIds, *LD;
 
+
+typedef struct arrayListofSubranges{
+  TYPE data;
+  struct arrayListofSubranges *next;
+}aLoSR, *LSR;
+
+
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
 TN makeIDNode(ST_ID id);
 TN makeTypeNode(ST_ID id, TYPE type);
 
 LD addToList(ST_ID id, LD oldList);
+LSR addToArraySubList(TYPE object, LSR oldList);
 
 
 /*
