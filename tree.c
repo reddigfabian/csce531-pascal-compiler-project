@@ -11,8 +11,6 @@ typedef struct LoIDs{
 */
 
 LD addToList(ST_ID id, LD oldList){
-
-  msg("adding to list of id");
   LD tempLid = (LD)malloc(sizeof(listOfIds));
   tempLid->data = id;
   tempLid->next = oldList;

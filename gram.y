@@ -55,6 +55,7 @@ void set_yydebug(int);
 void yyerror(const char *);
 
 int myDebug = 0;
+int block;
 
 /* Like YYERROR but do call yyerror */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -71,7 +72,8 @@ int myDebug = 0;
     long     y_int;
     double   y_real;
     ST_ID    y_ST_ID;
-    LD      y_listOfIDs;
+    LD       y_listOfIDs;
+    TYPE     y_type;
 }
 
 %token <y_string> LEX_ID
@@ -148,7 +150,8 @@ int myDebug = 0;
 
 /*OUR ADDED ONES*/
 %type <y_listOfIDs> id_list
-%type <y_ST_ID> new_identifier
+%type <y_ST_ID> new_identifier new_identifier_1 typename identifier
+%type <y_type> type_denoter
 
 
 
@@ -179,69 +182,69 @@ id_list:
   ;
 
 typename:
-    LEX_ID          {if(myDebug){msg("Found in typename:1---");}}
+    LEX_ID          {if(myDebug){msg("Found in typename:1---");}$$ = st_enter_id($1);}
   ;
 
 identifier:
-    LEX_ID          {if(myDebug){msg("Found in identifier:1---");}}
+    LEX_ID          {if(myDebug){msg("Found in identifier:1---");}$$ = st_enter_id($1);}
   ;
 
 new_identifier:
-    new_identifier_1    {if(myDebug){msg("Found in new_identifier:1---");}}
+    new_identifier_1    {if(myDebug){msg("Found in new_identifier:1---");}  $$ = $1;}
   ;
 
 new_identifier_1:
-    LEX_ID              {if(myDebug){msg("Found in new_identifier_1:1---");}}
+    LEX_ID              {if(myDebug){msg("Found in new_identifier_1:1---");} $$ = st_enter_id($1);}
 /* Standard Pascal constants */
-  | p_MAXINT
-  | p_FALSE
-  | p_TRUE
+  | p_MAXINT  {}
+  | p_FALSE  {}
+  | p_TRUE  {}
 /* Standard Pascal I/O */
-  | p_INPUT
-  | p_OUTPUT
-  | p_REWRITE
-  | p_RESET
-  | p_PUT
-  | p_GET
-  | p_WRITE
-  | p_READ
-  | p_WRITELN
-  | p_READLN
-  | p_PAGE
-  | p_EOF
-  | p_EOLN
+  | p_INPUT  {}
+  | p_OUTPUT  {}
+  | p_REWRITE  {}
+  | p_RESET  {}
+  | p_PUT  {}
+  | p_GET  {}
+  | p_WRITE  {}
+  | p_READ  {}
+  | p_WRITELN  {}
+  | p_READLN  {}
+  | p_PAGE  {}
+  | p_EOF  {}
+  | p_EOLN  {}
 /* Standard Pascal heap handling */
-  | p_NEW
-  | p_DISPOSE
+  | p_NEW  {}
+  | p_DISPOSE  {}
 /* Standard Pascal arithmetic */
-  | p_ABS
-  | p_SQR
-  | p_SIN
-  | p_COS
-  | p_EXP
-  | p_LN
-  | p_SQRT
-  | p_ARCTAN
-  | p_TRUNC
-  | p_ROUND
+  | p_ABS  {}
+  | p_SQR  {}
+  | p_SIN  {}
+  | p_COS  {}
+  | p_EXP  {}
+  | p_LN  {}
+  | p_SQRT  {}
+  | p_ARCTAN  {}
+  | p_TRUNC  {}
+  | p_ROUND  {}
 /* Standard Pascal transfer functions */
-  | p_PACK
-  | p_UNPACK
+  | p_PACK  {}
+  | p_UNPACK  {}
 /* Standard Pascal ordinal functions */
-  | p_ORD
-  | p_CHR
-  | p_SUCC
-  | p_PRED
-  | p_ODD
+  | p_ORD  {}
+  | p_CHR  {}
+  | p_SUCC  {}
+  | p_PRED  {}
+  | p_ODD  {}
 /* Other extensions */
-  | BREAK
-  | CONTINUE
-  | RETURN_
-  | RESULT
-  | EXIT
-  | FAIL
-  | SIZEOF
-  | BITSIZEOF
+  | BREAK  {}
+  | CONTINUE  {}
+  | RETURN_  {}
+  | RESULT  {}
+  | EXIT  {}
+  | SIZEOF  {}
+  | FAIL  {}  {}
+  | BITSIZEOF  {}
   ;
 
 any_global_declaration_part:
@@ -319,7 +322,7 @@ string:
   ;
 
 type_definition_part:
-    LEX_TYPE type_definition_list semi        {if(myDebug){msg("Found in type_definition_part:1---");}}
+    LEX_TYPE type_definition_list semi        {/* add action to check unresolved pointer types */}
   ;
 
 type_definition_list:
@@ -332,7 +335,9 @@ type_definition:
   ;
 
 type_denoter:
-    typename                            {if(myDebug){msg("Found in type_denoter:1---");}}
+    typename                            {if(myDebug){msg("Found in type_denoter:1---");}
+                                          $$ = st_lookup($1,&block)->u.typename.type;
+                                        }
   | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");}}
   | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");}}
   | new_procedural_type                 {if(myDebug){msg("Found in type_denoter:4---");}}
@@ -499,18 +504,32 @@ variable_declaration_list:
 
 variable_declaration:
     id_list ':' type_denoter semi           {if(myDebug){msg("Found in variable_declaration:1---");}
-                                                    /*
-                                              for each id on the list $1:
-                                                  st_lookup to see if previously installed
-                                                      if so, error (duplicate definition)
-                                                      otherwise, get a new ST_DR
-                                                          stdr_alloc() (dont call malloc ourselves)
-                                                          fill in the feilds:
-                                                              id is the current id (from for/while loop)
-                                                              tag is GDECL
-                                                              type is $3
-                                                          st_install() to install to symbol table
-                                                      Backend:
+                                            LD tempLD = $1;
+                                            if(tempLD != NULL){
+                                              do{
+
+                                                ST_ID IDtoInstall = st_lookup(tempLD->data, &block);
+                                                if(IDtoInstall == NULL){
+                                                  ST_DR DRtoInstall = stdr_alloc();
+                                                  DRtoInstall->tag = GDECL;
+                                                  DRtoInstall->u.decl.type = $3;
+                                                  if(!(st_install(tempLD->data,DRtoInstall))){
+                                                    bug("st_install failed");
+                                                  }else{
+                                                    stdr_dump(DRtoInstall);
+                                                  }
+                                                }
+                                                else{
+                                                  error("Duplicate declarations");
+                                                }
+
+                                                tempLD = tempLD->next;
+                                              }while(tempLD != NULL);
+
+                                            }else{
+                                              bug("Issue occured while calling id_list in variable_declaration. (id_list == NULL)");
+                                            }
+                                                    /*Backend:
                                                           computer size and alignment based on type
                                                           (should be data types, i.e., not function or procedure types)
                                                           b_gloval_decl()

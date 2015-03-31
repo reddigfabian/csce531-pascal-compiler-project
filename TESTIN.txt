@@ -1,0 +1,7 @@
+Program FUUUUUCK;
+
+var
+  x, y, z : Integer;
+
+begin
+end.
