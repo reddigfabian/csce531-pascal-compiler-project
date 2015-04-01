@@ -1,25 +1,7 @@
-{ There are no errors in this file! }
-program T1L80ok;
-
-type
-   CharArray	     = Array[4..10] of Char;
+Program Foo;
 
 var
-   { basic types }
-   a : Integer;
-   b : Single;
-   c : Real;
-   d : Char;
-   e : Boolean;
-   { multiple variables for one type }
-   f,g,h : Real;
-   { subranges }
-   i : 4..17;
-   { pointers }
-   { arrays }
-   ia : Array[0..9] of Integer;
-   iaa : Array[1..10,2..11] of Integer;
-   raaa : Array[1..10,2..9,3..8] of Real;
+   x : Integer;
 
 begin
 end.
