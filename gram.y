@@ -55,7 +55,7 @@
 void set_yydebug(int);
 void yyerror(const char *);
 
-int myDebug = 1;
+int myDebug = 0;
 int block;
 
 /* Like YYERROR but do call yyerror */
@@ -349,12 +349,7 @@ type_definition:
     new_identifier '=' type_denoter           {if(myDebug){msg("Found in type_definition:1---");}
 
                                                 ST_ID IDtoInstall = st_lookup($1, &block);
-                                                Char *idName = st_get_id_str($1);
-                                                TYPETAG typeToInstall;
                                                 if(IDtoInstall == NULL){
-                                                  typeToInstall = ty_query($3);
-                                                  int alignment = getAlignmentSize(typeToInstall);
-                                                  int size = getSize(typeToInstall, alignment);
                                                   ST_DR DRtoInstall = stdr_alloc();
                                                   DRtoInstall->tag = TYPENAME;   //90% sure correct
                                                   DRtoInstall->u.typename.type = $3;
@@ -362,33 +357,8 @@ type_definition:
                                                     bug("st_install failed in type_definition");
                                                   }else{
                                                     if(myDebug)stdr_dump(DRtoInstall);
-                                                    b_global_decl (idName, alignment, size);
-                                                    void b_skip(amount);
                                                   }
                                                 }else error("Duplicate declarations");
-                                                  //BACK END STUFF
-                                                  /*
-                                                  Alignment & size:
-                                                      SIMPLE TYPES:
-                                                      type    alignment   size
-                                                      -------------------------
-                                                      Char         1        1
-                                                      Boolean      1        1
-                                                      Integer      4        4
-                                                      Real         8        8
-                                                      Single       4        4
-                                                      Pointer      4        4
-
-                                                      Alignment required for and array is the same
-                                                      as its element type align requirement
-                                                          (if element is another array, recursive call)
-
-                                                      Size of an array equals
-                                                          (size of the element type) * (product of index type ranges)
-                                                          range 4..6 = 3
-                                                          low..high = high - low + 1
-                                                          */
-
                                               }
   ;
 
@@ -482,7 +452,7 @@ new_structured_type:
 
 array_type:
     LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}
-    
+
                                                                     $$ = ty_build_array($6,$3);
 
                                                                   }
@@ -583,7 +553,13 @@ variable_declaration:
                                               do{
 
                                                 ST_ID IDtoInstall = st_lookup(tempLD->data, &block);
+                                                char *idName = st_get_id_str(tempLD->data);
+                                                TYPETAG typeToInstall;
                                                 if(IDtoInstall == NULL){
+                                                  typeToInstall = ty_query($3);
+                                                  int alignment = getAlignmentSize(typeToInstall);
+                                                  int size = getSize(typeToInstall, alignment);
+                                                  int amount = alignment; //NOT CORRECT
                                                   ST_DR DRtoInstall = stdr_alloc();
                                                   DRtoInstall->tag = GDECL;
                                                   DRtoInstall->u.decl.type = $3;
@@ -591,6 +567,8 @@ variable_declaration:
                                                     bug("st_install failed in variable declaration");
                                                   }else{
                                                     if(myDebug)stdr_dump(DRtoInstall);
+                                                    b_global_decl (idName, alignment, size);
+                                                    b_skip(amount);
                                                   }
                                                 }
                                                 else{
@@ -607,7 +585,17 @@ variable_declaration:
                                                           computer size and alignment based on type
                                                           (should be data types, i.e., not function or procedure types)
                                                           b_gloval_decl()
-                                                          b_skip*/
+                                                          b_skip
+
+                                                          char *idName = st_get_id_str($1);
+                                                          TYPETAG typeToInstall;
+                                                          if(IDtoInstall == NULL){
+                                                            typeToInstall = ty_query($3);
+                                                            int alignment = getAlignmentSize(typeToInstall);
+                                                            int size = getSize(typeToInstall, alignment);
+                                                            int amount = alignment; //NOT CORRECT
+
+                                                          */
                                               }
   ;
 
@@ -1089,35 +1077,42 @@ set_yydebug (int value)
 
 int getSize(TYPETAG type, int alignment){
   switch(type){
+
     case TYARRAY:
-      //(size of the element type) * (product of index type ranges)
-      //low..high = high - low + 1
-      TYPE actualType = ty_build_basic(type);
-      INDEX_LIST listIndices = actualType->u.array.indices;
-      do{
-        subrange SR = ty_build_subrange(listIndices, &low, &high);
-        int low = SR.low;
-        int high = SR.high;
-        int SRsize = high - low + 1;
-
-        listIndices = listIndices.next;
-      }while(listIndices != NULL)
-
-      return getAlignmentsize(ty_query_array(type, &list));
+      // //(size of the element type) * (product of index type ranges)
+      // //low..high = high - low + 1
+      // TYPE actualType = ty_build_basic(type);
+      // INDEX_LIST listIndices = actualType->u.array.indices;
+      // do{
+      //   subrange SR = ty_build_subrange(listIndices, &low, &high);
+      //   int low = SR.low;
+      //   int high = SR.high;
+      //   int SRsize = high - low + 1;
+      //
+      //   listIndices = listIndices.next;
+      // }while(listIndices != NULL)
+      //
+      // return getAlignmentsize(ty_query_array(type, &list));
+      return 8;
       break;
+
     case TYSUBRANGE:
-      subrange SR = ty_build_subrange(ty_build_basic(type), &low, &high);
-      int low = SR.low;
-      int high = SR.high;
-      int SRsize = high - low + 1;
-      return SRsize * alignment;
+      // subrange SR = ty_build_subrange(ty_build_basic(type), &low, &high);
+      // int low = SR.low;
+      // int high = SR.high;
+      // int SRsize = high - low + 1;
+      // return SRsize * alignment;
+      return 8;
       break;
+
    default:
       return alignment;
   }
 }
 
-int getAlignmentsize(TYPETAG type){
+int getAlignmentSize(TYPETAG type){
+  msgn("Calling getAlignmentSize with TYPETAG = ");
+  ty_print_typetag(type);
   switch(type){
     case TYSIGNEDLONGINT:
       return sizeof(signed long int);
@@ -1129,13 +1124,13 @@ int getAlignmentsize(TYPETAG type){
       return sizeof(signed int);
       break;
     case TYUNSIGNEDLONGINT:
-      return sizeof(signed long int);
+      return sizeof(unsigned long int);
       break;
     case TYUNSIGNEDSHORTINT:
-      return sizeof(signed short int);
+      return sizeof(unsigned short int);
       break;
     case TYUNSIGNEDINT:
-      return sizeof(signed int);
+      return sizeof(unsigned int);
       break;
     case TYUNSIGNEDCHAR:
       return sizeof(unsigned char);
@@ -1144,13 +1139,15 @@ int getAlignmentsize(TYPETAG type){
       return sizeof(signed char);
       break;
     case TYARRAY:
-      return getAlignmentsize(ty_query_array(type, &list));
+      //return getAlignmentsize(ty_query_array(type, &list));
+      return 8;
       break;
     case TYPTR:
       return sizeof(char *);
       break;
     case TYSUBRANGE:
-      return getAlignmentsize(ty_query_subrange(type, &low, &high));
+      //return getAlignmentsize(ty_query_subrange(type, &low, &high));
+      return 8;
       break;
     case TYDOUBLE:
       return sizeof(double);

@@ -333,3 +333,10 @@ we should store stuff on the symantic stack (good for us, not required)
 A subrange will only ever exist with integer bounds.
 
 It doesn't matter that the symtab dump command outputs the type of pascal variables as their C equivalents (e.g. A real has type double when printed out via msg() command)
+
+============================TO DO========================================================================================================================================
+Handle backend for arrays and subranges (when it comes to calculating size and such)
+
+Handle unresolved pointers
+
+Check grammar for mistakes when building basic types. It seems the wrong C equivalent is being passed.
