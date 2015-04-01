@@ -86,15 +86,16 @@ int block;
 %type <y_index_list> array_index_list
 %type <y_listOfIDs> id_list
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
-%type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type new_structured_type
-%type <y_int> constant number unsigned_number enumerator enumerated_type enum_list
+%type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type new_structured_type pointer_domain_type
+%type <y_int> constant number unsigned_number LEX_INTCONST LEX_REALCONST
 //%type <y_real>
 //%type <y_single>
-//%type <y_char>
+%type <y_char> sign '+' '-'
 //s%type <y_bool>
 
 
 %token <y_string> LEX_ID
+//%token <y_int> LEX_INTCONST
 
 /* Reserved words. */
 
@@ -300,23 +301,23 @@ constant_definition:
 constant:
     identifier                    {}
   | sign identifier               {}
-  | number                        {if(myDebug){msg("Found in constant:3---");}}
+  | number                        {if(myDebug){msg("Found in constant:3---");} $$=$1;}
   | constant_literal              {}
   ;
 
 number:
-    sign unsigned_number            {if(myDebug){msg("Found in number:1---");}}
-  | unsigned_number                 {if(myDebug){msg("Found in number:2---");}}
+    sign unsigned_number            {if(myDebug){msg("Found in number:1---");} if($1= '-')$$=-$2; else $$=$2;}
+  | unsigned_number                 {if(myDebug){msg("Found in number:2---");} $$=$1;}
   ;
 
 unsigned_number:
-    LEX_INTCONST                    {if(myDebug){msg("Found in unsigned_number:1---");}}
-  | LEX_REALCONST                   {if(myDebug){msg("Found in unsigned_number:2---");}}
+    LEX_INTCONST                    {if(myDebug){msg("Found in unsigned_number:1---");} $$ = $1;}
+  | LEX_REALCONST                   {if(myDebug){msg("Found in unsigned_number:2---");} $$ = $1;}
   ;
 
 sign:
-    '+'                            {if(myDebug){msg("Found in sign:1---");}}
-  | '-'                            {if(myDebug){msg("Found in sign:2---");}}
+    '+'                            {if(myDebug){msg("Found in sign:1---");} $$ = $1;}
+  | '-'                            {if(myDebug){msg("Found in sign:2---");} $$ = $1;}
   ;
 
 constant_literal:
@@ -377,11 +378,17 @@ enumerator:
   ;
 
 subrange_type:
-    constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");} $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3); }
+    constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");}
+                                        if($1 <= $3){
+                                          $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3);
+                                        }else{
+                                          error("Subrange values are invalid!");
+                                        }
+                                        }
   ;
 
 new_pointer_type:
-    pointer_char pointer_domain_type    {if(myDebug){msg("Found in new_pointer_type:1---");}}
+    pointer_char pointer_domain_type    {if(myDebug){msg("Found in new_pointer_type:1---");} $$ = ty_build_ptr($2); }
   ;
 
 pointer_char:
@@ -390,8 +397,8 @@ pointer_char:
   ;
 
 pointer_domain_type:
-    new_identifier                    {if(myDebug){msg("Found in pointer_domain_type:1---");}}
-  | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");}}
+    new_identifier                    {if(myDebug){msg("Found in pointer_domain_type:1---");} $$ = st_lookup($1,&block)->u.typename.type;}
+  | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");} $$ = $1;/*To our knowledge this is not tested in PROJECT 1 */}
   ;
 
 new_procedural_type:
@@ -427,7 +434,7 @@ new_structured_type:
 array_type:
     LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}
                                                                     $$ = ty_build_array($6,$3);
-                                                                    
+
                                                                   }
   ;
 

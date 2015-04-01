@@ -299,34 +299,34 @@ we should store stuff on the symantic stack (good for us, not required)
 ===============================================================================================================================
 
 
-    id_list
-    typename
-    identifier
-    new_identifier
-    new_identifier_1 (LEX_ID production only)
-    simple_decl
-    constant (number production only)
-    number
-    unsigned_number
-    sign
-    type_definition_part
-    type_definition
-    type_denoter
-    type_denoter_1
-    new_ordinal_type
-    subrange_type
-    new_pointer_type
-    pointer_domain_type
-    new_procedural_type
-    optional_procedural_type_formal_parameter_list
-    procedural_type_formal_parameter_list
-    procedural_type_formal_parameter
-    new_structured_type
-    array_type
-    array_index_list
-    ordinal_index_type
-    variable_declaration
-    functiontype
+    id_list                         $$ = addToList($1, NULL);   $$ = addToList($3, $1);
+    typename                        $$ = st_enter_id($1);
+    identifier                      $$ = st_enter_id($1);
+    new_identifier                  $$ = $1;
+    new_identifier_1 (LEX_ID production only)  $$ = st_enter_id($1);
+    simple_decl                     NOT DONE YET  x3 parts
+    constant (number production only)  $$=$1;
+    number                          if($1= '-')$$=-$2; else $$=$2;    $$=$1;
+    unsigned_number                 $$=$1;     $$=$1;
+    sign                            $$=$1;     $$=$1;
+    type_definition_part            NOT DONE YET
+    type_definition                 NOT DONE YET
+    type_denoter                   $$ = st_lookup($1,&block)->u.typename.type;    $$ = $1; x4 parts
+    type_denoter_1                      MISSING?!?!?!? NOT DONE YET
+    new_ordinal_type                    NOT DONE YET AND $$ = $1;
+    subrange_type                 $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3);
+    new_pointer_type                                      NOT DONE YET
+    pointer_domain_type                                   NOT DONE YET
+    new_procedural_type                                   NOT DONE YET
+    optional_procedural_type_formal_parameter_list        NOT DONE YET
+    procedural_type_formal_parameter_list                 NOT DONE YET
+    procedural_type_formal_parameter      NOT DONE YET
+    new_structured_type                   NOT DONE YET
+    array_type                            $$ = ty_build_array($6,$3);
+    array_index_list                      $$ = addToArraySubList($1, NULL);     $$ = addToArraySubList($3, $1);
+    ordinal_index_type                    $$ = $1;       $$ = $1;
+    variable_declaration                  CREATS and INSTALLS vars
+    functiontype                          NOT DONE YET
 
 ============================Assumptions=================================================================================================================================
 
