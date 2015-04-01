@@ -74,4 +74,4 @@ y.output: gram.y
 	$(YACC) -v -y gram.y
 
 clean:
-	-rm -f ppc3 *.o y.tab.h y.output y.tab.c
+	-rm -f ppc3 *.o y.tab.h y.output y.tab.c *.err *.s *~

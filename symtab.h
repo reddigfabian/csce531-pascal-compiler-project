@@ -6,7 +6,7 @@
 
 #include "types.h"
 
-#define ST_DEBUG 1		/* enable/disable symbol table debugging */
+#define ST_DEBUG 0		/* enable/disable symbol table debugging */
 #define BS_DEPTH 11		/* block stack depth; maximum scope nesting */
 
 typedef void (*user_func)();
