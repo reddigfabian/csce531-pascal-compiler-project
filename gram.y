@@ -89,7 +89,7 @@ INDEX_LIST rootOfUnRP;
 %type <y_listOfIDs> id_list
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
 %type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type
-    new_structured_type pointer_domain_type
+    new_structured_type pointer_domain_type functiontype
 %type <y_int> constant number unsigned_number LEX_INTCONST LEX_REALCONST
 //%type <y_single>
 %type <y_char> sign '+' '-'
@@ -378,7 +378,7 @@ type_definition_list:
   ;
 
 type_definition:
-    new_identifier '=' type_denoter           {if(myDebug){msg("type_definition:1---"); ty_print_typetag(ty_query($3)); msg("");}
+    new_identifier '=' type_denoter           {if(myDebug){msgn("type_definition:1---"); ty_print_typetag(ty_query($3)); msg("");}
 
 
                                                 ST_ID IDtoInstall = st_lookup($1, &block);
@@ -474,12 +474,34 @@ pointer_domain_type:
                                           $$ = tempType;
 
                                       }
-  | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");} $$ = $1;/*To our knowledge this is not tested in PROJECT 1 */}
+  | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");} $$ = ty_build_ptr($1);/*To our knowledge this is not tested in PROJECT 1 */}
   ;
 
 new_procedural_type:
-    LEX_PROCEDURE optional_procedural_type_formal_parameter_list              {if(myDebug){msg("Found in new_procedural_type:1---");}}
-  | LEX_FUNCTION optional_procedural_type_formal_parameter_list functiontype  {if(myDebug){msg("Found in new_procedural_type:2---");}}
+    LEX_PROCEDURE optional_procedural_type_formal_parameter_list              {if(myDebug){msg("Found in new_procedural_type:1---");} $$ = ty_build_func(ty_build_basic(TYVOID), NULL, TRUE);}
+  | LEX_FUNCTION optional_procedural_type_formal_parameter_list functiontype  {if(myDebug){msg("Found in new_procedural_type:2---");}
+                                                                                TYPE tempTYPE = $3;
+                                                                                TYPETAG tempTAG = ty_query(tempTYPE);
+                                                                                if(TYFLOAT == tempTAG |
+                                                                                   TYDOUBLE == tempTAG |
+                                                                                   TYLONGDOUBLE == tempTAG |
+                                                                                   TYUNSIGNEDINT == tempTAG |
+                                                                                   TYUNSIGNEDCHAR == tempTAG |
+                                                                                   TYUNSIGNEDSHORTINT == tempTAG |
+                                                                                   TYUNSIGNEDLONGINT == tempTAG |
+                                                                                   TYSIGNEDCHAR == tempTAG |
+                                                                                   TYSIGNEDINT == tempTAG |
+                                                                                   TYSIGNEDLONGINT == tempTAG |
+                                                                                   TYSIGNEDSHORTINT == tempTAG |
+                                                                                   TYVOID == tempTAG |
+                                                                                   TYPTR == tempTAG){
+                                                                                  $$ = ty_build_func(tempTYPE, NULL, TRUE);
+
+                                                                                }else{
+                                                                                  error("Function type invalid");
+                                                                                  $$ = ty_build_basic(TYERROR);
+                                                                                }
+                                                                              }
   ;
 
 optional_procedural_type_formal_parameter_list:
@@ -510,7 +532,12 @@ new_structured_type:
 array_type:
     LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("array_type:1---"); ty_print_typetag(ty_query($6)); msg("");}
                                                                     if(ty_query($6) != TYERROR && ty_query($3->type) != TYERROR){
-                                                                      $$ = ty_build_array($6,$3);
+                                                                      if(ty_query($6) != TYFUNC){
+                                                                        $$ = ty_build_array($6,$3);
+                                                                      }else{
+                                                                        error("Data type expected for array elements");
+                                                                        $$ = ty_build_basic(TYERROR);
+                                                                      }
                                                                     }else{ // keep passing the error type up
                                                                       $$ = $6;
                                                                     }
@@ -615,27 +642,32 @@ variable_declaration:
                                                 ST_ID IDtoInstall = st_lookup(tempLD->data, &block);
                                                 char *idName = st_get_id_str(tempLD->data);
                                                 TYPE typeToInstall = $3;
-                                                if(IDtoInstall == NULL){
-                                                  ST_DR DRtoInstall = stdr_alloc();
-                                                  DRtoInstall->tag = GDECL;
-                                                  DRtoInstall->u.decl.sc = NO_SC;
-                                                  DRtoInstall->u.decl.type = typeToInstall;
-                                                  if(!(st_install(tempLD->data,DRtoInstall))){
-                                                    bug("st_install failed in variable declaration");
-                                                  }else{
-                                                    if(myDump){
-                                                      stdr_dump(DRtoInstall);
+
+                                                if(ty_query($3) != TYFUNC){
+                                                  if(IDtoInstall == NULL){
+                                                    ST_DR DRtoInstall = stdr_alloc();
+                                                    DRtoInstall->tag = GDECL;
+                                                    DRtoInstall->u.decl.sc = NO_SC;
+                                                    DRtoInstall->u.decl.type = typeToInstall;
+                                                    if(!(st_install(tempLD->data,DRtoInstall))){
+                                                      bug("st_install failed in variable declaration");
+                                                    }else{
+                                                      if(myDump){
+                                                        stdr_dump(DRtoInstall);
+                                                      }
+                                                      int alignment = getAlignmentSize(typeToInstall);
+                                                      int size = getSize(typeToInstall, alignment);
+                                                      int amount = size;
+                                                      b_global_decl (idName, alignment, size);
+                                                      b_skip(amount);
                                                     }
-                                                    int alignment = getAlignmentSize(typeToInstall);
-                                                    int size = getSize(typeToInstall, alignment);
-                                                    int amount = size;
-                                                    b_global_decl (idName, alignment, size);
-                                                    b_skip(amount);
+                                                  }else{
+                                                    error("Duplicate declaration: \"%s\"", idName);
                                                   }
+                                                }else{//cant set var to function
+                                                  error("Var can not be set to a Function or Procedure: \"%s\"",idName);
                                                 }
-                                                else{
-                                                  error("Duplicate declaration: \"%s\"", idName);
-                                                }
+
 
                                                 tempLD = tempLD->next;
                                               }while(tempLD != NULL);
@@ -667,8 +699,16 @@ directive:
   ;
 
 functiontype:
-    /* empty */                     {if(myDebug){msg("Found in functiontype:0---");}}
-    | ':' typename                  {if(myDebug){msg("Found in functiontype:1---");}}
+    /* empty */                     {if(myDebug){msg("functiontype:0---");}}  //procedure
+    | ':' typename                  {if(myDebug){msg("functiontype:1--- %s", st_get_id_str($2));}
+                                    ST_ID tempID = $2;
+                                    ST_DR tempDR = st_lookup(tempID, &block);
+                                    if(tempDR != NULL){
+                                      $$ = tempDR->u.typename.type;
+                                    }else{
+                                      error("Function returnType invalid: \"%s\"", st_get_id_str($2));
+                                    }
+                                    }
   ;
 
 /* parameter specification section */
