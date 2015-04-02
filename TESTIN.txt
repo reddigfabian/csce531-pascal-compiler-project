@@ -3,5 +3,13 @@ Program Foo;
 var
    x : Integer;
 
+   y : Array[1..4] of Real;
+
+   g : Array[1..4] of Char;
+
+   iaa : Array[1..10,2..11] of Integer;
+
+   test : 5..8;
+
 begin
 end.

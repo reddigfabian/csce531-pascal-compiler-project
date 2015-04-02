@@ -35,3 +35,19 @@ INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList){
 
   return tempEntry;
 }
+
+
+INDEX_LIST addToUnresolvedPtrs(TYPE object, INDEX_LIST root){
+  INDEX_LIST tempEntry = (INDEX_LIST)malloc(sizeof(INDEX));
+  tempEntry->type = object;
+  tempEntry->next = NULL;
+  INDEX_LIST lastEntry = root;
+  while(lastEntry->next != NULL){
+    lastEntry = lastEntry->next;
+  }
+
+  lastEntry->next = tempEntry;
+  tempEntry->prev = lastEntry;
+
+  return tempEntry;
+}

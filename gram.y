@@ -56,7 +56,9 @@ void set_yydebug(int);
 void yyerror(const char *);
 
 int myDebug = 0;
+int myDump = 0;
 int block;
+INDEX_LIST rootOfUnRP;
 
 /* Like YYERROR but do call yyerror */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -88,7 +90,6 @@ int block;
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
 %type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type new_structured_type pointer_domain_type
 %type <y_int> constant number unsigned_number LEX_INTCONST LEX_REALCONST
-//%type <y_real>
 //%type <y_single>
 %type <y_char> sign '+' '-'
 //s%type <y_bool>
@@ -306,13 +307,13 @@ constant:
   ;
 
 number:
-    sign unsigned_number            {if(myDebug){msg("Found in number:1---");} if($1= '-')$$=-$2; else $$=$2;}
+    sign unsigned_number            {if(myDebug){msg("Found in number:1---");} if($1 == '-')$$=-$2; else $$=$2;}
   | unsigned_number                 {if(myDebug){msg("Found in number:2---");} $$=$1;}
   ;
 
 unsigned_number:
-    LEX_INTCONST                    {if(myDebug){msg("Found in unsigned_number:1---");} $$ = $1;}
-  | LEX_REALCONST                   {if(myDebug){msg("Found in unsigned_number:2---");} $$ = $1;}
+    LEX_INTCONST                    {if(myDebug){msg("Found in unsigned_number:1---");} $$ = $<y_int>1;}
+  | LEX_REALCONST                   {if(myDebug){msg("Found in unsigned_number:2---");} $$ = $<y_real>1;}
   ;
 
 sign:
@@ -337,7 +338,20 @@ string:
   ;
 
 type_definition_part:
-    LEX_TYPE type_definition_list semi        {/* add action to check unresolved pointer types */}
+    LEX_TYPE type_definition_list semi        {INDEX_LIST tempUnRP = rootOfUnRP;
+                                              do{
+                                                if(tempUnRP == NULL){
+                                                  break;
+                                                }else{
+                                                  ST_ID tempID;
+                                                  TYPE tempTYPE = tempUnRP->type;
+                                                  ty_query_ptr(tempTYPE, &tempID);
+                                                  ST_DR ptrToResolve = st_lookup(tempID, &block);
+                                                  ty_resolve_ptr(tempUnRP->type, ptrToResolve->u.decl.type);
+                                                }
+                                                tempUnRP = tempUnRP->next;
+                                              }while(tempUnRP != NULL);
+                                              }
   ;
 
 type_definition_list:
@@ -346,7 +360,7 @@ type_definition_list:
   ;
 
 type_definition:
-    new_identifier '=' type_denoter           {if(myDebug){msg("Found in type_definition:1---");}
+    new_identifier '=' type_denoter           {if(myDebug){msg("Found type_definition:1---");}
 
                                                 ST_ID IDtoInstall = st_lookup($1, &block);
                                                 if(IDtoInstall == NULL){
@@ -356,7 +370,7 @@ type_definition:
                                                   if(!(st_install($1,DRtoInstall))){
                                                     bug("st_install failed in type_definition");
                                                   }else{
-                                                    if(myDebug)stdr_dump(DRtoInstall);
+                                                    //if(myDump)stdr_dump(DRtoInstall);
                                                   }
                                                 }else error("Duplicate declarations");
                                               }
@@ -398,16 +412,16 @@ enumerator:
 
 subrange_type:
     constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");}
-                                        if($1 <= $3){
-                                          $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3);
-                                        }else{
-                                          error("Subrange values are invalid!");
-                                        }
+                                          if($1 <= $3){
+                                            $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3);
+                                          }else{
+                                            error("Subrange values are invalid!");
+                                          }
                                         }
   ;
 
 new_pointer_type:
-    pointer_char pointer_domain_type    {if(myDebug){msg("Found in new_pointer_type:1---");} $$ = ty_build_ptr($2); }
+    pointer_char pointer_domain_type    {if(myDebug){msg("Found in new_pointer_type:1---");} $$ = $2;}
   ;
 
 pointer_char:
@@ -416,7 +430,24 @@ pointer_char:
   ;
 
 pointer_domain_type:
-    new_identifier                    {if(myDebug){msg("Found in pointer_domain_type:1---");} $$ = st_lookup($1,&block)->u.typename.type;}
+    new_identifier                    {if(myDebug){msg("Found in pointer_domain_type:1---");}
+                                        ST_DR tempDR = st_lookup($1,&block);
+                                        TYPE tempType;
+                                          if(tempDR == NULL){
+                                            tempType = ty_build_unresolved_ptr($1);
+                                            //add to list of unresloved
+                                            if(rootOfUnRP == NULL){
+                                              initRootOfUnRP(tempType);
+                                            }else{
+                                              addToUnresolvedPtrs(tempType, rootOfUnRP);
+                                            }
+                                          }else{
+                                            tempType = tempDR->u.typename.type;
+                                            tempType = ty_build_ptr(tempType);
+                                          }
+                                          $$ = tempType;
+
+                                      }
   | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");} $$ = $1;/*To our knowledge this is not tested in PROJECT 1 */}
   ;
 
@@ -538,7 +569,9 @@ one_case_constant:
    using a simple inherited attribute of type int */
 
 variable_declaration_part:
-    LEX_VAR variable_declaration_list
+    LEX_VAR variable_declaration_list       {
+      //for each, get the id by calling ty_query_ptr(), then look up the id in the symbol table to get the stdr (which must be a TYPENAME), then call ty_resolve_ptr()
+                                            }
   ;
 
 variable_declaration_list:
@@ -554,19 +587,18 @@ variable_declaration:
 
                                                 ST_ID IDtoInstall = st_lookup(tempLD->data, &block);
                                                 char *idName = st_get_id_str(tempLD->data);
-                                                TYPETAG typeToInstall;
+                                                TYPE typeToInstall = $3;
                                                 if(IDtoInstall == NULL){
-                                                  typeToInstall = ty_query($3);
-                                                  int alignment = getAlignmentSize(typeToInstall);
-                                                  int size = getSize(typeToInstall, alignment);
-                                                  int amount = alignment; //NOT CORRECT
                                                   ST_DR DRtoInstall = stdr_alloc();
                                                   DRtoInstall->tag = GDECL;
-                                                  DRtoInstall->u.decl.type = $3;
+                                                  DRtoInstall->u.decl.type = typeToInstall;
                                                   if(!(st_install(tempLD->data,DRtoInstall))){
                                                     bug("st_install failed in variable declaration");
                                                   }else{
-                                                    if(myDebug)stdr_dump(DRtoInstall);
+                                                    if(myDump)stdr_dump(DRtoInstall);
+                                                    int alignment = getAlignmentSize(typeToInstall);
+                                                    int size = getSize(typeToInstall, alignment);
+                                                    int amount = size;
                                                     b_global_decl (idName, alignment, size);
                                                     b_skip(amount);
                                                   }
@@ -581,21 +613,6 @@ variable_declaration:
                                             }else{
                                               bug("Issue occured while calling id_list in variable_declaration. (id_list == NULL)");
                                             }
-                                                    /*Backend:
-                                                          computer size and alignment based on type
-                                                          (should be data types, i.e., not function or procedure types)
-                                                          b_gloval_decl()
-                                                          b_skip
-
-                                                          char *idName = st_get_id_str($1);
-                                                          TYPETAG typeToInstall;
-                                                          if(IDtoInstall == NULL){
-                                                            typeToInstall = ty_query($3);
-                                                            int alignment = getAlignmentSize(typeToInstall);
-                                                            int size = getSize(typeToInstall, alignment);
-                                                            int amount = alignment; //NOT CORRECT
-
-                                                          */
                                               }
   ;
 
@@ -1075,88 +1092,108 @@ set_yydebug (int value)
 #endif
 }
 
-int getSize(TYPETAG type, int alignment){
-  switch(type){
-
+int getSize(TYPE type, int baseTypeSize){
+  INDEX_LIST currList;
+  long low;
+  long high;
+  TYPETAG typeTag = ty_query(type);
+  TYPE tempSubRange;
+  switch(typeTag){
+    TYPE tempTYPE;
+    int indexSize;
     case TYARRAY:
-      // //(size of the element type) * (product of index type ranges)
-      // //low..high = high - low + 1
-      // TYPE actualType = ty_build_basic(type);
-      // INDEX_LIST listIndices = actualType->u.array.indices;
-      // do{
-      //   subrange SR = ty_build_subrange(listIndices, &low, &high);
-      //   int low = SR.low;
-      //   int high = SR.high;
-      //   int SRsize = high - low + 1;
-      //
-      //   listIndices = listIndices.next;
-      // }while(listIndices != NULL)
-      //
-      // return getAlignmentsize(ty_query_array(type, &list));
-      return 8;
-      break;
+      tempTYPE = ty_query_array(type, &currList);
+      indexSize = 0;
+      do{
+        tempSubRange = currList->type;
+        ty_query_subrange(tempSubRange, &low, &high);
+        if(indexSize == 0){
+          indexSize = high - low + 1;
+        }else{
+          indexSize = indexSize * (high - low + 1);
+        }
+        currList = currList->next;
+      }while(currList != NULL);
+
+      if(ty_query(tempTYPE) == TYARRAY){
+        return indexSize * getSize(tempTYPE, baseTypeSize);
+      }
+      return indexSize * baseTypeSize;
 
     case TYSUBRANGE:
-      // subrange SR = ty_build_subrange(ty_build_basic(type), &low, &high);
-      // int low = SR.low;
-      // int high = SR.high;
-      // int SRsize = high - low + 1;
-      // return SRsize * alignment;
-      return 8;
-      break;
+      ty_query_subrange(type, &low, &high);
+      return 4; //Assumption: In Part 1 of the project we believe we are only dealing with Integer values of subranges and so we return the size value of integers
 
    default:
-      return alignment;
+      return baseTypeSize;
   }
 }
 
-int getAlignmentSize(TYPETAG type){
-  msgn("Calling getAlignmentSize with TYPETAG = ");
-  ty_print_typetag(type);
-  switch(type){
+/*
+Alignment required for and array is the same
+as its element type align requirement
+    (if element is another array, recursive call)
+
+Size of an array equals
+    (size of the element type) * (product of index type ranges)
+    range 4..6 = 3
+    low..high = high - low + 1
+*/
+
+int getAlignmentSize(TYPE type){
+  INDEX_LIST list;
+  long low;
+  long high;
+  TYPETAG typeTag = ty_query(type);
+  switch(typeTag){
     case TYSIGNEDLONGINT:
-      return sizeof(signed long int);
-      break;
+      return 4;
+
     case TYSIGNEDSHORTINT:
-      return sizeof(signed short int);
-      break;
+      return 4;
+
     case TYSIGNEDINT:
-      return sizeof(signed int);
-      break;
+      return 4;
+
     case TYUNSIGNEDLONGINT:
-      return sizeof(unsigned long int);
-      break;
+      return 4;
+
     case TYUNSIGNEDSHORTINT:
-      return sizeof(unsigned short int);
-      break;
+      return 4;
+
     case TYUNSIGNEDINT:
-      return sizeof(unsigned int);
-      break;
+      return 4;
+
     case TYUNSIGNEDCHAR:
-      return sizeof(unsigned char);
-      break;
+      return 1;
+
     case TYSIGNEDCHAR:
-      return sizeof(signed char);
-      break;
+      return 1;
+
     case TYARRAY:
-      //return getAlignmentsize(ty_query_array(type, &list));
-      return 8;
-      break;
+      return getAlignmentSize(ty_query_array(type, &list));
+
     case TYPTR:
-      return sizeof(char *);
-      break;
+      return 4;
+
     case TYSUBRANGE:
-      //return getAlignmentsize(ty_query_subrange(type, &low, &high));
-      return 8;
-      break;
+      return getAlignmentSize(ty_query_subrange(type, &low, &high));
+
     case TYDOUBLE:
-      return sizeof(double);
-      break;
+      return 8;
+
    case TYFLOAT:
-      return sizeof(float);
-      break;
+      return 4;
+
    case TYLONGDOUBLE:
-      return sizeof(long double);
-      break;
+      return 8;
+
   }
+}
+
+void initRootOfUnRP(TYPE type){
+  rootOfUnRP = (INDEX_LIST)malloc(sizeof(INDEX));
+  rootOfUnRP->type = type;
+  rootOfUnRP->next = NULL;
+  rootOfUnRP->prev = NULL;
 }

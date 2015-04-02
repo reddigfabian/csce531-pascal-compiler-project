@@ -41,7 +41,8 @@ TN makeIDNode(ST_ID id);
 TN makeTypeNode(ST_ID id, TYPE type);
 
 LD addToList(ST_ID id, LD oldList);
-//LSR addToArraySubList(TYPE object, LSR oldList);
+INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);
+INDEX_LIST addToUnresolvedPtrs(TYPE object, INDEX_LIST root);
 
 
 /*
