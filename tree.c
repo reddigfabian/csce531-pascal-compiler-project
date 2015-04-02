@@ -27,13 +27,27 @@ typedef struct tlist {
 
 typedef struct tlist INDEX, *INDEX_LIST;
 */
-INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList){
+INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST root){
   INDEX_LIST tempEntry = (INDEX_LIST)malloc(sizeof(INDEX));
   tempEntry->type = object;
-  tempEntry->next = oldList;
+  tempEntry->next = NULL;
   tempEntry->prev = NULL;
+  INDEX_LIST lastEntry = root;
 
-  return tempEntry;
+  if(lastEntry != NULL){
+    while(lastEntry->next != NULL){
+      lastEntry = lastEntry->next;
+    }
+    lastEntry->next = tempEntry;
+    tempEntry->prev = lastEntry;
+  }
+
+
+  if(root == NULL){
+    return tempEntry;
+  }else{
+    return root;
+  }
 }
 
 

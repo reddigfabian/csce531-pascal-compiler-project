@@ -88,7 +88,8 @@ INDEX_LIST rootOfUnRP;
 %type <y_index_list> array_index_list
 %type <y_listOfIDs> id_list
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
-%type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type new_structured_type pointer_domain_type
+%type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type
+    new_structured_type pointer_domain_type
 %type <y_int> constant number unsigned_number LEX_INTCONST LEX_REALCONST
 //%type <y_single>
 %type <y_char> sign '+' '-'
@@ -338,19 +339,36 @@ string:
   ;
 
 type_definition_part:
-    LEX_TYPE type_definition_list semi        {INDEX_LIST tempUnRP = rootOfUnRP;
+    LEX_TYPE type_definition_list semi        {if(myDebug){msg("Found type_definition_part:1 resolving pointers---");}
+                                              INDEX_LIST tempUnRP = rootOfUnRP;
+
                                               do{
+                                                ST_ID tempID;
+                                                TYPE tempTYPE;
                                                 if(tempUnRP == NULL){
                                                   break;
                                                 }else{
-                                                  ST_ID tempID;
-                                                  TYPE tempTYPE = tempUnRP->type;
-                                                  ty_query_ptr(tempTYPE, &tempID);
-                                                  ST_DR ptrToResolve = st_lookup(tempID, &block);
-                                                  ty_resolve_ptr(tempUnRP->type, ptrToResolve->u.decl.type);
+                                                  tempTYPE = tempUnRP->type;
+                                                  if(ty_query(tempTYPE) != TYERROR){
+                                                    ty_query_ptr(tempTYPE, &tempID);
+                                                    ST_DR ptrToResolve = st_lookup(tempID, &block);
+                                                    if(ptrToResolve != NULL){
+                                                      ty_resolve_ptr(tempUnRP->type, ptrToResolve->u.decl.type);
+                                                    }else{
+                                                      if(myDebug){
+                                                        msg("Something got into the pointer list that isn't in the symtab *#_#");
+                                                      }
+                                                    }
+
+                                                  }
+
+                                                }
+                                                if(ty_query_ptr(tempTYPE, &tempID) == NULL){
+                                                  error("Unresolved Pointer: \"%s\"", st_get_id_str(tempID));
                                                 }
                                                 tempUnRP = tempUnRP->next;
                                               }while(tempUnRP != NULL);
+
                                               }
   ;
 
@@ -360,19 +378,20 @@ type_definition_list:
   ;
 
 type_definition:
-    new_identifier '=' type_denoter           {if(myDebug){msg("Found type_definition:1---");}
+    new_identifier '=' type_denoter           {if(myDebug){msg("type_definition:1---"); ty_print_typetag(ty_query($3)); msg("");}
+
 
                                                 ST_ID IDtoInstall = st_lookup($1, &block);
                                                 if(IDtoInstall == NULL){
                                                   ST_DR DRtoInstall = stdr_alloc();
-                                                  DRtoInstall->tag = TYPENAME;   //90% sure correct
+                                                  DRtoInstall->tag = TYPENAME;
                                                   DRtoInstall->u.typename.type = $3;
                                                   if(!(st_install($1,DRtoInstall))){
                                                     bug("st_install failed in type_definition");
                                                   }else{
                                                     //if(myDump)stdr_dump(DRtoInstall);
                                                   }
-                                                }else error("Duplicate declarations");
+                                                }else error("Duplicate variable declaration: \"%s\"", st_get_id_str(IDtoInstall));
                                               }
   ;
 
@@ -382,9 +401,15 @@ type_denoter:
                                             ST_DR testTemp = st_lookup($1,&block);
                                             if(testTemp != NULL){
                                               $$ = testTemp->u.typename.type;
-                                            }else bug("ST_DR from typename in type_denoter is NULL!");
+                                            }else{
+                                               error("Undeclared type name: \"%s\"", st_get_id_str($1));
+                                               $$ = ty_build_basic(TYERROR);
+                                             }
 
-                                          }else bug("ST_ID from typename in type_denoter is NULL!");
+                                          }else{
+                                             //this shouldnt ever happen *hopefully*
+                                             bug("ST_ID from typename in type_denoter is NULL!");
+                                           }
                                         }
   | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");} $$ = $1;}
   | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");} $$ = $1;}
@@ -416,6 +441,7 @@ subrange_type:
                                             $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3);
                                           }else{
                                             error("Subrange values are invalid!");
+                                            $$ = ty_build_basic(TYERROR);
                                           }
                                         }
   ;
@@ -474,7 +500,7 @@ procedural_type_formal_parameter:
   ;
 
 new_structured_type:
-    array_type              {if(myDebug){msg("Found in new_structured_type:1---");}}
+    array_type              {if(myDebug){msg("Found in new_structured_type:1---");} $$ = $1;}
   | set_type                {if(myDebug){msg("Found in new_structured_type:2---");}}
   | record_type             {if(myDebug){msg("Found in new_structured_type:3---");}}
   ;
@@ -482,10 +508,12 @@ new_structured_type:
 /* Array */
 
 array_type:
-    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("Found in array_type:1---");}
-
-                                                                    $$ = ty_build_array($6,$3);
-
+    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("array_type:1---"); ty_print_typetag(ty_query($6)); msg("");}
+                                                                    if(ty_query($6) != TYERROR && ty_query($3->type) != TYERROR){
+                                                                      $$ = ty_build_array($6,$3);
+                                                                    }else{ // keep passing the error type up
+                                                                      $$ = $6;
+                                                                    }
                                                                   }
   ;
 
@@ -496,7 +524,7 @@ array_index_list:
 
 
 ordinal_index_type:
-    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");} $$ = $1; /*WERE HERE and this is a subrange return (for now)*/}
+    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");} $$ = $1; /*this is a subrange return (for now)*/}
   | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");} $$ = $1; /*ST_Id*/}
   ;
 
@@ -580,22 +608,24 @@ variable_declaration_list:
   ;
 
 variable_declaration:
-    id_list ':' type_denoter semi           {if(myDebug){msg("Found in variable_declaration:1---");}
+    id_list ':' type_denoter semi           {if(myDebug){msg("variable_declaration:1---"); ty_print_typetag(ty_query($3)); msg("");}
                                             LD tempLD = $1;
                                             if(tempLD != NULL){
                                               do{
-
                                                 ST_ID IDtoInstall = st_lookup(tempLD->data, &block);
                                                 char *idName = st_get_id_str(tempLD->data);
                                                 TYPE typeToInstall = $3;
                                                 if(IDtoInstall == NULL){
                                                   ST_DR DRtoInstall = stdr_alloc();
                                                   DRtoInstall->tag = GDECL;
+                                                  DRtoInstall->u.decl.sc = NO_SC;
                                                   DRtoInstall->u.decl.type = typeToInstall;
                                                   if(!(st_install(tempLD->data,DRtoInstall))){
                                                     bug("st_install failed in variable declaration");
                                                   }else{
-                                                    if(myDump)stdr_dump(DRtoInstall);
+                                                    if(myDump){
+                                                      stdr_dump(DRtoInstall);
+                                                    }
                                                     int alignment = getAlignmentSize(typeToInstall);
                                                     int size = getSize(typeToInstall, alignment);
                                                     int amount = size;
@@ -604,7 +634,7 @@ variable_declaration:
                                                   }
                                                 }
                                                 else{
-                                                  error("Duplicate declarations");
+                                                  error("Duplicate declaration: \"%s\"", idName);
                                                 }
 
                                                 tempLD = tempLD->next;
