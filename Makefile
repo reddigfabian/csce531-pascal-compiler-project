@@ -40,6 +40,12 @@ PPC3H	= defs.h types.h tree.h symtab.h $(BACKEND).h
 
 PPC3OBJ = main.o message.o symtab.o types.o tree.o utils.o gram.o scan.o $(BACKEND).o
 
+CURRDIR := ../$(notdir $(patsubst %/,%,$(shell pwd)))
+
+BACKUPFOLDER = ../CompilersBackup
+
+PROJECTNAME = pas-proj2
+
 # ppc3 rules
 #
 ppc3     : $(PPC3OBJ)
@@ -75,3 +81,13 @@ y.output: gram.y
 
 clean:
 	-rm -f ppc3 *.o y.tab.h y.output y.tab.c *.err *.s *~
+
+backup:
+	-make clean
+	-mkdir -p $(BACKUPFOLDER)
+	-tar cvf ../$(PROJECTNAME).tar $(CURRDIR)
+	-gzip ../$(PROJECTNAME).tar
+	-mv ../$(PROJECTNAME).tar.gz $(BACKUPFOLDER)/$(PROJECTNAME).tar.gz
+
+test:
+	-echo "current_dir: $(CURRDIR)"
