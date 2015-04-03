@@ -1,0 +1,19 @@
+line 26: ERROR -- Duplicate forward or external function declaration
+line 29: ERROR -- Duplicate forward or external function declaration
+line 48: ERROR -- Undeclared identifier "Q" in expression
+line 49: ERROR -- Expected procedure name, saw data
+line 50: ERROR -- Procedure call expected
+line 51: ERROR -- Assignment requires l-value on the left
+line 52: ERROR -- Assignment requires l-value on the left
+line 53: ERROR -- Cannot convert between nondata types
+line 56: ERROR -- Undeclared identifier "Q" in expression
+line 57: ERROR -- Illegal conversion
+line 58: ERROR -- Illegal conversion
+line 59: ERROR -- Illegal conversion
+line 60: ERROR -- Illegal conversion
+line 61: ERROR -- Illegal conversion
+line 62: ERROR -- Illegal conversion
+line 63: ERROR -- Illegal conversion
+line 64: ERROR -- Illegal conversion
+line 65: ERROR -- Nonnumerical type argument(s) to arithmetic operation
+line 66: ERROR -- Incompatible type arguments to comparison operator

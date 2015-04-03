@@ -1,0 +1,163 @@
+Comments for self-test -------- Fri Mar 13, 2015 at 9:47:24 EDT
+No illegal files found
+
+Testing compiliation with ppc3:
+  Attempting to build ppc3 ... ok
+
+
+LEVEL 80extra:
+
+Running ppc3 with input T2L80extra_ok.pas ... zero termination status
+  T2L80extra_ok.s exists ... will assemble and run later
+  Checking constant folding ...
+vvvvv
+				# b_push_ext_addr (I)
+				# b_push_const_int (116)
+				# b_assign (signed long int)
+				# b_pop ()
+ #   65
+				# b_push_ext_addr (X)
+				# b_push_const_double (-1.9989999999999998e+01)
+				# b_convert (double -> float)
+				# b_assign (float)
+				# b_pop ()
+ #   66
+				# b_push_ext_addr (D)
+				# b_push_const_double (1.7582400000000002e+03)
+				# b_assign (double)
+				# b_pop ()
+ #   67
+				# b_push_ext_addr (C)
+				# b_push_const_int (76)
+				# b_convert (signed long int -> unsigned char)
+				# b_assign (unsigned char)
+				# b_pop ()
+^^^^^
+
+
+LEVEL 80:
+
+Running ppc3 with input T2L80_ok.pas ... zero termination status
+  T2L80_ok.s exists ... will assemble and run later
+Running ppc3 with input T2L80_err.pas ... zero termination status
+  T2L80_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 100:
+
+Running ppc3 with input T2L100_ok.pas ... zero termination status
+  T2L100_ok.s exists ... will assemble and run later
+  Checking dispose operator ...
+vvvvv
+				# b_alloc_arglist (4 bytes)
+				# b_push_ext_addr (Ip)
+				# b_deref (pointer)
+				# b_load_arg (pointer)
+				# b_funcall_by_name (free, void)
+				# b_alloc_arglist (4 bytes)
+				# b_push_ext_addr (Rp)
+				# b_deref (pointer)
+				# b_load_arg (pointer)
+				# b_funcall_by_name (free, void)
+
+^^^^^
+Running ppc3 with input T2L100_err.pas ... zero termination status
+  T2L100_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 110:
+
+Running ppc3 with input T2L110_ok.pas ... zero termination status
+  T2L110_ok.s exists ... will assemble and run later
+Running ppc3 with input T2L110_err.pas ... zero termination status
+  T2L110_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 120:
+
+Running ppc3 with input T2L120_ok.pas ... zero termination status
+  T2L120_ok.s exists ... will assemble and run later
+Running ppc3 with input T2L120_err.pas ... zero termination status
+  T2L120_err.err exists
+  Comparing with solution file ... files match
+######################################################
+Compilation summary for self-test:
+  T2L100_err:  error message(s) (check appropriateness)
+  T2L100_ok:  ok
+  T2L110_err:  error message(s) (check appropriateness)
+  T2L110_ok:  ok
+  T2L120_err:  error message(s) (check appropriateness)
+  T2L120_ok:  ok
+  T2L80_err:  error message(s) (check appropriateness)
+  T2L80_ok:  ok
+  T2L80extra_ok:  ok
+  ppc3:  ok
+######################################################
+
+Testing execution with ppc3:
+
+
+LEVEL 80extra:
+
+Trying to assemble T2L80extra_ok.s with gcc and lib80 ...  succeeded
+Executable a.out exists
+./a.out < T2L80extra_ok.in > T2L80extra_ok.out 2> T2L80extra_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T2L80extra_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 80:
+
+Trying to assemble T2L80_ok.s with gcc and lib80 ...  succeeded
+Executable a.out exists
+./a.out < T2L80_ok.in > T2L80_ok.out 2> T2L80_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T2L80_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 100:
+
+Trying to assemble T2L100_ok.s with gcc and lib100 ...  succeeded
+Executable a.out exists
+./a.out < T2L100_ok.in > T2L100_ok.out 2> T2L100_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T2L100_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 110:
+
+Trying to assemble T2L110_ok.s with gcc and lib100 ...  succeeded
+Executable a.out exists
+./a.out > T2L110_ok.out 2> T2L110_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T2L110_ok.out exists -- comparing with solution output file
+ files match
+######################################################
+Assembly/execution summary for self-test:
+  T2L100:  ok
+  T2L110:  ok
+  T2L80:  ok
+  T2L80extra:  ok
+  ppc3:  ok
+######################################################
+ 80% level: 
+100% level: 
+110% level: 
