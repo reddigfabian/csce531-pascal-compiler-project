@@ -40,11 +40,27 @@ PPC3H	= defs.h types.h tree.h symtab.h $(BACKEND).h
 
 PPC3OBJ = main.o message.o symtab.o types.o tree.o utils.o gram.o scan.o $(BACKEND).o
 
+
+#
+# For backup function
+#
 CURRDIR := ../$(notdir $(patsubst %/,%,$(shell pwd)))
 
 BACKUPFOLDER = ../CompilersBackup
 
 PROJECTNAME = pas-proj2
+
+#
+# For tesing function
+#
+FILEIN = Part2/test/T2L80_ok.pas
+
+ERRORIN = Part2/test/T2L80_err.pas
+
+FILEOUT = ./aaaOUT.txt
+
+ERROROUT = ./aaaERRORout.txt
+
 
 # ppc3 rules
 #
@@ -90,4 +106,7 @@ backup:
 	-mv ../$(PROJECTNAME).tar.gz $(BACKUPFOLDER)/$(PROJECTNAME).tar.gz
 
 test:
-	-echo "current_dir: $(CURRDIR)"
+	-./ppc3 < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
+
+error:
+	-./ppc3 < $(ERRORIN) > $(FILEOUT) 2> $(ERROROUT)

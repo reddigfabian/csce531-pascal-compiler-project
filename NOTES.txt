@@ -328,7 +328,7 @@ we should store stuff on the symantic stack (good for us, not required)
     variable_declaration                  CREATS and INSTALLS vars
     functiontype                          NOT DONE YET
 
-============================April 4th=================================================================================================================================
+============================April 6th=================================================================================================================================
 *declare vars*
 function foo(a:INTEGER; var b :REAL): CHAR;
 
@@ -428,13 +428,13 @@ function_delaration:
         ****i asked in class, we are allowed to just have everything use offset 8 to keep things simple. even char, whitch is only 1 byte
         }
 
-    <------------b_enter_function_body()
+    <------------b_func_prologue()
 statement_part:
     {
     for each formal param, call b_store_formal_param
 
     }
-    <-----------b_exit_funct_body()
+    <-----------b_func_epilogue()
 ============================Assumptions=================================================================================================================================
 
 A subrange will only ever exist with integer bounds.

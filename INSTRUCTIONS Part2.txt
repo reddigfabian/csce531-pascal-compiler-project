@@ -81,121 +81,240 @@ The only nontrival binary conversions are:
 The only exception is the real division operator (/), which requires both arguments to be Real,
 and so in this case, if both arguments are Integer, then they are both converted to Real before applying the operator.
 
-Other --- These include assignment conversions (converting the right-hand side of an assignment to the type of the left-hand side), and parameter conversions (converting an actual argument to the type of the corresponding formal parameter) for pass-by-value parameters (see below). Nontrivial conversions are allowed between any two numerical types (Integer, Single, Real), except that Single and Real cannot be implicitly converted to Integer. Conversions are also allowed between subranges of the same base type and the base type itself, and from a pointer to void to a pointer to any non-void type.
-When applying a unary operator, the operand is first unary-converted before the operator is applied. Before applying a binary operator, both arguments are first unary-converted, then each argument is binary-converted based on the type of the other (the / operator being a slight exception; see above). For an assignment statement, the right-hand side is assignment-converted to the type of the left-hand side. If you wish, you may treat assignment as a binary operator whose result type is void. (This is different from C, where the result of an assignment expression is the value that was assigned. In Pascal, assignments are statements and cannot be nested inside other expressions.)
-If you have any doubts about what conversions to apply and when, you should use the executable solution ppc3-sol that I provided (see Testing, below).
+Other --- These include assignment conversions (converting the right-hand side of an assignment to the type of the left-hand side),
+and parameter conversions (converting an actual argument to the type of the corresponding formal parameter)
+for pass-by-value parameters (see below).
+Nontrivial conversions are allowed between any two numerical types (Integer, Single, Real),
+except that Single and Real cannot be implicitly converted to Integer.
+Conversions are also allowed between subranges of the same base type and the base type itself,
+and from a pointer to void to a pointer to any non-void type.
+When applying a unary operator, the operand is first unary-converted before the operator is applied.
+Before applying a binary operator, both arguments are first unary-converted,
+then each argument is binary-converted based on the type of the other (the / operator being a slight exception; see above).
+For an assignment statement, the right-hand side is assignment-converted to the type of the left-hand side.
+If you wish, you may treat assignment as a binary operator whose result type is void.
+(This is different from C, where the result of an assignment expression is the value that was assigned.
+In Pascal, assignments are statements and cannot be nested inside other expressions.)
+If you have any doubts about what conversions to apply and when,
+you should use the executable solution ppc3-sol that I provided (see Testing, below).
 
-At all levels of Project II, you may assume that in a procedure or function call, the expression denoting the procedure/function itself is just an identifier (e.g., you won't have to process an expression like fp^(3), where fp is a pointer-to-function variable). At this level of the project, to generate code for a procedure or function call with no arguments, you should call b_alloc_arglist(0) followed immediately by b_funcall_by_name(<name>, <typetag of return value>).
+At all levels of Project II, you may assume that in a procedure or function call,
+the expression denoting the procedure/function itself is just an identifier
+(e.g., you won't have to process an expression like fp^(3), where fp is a pointer-to-function variable).
+At this level of the project, to generate code for a procedure or function call with no arguments,
+you should call b_alloc_arglist(0) followed immediately by b_funcall_by_name(<name>, <typetag of return value>).
 
-You should also understand the difference between access expressions (a.k.a. l-values a.k.a. read-write) and data value expressions (a.k.a. r-values a.k.a. read-only). This will be discussed in class, including how and when to include DEREF operators. Please note:
+You should also understand the difference between
+access expressions (a.k.a. l-values a.k.a. read-write) and
+data value expressions (a.k.a. r-values a.k.a. read-only).
+This will be discussed in class, including how and when to include DEREF operators. Please note:
 
-An l-value expression is represented at runtime as an address (pointer), regardless of the type of the expression. That is, to evaluate an l-value, push its address onto the stack.
+An l-value expression is represented at runtime as an address (pointer), regardless of the type of the expression.
+That is, to evaluate an l-value, push its address onto the stack.
 Variable names (and later, array accesses) are l-values. Constants are r-values.
-The unary DEREF operator is used to implicitly convert an l-value to its corresponding r-value whenever needed (the only exception is handling var parameters; see below). It assumes a pointer is on top of the stack and replaces it with the contents (of the appropriate type) at the location being pointed to. A DEREF should be automatically applied whenever an expression is an l-value but an r-value is called for.
+The unary DEREF operator is used to implicitly convert an l-value to its corresponding r-value whenever needed
+(the only exception is handling var parameters; see below).
+It assumes a pointer is on top of the stack and replaces it with the contents (of the appropriate type) at the location being pointed to.
+A DEREF should be automatically applied whenever an expression is an l-value but an r-value is called for.
 An r-value cannot be implicitly converted to an l-value. It is an error to have an r-value where an l-value is expected.
 In an assignment, the left-hand side must be an l-value. The right-hand side is expected to be an r-value.
 All the usual arithmetic and comparison operators expect r-values and produce r-values.
-You are also responsible for doing the appropriate semantic error checking. For example, the use of an undeclared identifier in an expression or statement is illegal.
+You are also responsible for doing the appropriate semantic error checking.
+For example, the use of an undeclared identifier in an expression or statement is illegal.
 
-The relevant back-end routines for this level of the Project are b_pop, b_push_ext_addr, b_push_const_int, b_push_const_double, b_push_const_string, b_deref, b_convert, b_negate, b_assign, b_arith_rel_op, b_func_prologue, b_func_epilogue, b_alloc_arglist, and b_funcall_by_name.
+The relevant back-end routines for this level of the Project are
+b_pop,
+b_push_ext_addr,
+b_push_const_int,
+b_push_const_double,
+b_push_const_string,
+b_deref,
+b_convert,
+b_negate,
+b_assign,
+b_arith_rel_op,
+b_func_prologue,
+b_func_epilogue,
+b_alloc_arglist, and
+b_funcall_by_name.
 
-To optionally receive EXTRA credit at the 80% level, you should also perform "constant folding" as the expression trees are constructed. Any operator that is detected as having constant operands should be evaluated at compile time (a constant tree node containing the value of the result is returned, rather than the operator node with operands as children). So for example, the expression "3+5" would produce the same syntax tree as "8". The only allowed exception to this is if a double constant needs converting to a float (for purposes of assignment, for example); in this case, an explicit convert node may be added. You should also be able to implicitly convert a string constant of length one into a character constant if called for, for example, in the expression, ord('a').
+To optionally receive EXTRA credit at the 80% level, you should also perform "constant folding" as the expression trees are constructed.
+Any operator that is detected as having constant operands should be evaluated at compile time
+(a constant tree node containing the value of the result is returned, rather than the operator node with operands as children).
+So for example, the expression "3+5" would produce the same syntax tree as "8".
+The only allowed exception to this is if a double constant needs converting to a float (for purposes of assignment, for example);
+in this case, an explicit convert node may be added.
+You should also be able to implicitly convert a string constant of length one into a character constant if called for,
+for example, in the expression, ord('a').
+
 There is no 90% level for this assignment.
 
-To receive 100% of the credit: In addition to obtaining the 80% level, you must be able to allow actual arguments in calls to external procedures and functions (without type-checking the arguments), and you must handle global procedure and function definitions without any local objects (i.e., no formal parameters, local types, local variables, or local procedures or functions). For a procedure/function call with arguments, you must generate the assembly code to evaluate the arguments and place them on the actual argument list for the function to be called. All arguments to external functions are r-values (pass-by-value).
+To receive 100% of the credit: In addition to obtaining the 80% level,
+you must be able to allow actual arguments in calls to external procedures and functions (without type-checking the arguments),
+and you must handle global procedure and function definitions without any local objects
+(i.e., no formal parameters, local types, local variables, or local procedures or functions).
+For a procedure/function call with arguments, you must generate the assembly code to evaluate the arguments and
+place them on the actual argument list for the function to be called. All arguments to external functions are r-values (pass-by-value).
 
-For a (procedure or) function definition, you must generate the necessary assembly code to enter and exit the function, as well as generating the assembly code for the function body (the statements inside the function). At this level you do not need to handle parameter, local type, local variable, or local function/procedure declarations or definitions.
+For a (procedure or) function definition, you must generate the necessary assembly code to enter and exit the function,
+as well as generating the assembly code for the function body (the statements inside the function).
+At this level you do not need to handle parameter, local type, local variable, or local function/procedure declarations or definitions.
 
-For this level, you must also process the unary indirection operator (postfix ^), which takes as operand an r-value of type "pointer to T" where T is some non-void data type, and results in an l-value of type T. NOTE: no assembly code is generated for the indirection operator itself; any dereferencing that occurs is a result of the DEREF nodes added to convert from l-values to r-values.
+For this level, you must also process the unary indirection operator (postfix ^),
+which takes as operand an r-value of type "pointer to T" where T is some non-void data type, and results in an l-value of type T.
+NOTE: no assembly code is generated for the indirection operator itself;
+any dereferencing that occurs is a result of the DEREF nodes added to convert from l-values to r-values.
 
-You must also process the unary operators New and Dispose. New requires as operand an l-value of type "pointer to T", where T is any non-void type, and Dispose requires an r-value of similar type. The result type of both is void, i.e., these are statements rather than expressions. New allocates space for a new object of type T on the heap (dynamic storage), and leaves its argument pointing to the new storage. Dispose frees the storage pointed to by its argument. To implement New, call the external C function malloc (defined in stdlib.h) with the size of the new object as argument. To implement Dispose, call the external C procedure free (stdlib.h) with the pointer value as argument.
+You must also process the unary operators New and Dispose.
+New requires as operand an l-value of type "pointer to T", where T is any non-void type, and Dispose requires an r-value of similar type.
+The result type of both is void, i.e., these are statements rather than expressions.
+New allocates space for a new object of type T on the heap (dynamic storage), and leaves its argument pointing to the new storage.
+Dispose frees the storage pointed to by its argument.
+To implement New, call the external C function malloc (defined in stdlib.h) with the size of the new object as argument.
+To implement Dispose, call the external C procedure free (stdlib.h) with the pointer value as argument.
 
-To receive 10% EXTRA credit: In addition to obtaining the 100% level, you must implement procedure/function definitions with formal parameters and local variables. This means you must support formal parameter and local variable declarations, as well as references to these within expression statements. You only need to handle parameter and local variable declarations of type Integer, Char, Single, Boolean, and Real.
+To receive 10% EXTRA credit: In addition to obtaining the 100% level,
+you must implement procedure/function definitions with formal parameters and local variables.
+This means you must support formal parameter and local variable declarations, as well as references to these within expression statements.
+You only need to handle parameter and local variable declarations of type Integer, Char, Single, Boolean, and Real.
 
-Formal parameters my either be value parameters, which implement pass-by-value, or variable (or just var) parameters, which implement pass-by-reference. You must handle both kinds of parameter. Actual arguments passed into value parameter slots are expected to be r-values (appropriately parameter-converted); arguments passed into var parameter slots must be l-values of the same type (conversions are never applied directly to l-values). The semantic differences are:
+Formal parameters my either be value parameters, which implement pass-by-value, or variable (or just var) parameters,
+which implement pass-by-reference. You must handle both kinds of parameter.
+Actual arguments passed into value parameter slots are expected to be r-values
+(appropriately parameter-converted); arguments passed into var parameter slots must be l-values of the same type
+(conversions are never applied directly to l-values).
+The semantic differences are:
 
-For a value parameter, the value is copied into the called function's activation record (stack frame). Inside the called function, use of the value parameter name then refers to this (private) copy, and has no effect outside the scope of the function.
-For a var parameter, the formal parameter name is used inside the function to refer to the l-value passed in, effectively becoming a private name for the l-value. Manipulating this name directly affects the outside variable passed as the actual argument.
-When a var parameter name is encountered in an expression in the body of a Pascal function or procedure, it is always DEREF'ed immediately, no matter what, and the result is still an l-value. (It follows that if the name occurs in a context where an r-value is expected, a second DEREF is applied.) This is the only exception to the behavior of the DEREF operator described above.
+For a value parameter, the value is copied into the called function's activation record (stack frame).
+Inside the called function, use of the value parameter name then refers to this (private) copy,
+and has no effect outside the scope of the function.
+For a var parameter, the formal parameter name is used inside the function to refer to the l-value passed in,
+effectively becoming a private name for the l-value.
+Manipulating this name directly affects the outside variable passed as the actual argument.
+When a var parameter name is encountered in an expression in the body of a Pascal function or procedure,
+it is always DEREF'ed immediately, no matter what, and the result is still an l-value.
+(It follows that if the name occurs in a context where an r-value is expected, a second DEREF is applied.)
+This is the only exception to the behavior of the DEREF operator described above.
 At all levels you are responsible for detecting the relevant duplicate declarations.
 
 The appropriate back-end routines to generate x86 assembly code for this assignment are discussed in class and described in backend-x86.h.
 
-For all levels, PLEASE TURN OFF THE DUMP OF THE SYMBOL TABLE. You may want it on for debugging, but turn it off prior to submitting your program for grading. Do this by commenting out the call to st_dump() in main.c.
+For all levels, PLEASE TURN OFF THE DUMP OF THE SYMBOL TABLE.
+You may want it on for debugging, but turn it off prior to submitting your program for grading.
+Do this by commenting out the call to st_dump() in main.c.
 
-You may assume there will not be any initializers in the source code. You are also not responsible for processing storage class specifiers on any declaration.
+You may assume there will not be any initializers in the source code.
+You are also not responsible for processing storage class specifiers on any declaration.
 
-As in Project Part I: your compiler should be capable of detecting multiple semantic errors in one file. It is not important what you do after you disclose a semantic error, as long as you continue to parse. You may allow the compiler to stop processing with the first syntax error.
+As in Project Part I: your compiler should be capable of detecting multiple semantic errors in one file.
+It is not important what you do after you disclose a semantic error, as long as you continue to parse.
+You may allow the compiler to stop processing with the first syntax error.
 
 Testing
 
-The zip file pas-proj2.zip contains test files and the executable solution ppc3-sol. These may not be the only test files that will be used when grading, so do your own testing too.
+The zip file pas-proj2.zip contains test files and the executable solution ppc3-sol.
+These may not be the only test files that will be used when grading, so do your own testing too.
 
 Starting with this installment, you will be able to actually execute the code that you compile. See below.
 
 For the error-free files, run
-
     ./ppc3 < T2Lxxx_ok.pas > T2Lxxx_ok.s
 
 as you did for Project I. Then run
-
     gcc T2Lxxx_ok.s libxxx.c
 
 each time you want to produce an executable of your program, or run
-
     gcc -c libxxx.c
 
 once, then run
-
     gcc T2Lxxx_ok.s libxxx.o
 
-on subsequent tests on the same level. Note that there is no lib_extra.c; use lib100.c instead. Finally, to execute the code your compiler produces, run
-
+on subsequent tests on the same level. Note that there is no lib_extra.c; use lib100.c instead.
+Finally, to execute the code your compiler produces, run
     ./a.out
 
-and type in any input that may be requested. You may want to edit your Makefile to automate this process.
+and type in any input that may be requested.
+You may want to edit your Makefile to automate this process.
 
 For the files with errors, run (in the bash shell)
-
     ./ppc3 < T2Lxxx_err.pas > T2Lxxx_err.s 2> T2Lxxx_err.err
 
-For these files, you can ignore the assembler output, because the Pascal program won't run anyway. Here the important file is the .err file, which captures your error messages sent to stderr.
+For these files, you can ignore the assembler output, because the Pascal program won't run anyway.
+Here the important file is the .err file, which captures your error messages sent to stderr.
 
-For error-free programs, you should always compare your compiler's assembly code output with that of ppc3-sol. In addition, I have provided T2Lxxx_ok.c programs that are semantically equivalent to their Pascal counterparts, in case you want to clarify the semantics of a Pascal construct.
+For error-free programs, you should always compare your compiler's assembly code output with that of ppc3-sol.
+In addition, I have provided T2Lxxx_ok.c programs that are semantically equivalent to their Pascal counterparts,
+in case you want to clarify the semantics of a Pascal construct.
 
-The script proj2-test.pl will be used to automatially grade this installment. You may run it yourself with the --self-test option as with previous assignments.
+The script proj2-test.pl will be used to automatially grade this installment.
+You may run it yourself with the --self-test option as with previous assignments.
 
-You will need the 80% level functionality (minus constant folding and string const to char const) in order to do later parts of the project, so be sure you at least get that much of the assignment completed.
+You will need the 80% level functionality (minus constant folding and string const to char const)
+in order to do later parts of the project, so be sure you at least get that much of the assignment completed.
 
-Remember: you get credit for features successfully implemented. You do not get credit for attempting to do something; you get credit for the things that you can successfully demonstrate work.
+Remember: you get credit for features successfully implemented. You do not get credit for attempting to do something;
+you get credit for the things that you can successfully demonstrate work.
 
 Division of labor
-
-This part of the project splits rather cleanly between (1) handling expressions and (2) handling procedure/function definitions. Expressions are needed for all levels of the project, whereas proc/fun definitions are only important for the top two levels, especially the highest level. These two parts can be worked on mostly independently from each other, although regular coordination is always important. If for some reason you prefer to handle these tasks sequentially, then do expressions first.
+This part of the project splits rather cleanly between
+(1) handling expressions and
+(2) handling procedure/function definitions.
+Expressions are needed for all levels of the project, whereas proc/fun definitions are only important for the top two levels,
+especially the highest level. These two parts can be worked on mostly independently from each other,
+although regular coordination is always important.
+If for some reason you prefer to handle these tasks sequentially, then do expressions first.
 
 Submission
+Also remember: as always you are expected to do your own work (as a team) on this assignment.
+Read the section on plagiarism in the syllabus. There should be only one submission per team.
 
-Also remember: as always you are expected to do your own work (as a team) on this assignment. Read the section on plagiarism in the syllabus. There should be only one submission per team.
+Finally: you should adequately document and structure your program.
+Remember you may be individually asked to explain this program orally during a subsequent "quiz."
 
-Finally: you should adequately document and structure your program. Remember you may be individually asked to explain this program orally during a subsequent "quiz."
+The project is due at 11:59 pm on the date given above.
+As before, late submissions will be accepted up to one week late with 20% subtracted per weekday.
+You should shoot for finishing the assignment early if possible.
 
-The project is due at 11:59 pm on the date given above. As before, late submissions will be accepted up to one week late with 20% subtracted per weekday. You should shoot for finishing the assignment early if possible.
-
-You must turn in all source files (even the ones we gave you) and a Makefile for your compiler. Do not turn in any automatically generated files; run `make clean' before submitting. To turn in this assignment, name your directory pas-proj2, create a gzipped tar of this directory pas-proj2.tar.gz in the parent directory, and submit the tar using CSE Dropbox, similarly to previous assignments. As with previous assignments, I will use a Perl script to assist with grading. The script will run on pluto.cse.sc.edu or eos.cse.sc.edu and will invoke the shell commands "make ppc3" and "make clean" inside your submission directory. Both these commands should behave as expected. In addition, I will also run an additional script that assembles, links, and executes your compiler's output as described above. This will be a back-up test in case your compiler's assembly code output does not exactly match that of ppc3-sol.
+You must turn in all source files (even the ones we gave you) and a Makefile for your compiler.
+Do not turn in any automatically generated files; run `make clean' before submitting.
+To turn in this assignment, name your directory pas-proj2, create a gzipped tar of this directory pas-proj2.tar.gz in the parent directory,
+and submit the tar using CSE Dropbox, similarly to previous assignments. As with previous assignments,
+I will use a Perl script to assist with grading.
+The script will run on pluto.cse.sc.edu or eos.cse.sc.edu and will invoke the shell commands "make ppc3" and "make clean"
+inside your submission directory. Both these commands should behave as expected.
+In addition, I will also run an additional script that assembles, links, and executes your compiler's output as described above.
+This will be a back-up test in case your compiler's assembly code output does not exactly match that of ppc3-sol.
 
 FAQs about parser conflicts
+Read this if bison is saying that you have conflicts -- some number of shift/reduce and/or reduce/reduce.
+With just a few exceptions, conflicts should generally be avoided. There should be no conflicts in your Pascal parser.
 
-Read this if bison is saying that you have conflicts -- some number of shift/reduce and/or reduce/reduce. With just a few exceptions, conflicts should generally be avoided. There should be no conflicts in your Pascal parser.
-
-What is a parser conflict, and when does it occur? A conflict occurs when bison determines, based on the grammar, that it could legitimately perform two (or more) different actions in the same state with the same lookahead. Conflicts are detected while the parser is being built by bison. There are two types of conflict: (1) shift/reduce, where the parser could either shift (advancing the lookahead and pushing a new state on the stack) or reduce by some production (and execute the corresponding C code); (2) reduce/reduce, where the parser could reduce by two different productions. For example, here is a pair of productions from the ANSI C grammar that causes a shift/reduce conflict. It is known as the "dangling ELSE ambiguity":
+What is a parser conflict, and when does it occur? A conflict occurs when bison determines, based on the grammar,
+that it could legitimately perform two (or more) different actions in the same state with the same lookahead.
+Conflicts are detected while the parser is being built by bison.
+There are two types of conflict:
+(1) shift/reduce, where the parser could either shift (advancing the lookahead and pushing a new state on the stack)
+        or reduce by some production (and execute the corresponding C code);
+(2) reduce/reduce, where the parser could reduce by two different productions.
+For example, here is a pair of productions from the ANSI C grammar that causes a shift/reduce conflict.
+It is known as the "dangling ELSE ambiguity":
 
 selection_statement:
       IF ´(´ expr ´)´ statement
     | IF ´(´ expr ´)´ statement ELSE statement
     ;
 
-After reading the "if" keyword, the test expression in parentheses, then the following statement, if the lookahead is "else", then the parser could either: (i) reduce by the first production, or (ii) shift, reading the "else" and continuing with the second production. By default, bison resolves a shift/reduce conflict in favor of shifting, and in the case above, that is exactly what we want, making this case one of those rare instances where a conflict is tolerated. (By default, bison resolves a reduce/reduce conflict by reducing by whichever production appears first in the grammar.)
-There were no conflicts before, and I haven't altered the grammar at all, so why are there conflicts now? Actually, you have altered the grammar by inserting intermediate actions. Recall that bison converts intermediate actions into reduce-actions by adding a new nonterminal and a new empty production. For example,
+After reading the "if" keyword, the test expression in parentheses, then the following statement,
+if the lookahead is "else", then the parser could either:
+(i) reduce by the first production, or
+(ii) shift, reading the "else" and continuing with the second production.
+By default, bison resolves a shift/reduce conflict in favor of shifting, and in the case above, that is exactly what we want,
+making this case one of those rare instances where a conflict is tolerated.
+(By default, bison resolves a reduce/reduce conflict by reducing by whichever production appears first in the grammar.)
+There were no conflicts before, and I haven't altered the grammar at all, so why are there conflicts now? Actually,
+you have altered the grammar by inserting intermediate actions.
+Recall that bison converts intermediate actions into reduce-actions by adding a new nonterminal and a new empty production.
+For example,
 
 head:
     body1 body2 { some_intermediate_action } body3 body4
@@ -212,5 +331,10 @@ some_fresh_nonterminal:
     ;
 
 (The only difference in the converted some_intermediate_action is a slight reinterpretation of the dollar-sign offsets.)
-How can I get rid of conflicts? Intermediate actions are essential to an efficient compiler, so it would be too much to forbid them. Instead, you should put your intermediate action(s) as late in a production as you possibly can, without sacrificing efficiency. The later the intermediate action, the more time the parser has to make decisions about what production it is working on by the time the action is to be performed, hence, the less chance of a conflict.
+How can I get rid of conflicts? Intermediate actions are essential to an efficient compiler, so it would be too much to forbid them.
+Instead, you should put your intermediate action(s) as late in a production as you possibly can, without sacrificing efficiency.
+The later the intermediate action, the more time the parser has to make decisions about what production it is working on
+by the time the action is to be performed, hence, the less chance of a conflict.
+
+
 This page was last modified Wednesday April 1, 2015 at 16:58:47 EDT.
