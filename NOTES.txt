@@ -328,6 +328,113 @@ we should store stuff on the symantic stack (good for us, not required)
     variable_declaration                  CREATS and INSTALLS vars
     functiontype                          NOT DONE YET
 
+============================April 4th=================================================================================================================================
+*declare vars*
+function foo(a:INTEGER; var b :REAL): CHAR;
+
+z := foo(x+36, y)
+    expecting an *&^ val        (y: must be l-vlaue, do not convert to r-value)
+    (deref is necssisary)
+
+when generating code for a function call:
+h_alloc_arglist(size)  <--- could just be #args * 8 (8 is max size of any arg)
+
+**STACK**
+|_______|
+| val   |
+|-------|
+| size  |  ^ lower address
+|-------| <--
+|_______|  V higher address
+
+
+for each actual argumetn (left tp right)
+    -generate code to evaluate expression
+    -b_load_arg(type tag)         (updates internal counters for back-end, to place in a new place each call instead of overwriting)
+end_for
+b_funcall_by_name("foo")
+
+*we will need to handle promoting types: like int->real  single->real, ect***
+
+h_alloc_arglist()   and   b_funccall_by_name()
+must be matching like opening and closing delimiters EX: "{"and"}"  (even if no arguments)
+---function calls can be nested
+    EX:   z := foo(x+bar(c), y)
+
+procedures and function decls and definitions:
+function_declarations:
+
+function foo(...).Char:External;
+    install in symbol table as a GDECL
+        storage class is SC_EXTERNAL (possibly EXTERN, or something)
+        check_args flag should be FALSE   (for external functions)   --- check args is in the TYPE, not in symtable directly
+            (compiler will NOT check arg types and number of args for external functions)
+
+function bar(....) : REAL; Forward   (expected to be defined later on)
+            for when functions call eachother and have to be defined in sequence
+            installed as a GDECL but with SC_NOSC and cheack_args flag TRUE
+                (compiler will check args)
+-------------------
+function_delaration:
+    function_heading semi
+        { install function name FDECL
+            two possibilities:
+                if function name is not already in symbol table: then install it as a fresh FDECL
+                if already in the symbolTAB (st_lookup returns a record ST_DR)
+                    only allowed situation is previous installment was a GDECL of a function of the same type that is not external
+                        this would be a forward decl (look at the storage class)
+                    anything else is a symantic error
+                        if FDECL then duplicate declaration
+                        not a function
+                        func but wrong args or return type (dont match)
+
+        st_enter_block()
+            enters a new namespace or new "scope"
+            any decls from now on are local
+
+            b_init_formal_param_offset()
+            install parameters into the symbol table as PDECL (left to right)
+                    with offsets (ints)(from the currrent frame pointer at runtime)
+
+            offset value is obtained by calling b_get_formal_param_offset(type tag)  offset is installed in table?!
+        }
+
+    any_declaration_part:
+        //we wont deal with local consts
+        var decl part only
+        {
+        install vars as local using LDECL
+        st_get_block() is greater than 1, then you are in a local block
+            block 0 is for installing integer and REAL, ect (install scope)
+            global block is 1
+        store by offset, computer these ourselves
+
+**STACK**
+|_______|
+| local |
+| vars  |       *offset is 8 byte aligned
+|-------| <---- offset = b_get_local_var_offset()
+|       |               if return value (non-void function)
+|_______|               offset -= 8;  subtract 8 from offset
+                        for each local var decl, decrease the offset to make room for the new variable
+                            size based on size and alignment requirements of the local var,
+                            then install with this new offset
+        var
+        a: Integer;
+            Decrease offset by 4, with this new offset
+        b:Real;
+            decrease offset by 12 so that b is 8-byte aligned
+
+        ****i asked in class, we are allowed to just have everything use offset 8 to keep things simple. even char, whitch is only 1 byte
+        }
+
+    <------------b_enter_function_body()
+statement_part:
+    {
+    for each formal param, call b_store_formal_param
+
+    }
+    <-----------b_exit_funct_body()
 ============================Assumptions=================================================================================================================================
 
 A subrange will only ever exist with integer bounds.

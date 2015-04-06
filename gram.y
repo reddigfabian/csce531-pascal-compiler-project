@@ -679,6 +679,31 @@ variable_declaration:
   ;
 
 function_declaration:
+
+                /*
+                { install function name FDECL
+                    two possibilities:
+                        if function name is not already in symbol table: then install it as a fresh FDECL
+                        if already in the symbolTAB (st_lookup returns a record ST_DR)
+                            only allowed situation is previous installment was a GDECL of a function of the same type that is not external
+                                this would be a forward decl (look at the storage class)
+                            anything else is a symantic error
+                                if FDECL then duplicate declaration
+                                not a function
+                                func but wrong args or return type (dont match)
+
+                st_enter_block()
+                    enters a new namespace or new "scope"
+                    any decls from now on are local
+
+                    b_init_formal_param_offset()
+                    install parameters into the symbol table as PDECL (left to right)
+                            with offsets (ints)(from the currrent frame pointer at runtime)
+
+                    offset value is obtained by calling b_get_formal_param_offset(type tag)  offset is installed in table?!
+                }
+                */
+
     function_heading semi directive_list semi
   | function_heading semi any_declaration_part statement_part semi
   ;
