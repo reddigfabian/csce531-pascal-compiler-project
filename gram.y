@@ -55,7 +55,8 @@
 void set_yydebug(int);
 void yyerror(const char *);
 
-int myDebug = 0;
+int myDebugPart1 = 0;
+int myDebugPart2 = 1;
 int myDump = 0;
 int block;
 INDEX_LIST rootOfUnRP;
@@ -194,24 +195,24 @@ optional_par_id_list:
   ;
 
 id_list:
-    new_identifier                {if(myDebug){msg("Found in id_list:1---");} $$ = addToList($1, NULL);}
-  | id_list ',' new_identifier    {if(myDebug){msg("Found in id_list:2---");} $$ = addToList($3, $1);}
+    new_identifier                {if(myDebugPart1){msg("Found in id_list:1---");} $$ = addToList($1, NULL);}
+  | id_list ',' new_identifier    {if(myDebugPart1){msg("Found in id_list:2---");} $$ = addToList($3, $1);}
   ;
 
 typename:
-    LEX_ID          {if(myDebug){msg("Found in typename:1---");}$$ = st_enter_id($1);}
+    LEX_ID          {if(myDebugPart1){msg("Found in typename:1---");}$$ = st_enter_id($1);}
   ;
 
 identifier:
-    LEX_ID          {if(myDebug){msg("Found in identifier:1---");}$$ = st_enter_id($1);}
+    LEX_ID          {if(myDebugPart1){msg("Found in identifier:1---");}$$ = st_enter_id($1);}
   ;
 
 new_identifier:
-    new_identifier_1    {if(myDebug){msg("Found in new_identifier:1---");}  $$ = $1;}
+    new_identifier_1    {if(myDebugPart1){msg("Found in new_identifier:1---");}  $$ = $1;}
   ;
 
 new_identifier_1:
-    LEX_ID              {if(myDebug){msg("Found in new_identifier_1:1---");} $$ = st_enter_id($1);}
+    LEX_ID              {if(myDebugPart1){msg("Found in new_identifier_1:1---");} $$ = st_enter_id($1);}
 /* Standard Pascal constants */
   | p_MAXINT  {}
   | p_FALSE  {}
@@ -280,9 +281,9 @@ any_decl:
   ;
 
 simple_decl:
-    constant_definition_part           {if(myDebug){msg("Found in simple_decl:1---");}}
-  | type_definition_part               {if(myDebug){msg("Found in simple_decl:2---");}}
-  | variable_declaration_part          {if(myDebug){msg("Found in simple_decl:3---");}}
+    constant_definition_part           {if(myDebugPart1){msg("Found in simple_decl:1---");}}
+  | type_definition_part               {if(myDebugPart1){msg("Found in simple_decl:2---");}}
+  | variable_declaration_part          {if(myDebugPart1){msg("Found in simple_decl:3---");}}
   ;
 
 /* constant definition part */
@@ -303,23 +304,23 @@ constant_definition:
 constant:
     identifier                    {}
   | sign identifier               {}
-  | number                        {if(myDebug){msg("Found in constant:3---");} $$=$1;}
+  | number                        {if(myDebugPart1){msg("Found in constant:3---");} $$=$1;}
   | constant_literal              {}
   ;
 
 number:
-    sign unsigned_number            {if(myDebug){msg("Found in number:1---");} if($1 == '-')$$=-$2; else $$=$2;}
-  | unsigned_number                 {if(myDebug){msg("Found in number:2---");} $$=$1;}
+    sign unsigned_number            {if(myDebugPart1){msg("Found in number:1---");} if($1 == '-')$$=-$2; else $$=$2;}
+  | unsigned_number                 {if(myDebugPart1){msg("Found in number:2---");} $$=$1;}
   ;
 
 unsigned_number:
-    LEX_INTCONST                    {if(myDebug){msg("Found in unsigned_number:1---");} $$ = $<y_int>1;}
-  | LEX_REALCONST                   {if(myDebug){msg("Found in unsigned_number:2---");} $$ = $<y_real>1;}
+    LEX_INTCONST                    {if(myDebugPart1){msg("Found in unsigned_number:1---");} $$ = $<y_int>1;}
+  | LEX_REALCONST                   {if(myDebugPart1){msg("Found in unsigned_number:2---");} $$ = $<y_real>1;}
   ;
 
 sign:
-    '+'                            {if(myDebug){msg("Found in sign:1---");} $$ = $1;}
-  | '-'                            {if(myDebug){msg("Found in sign:2---");} $$ = $1;}
+    '+'                            {if(myDebugPart1){msg("Found in sign:1---");} $$ = $1;}
+  | '-'                            {if(myDebugPart1){msg("Found in sign:2---");} $$ = $1;}
   ;
 
 constant_literal:
@@ -339,7 +340,7 @@ string:
   ;
 
 type_definition_part:
-    LEX_TYPE type_definition_list semi        {if(myDebug){msg("Found type_definition_part:1 resolving pointers---");}
+    LEX_TYPE type_definition_list semi        {if(myDebugPart1){msg("Found type_definition_part:1 resolving pointers---");}
                                               INDEX_LIST tempUnRP = rootOfUnRP;
 
                                               do{
@@ -355,7 +356,7 @@ type_definition_part:
                                                     if(ptrToResolve != NULL){
                                                       ty_resolve_ptr(tempUnRP->type, ptrToResolve->u.decl.type);
                                                     }else{
-                                                      if(myDebug){
+                                                      if(myDebugPart1){
                                                         msg("Something got into the pointer list that isn't in the symtab *#_#");
                                                       }
                                                     }
@@ -378,7 +379,7 @@ type_definition_list:
   ;
 
 type_definition:
-    new_identifier '=' type_denoter           {if(myDebug){msgn("type_definition:1---"); ty_print_typetag(ty_query($3)); msg("");}
+    new_identifier '=' type_denoter           {if(myDebugPart1){msgn("type_definition:1---"); ty_print_typetag(ty_query($3)); msg("");}
 
 
                                                 ST_ID IDtoInstall = st_lookup($1, &block);
@@ -396,7 +397,7 @@ type_definition:
   ;
 
 type_denoter:
-    typename                            {if(myDebug){msg("Found in type_denoter:1---");}
+    typename                            {if(myDebugPart1){msg("Found in type_denoter:1---");}
                                           if($1 != NULL){
                                             ST_DR testTemp = st_lookup($1,&block);
                                             if(testTemp != NULL){
@@ -411,15 +412,15 @@ type_denoter:
                                              bug("ST_ID from typename in type_denoter is NULL!");
                                            }
                                         }
-  | new_ordinal_type                    {if(myDebug){msg("Found in type_denoter:2---");} $$ = $1;}
-  | new_pointer_type                    {if(myDebug){msg("Found in type_denoter:3---");} $$ = $1;}
-  | new_procedural_type                 {if(myDebug){msg("Found in type_denoter:4---");} $$ = $1;}
-  | new_structured_type                 {if(myDebug){msg("Found in type_denoter:5---");} $$ = $1;}
+  | new_ordinal_type                    {if(myDebugPart1){msg("Found in type_denoter:2---");} $$ = $1;}
+  | new_pointer_type                    {if(myDebugPart1){msg("Found in type_denoter:3---");} $$ = $1;}
+  | new_procedural_type                 {if(myDebugPart1){msg("Found in type_denoter:4---");} $$ = $1;}
+  | new_structured_type                 {if(myDebugPart1){msg("Found in type_denoter:5---");} $$ = $1;}
   ;
 
 new_ordinal_type:
-    enumerated_type                     {if(myDebug){msg("Found in new_ordinal_type:1---");}}
-  | subrange_type                       {if(myDebug){msg("Found in new_ordinal_type:2---");} $$ = $1;}
+    enumerated_type                     {if(myDebugPart1){msg("Found in new_ordinal_type:1---");}}
+  | subrange_type                       {if(myDebugPart1){msg("Found in new_ordinal_type:2---");} $$ = $1;}
   ;
 
 enumerated_type:
@@ -436,7 +437,7 @@ enumerator:
   ;
 
 subrange_type:
-    constant LEX_RANGE constant        {if(myDebug){msg("Found in subrange_type:1---");}
+    constant LEX_RANGE constant        {if(myDebugPart1){msg("Found in subrange_type:1---");}
                                           if($1 <= $3){
                                             $$ = ty_build_subrange(ty_build_basic(TYSIGNEDLONGINT),$1,$3);
                                           }else{
@@ -447,7 +448,7 @@ subrange_type:
   ;
 
 new_pointer_type:
-    pointer_char pointer_domain_type    {if(myDebug){msg("Found in new_pointer_type:1---");} $$ = $2;}
+    pointer_char pointer_domain_type    {if(myDebugPart1){msg("Found in new_pointer_type:1---");} $$ = $2;}
   ;
 
 pointer_char:
@@ -456,7 +457,7 @@ pointer_char:
   ;
 
 pointer_domain_type:
-    new_identifier                    {if(myDebug){msg("Found in pointer_domain_type:1---");}
+    new_identifier                    {if(myDebugPart1){msg("Found in pointer_domain_type:1---");}
                                         ST_DR tempDR = st_lookup($1,&block);
                                         TYPE tempType;
                                           if(tempDR == NULL){
@@ -474,12 +475,12 @@ pointer_domain_type:
                                           $$ = tempType;
 
                                       }
-  | new_procedural_type               {if(myDebug){msg("Found in pointer_domain_type:2---");} $$ = ty_build_ptr($1);/*To our knowledge this is not tested in PROJECT 1 */}
+  | new_procedural_type               {if(myDebugPart1){msg("Found in pointer_domain_type:2---");} $$ = ty_build_ptr($1);/*To our knowledge this is not tested in PROJECT 1 */}
   ;
 
 new_procedural_type:
-    LEX_PROCEDURE optional_procedural_type_formal_parameter_list              {if(myDebug){msg("Found in new_procedural_type:1---");} $$ = ty_build_func(ty_build_basic(TYVOID), NULL, TRUE);}
-  | LEX_FUNCTION optional_procedural_type_formal_parameter_list functiontype  {if(myDebug){msg("Found in new_procedural_type:2---");}
+    LEX_PROCEDURE optional_procedural_type_formal_parameter_list              {if(myDebugPart1){msg("Found in new_procedural_type:1---");} $$ = ty_build_func(ty_build_basic(TYVOID), NULL, TRUE);}
+  | LEX_FUNCTION optional_procedural_type_formal_parameter_list functiontype  {if(myDebugPart1){msg("Found in new_procedural_type:2---");}
                                                                                 TYPE tempTYPE = $3;
                                                                                 TYPETAG tempTAG = ty_query(tempTYPE);
                                                                                 if(TYFLOAT == tempTAG |
@@ -505,32 +506,32 @@ new_procedural_type:
   ;
 
 optional_procedural_type_formal_parameter_list:
-    /* empty */                                           {if(myDebug){msg("Found in optional_procedural_type_formal_parameter_list:0---");}}
-  | '(' procedural_type_formal_parameter_list ')'         {if(myDebug){msg("Found in optional_procedural_type_formal_parameter_list:1---");}}
+    /* empty */                                           {if(myDebugPart1){msg("Found in optional_procedural_type_formal_parameter_list:0---");}}
+  | '(' procedural_type_formal_parameter_list ')'         {if(myDebugPart1){msg("Found in optional_procedural_type_formal_parameter_list:1---");}}
   ;
 
 procedural_type_formal_parameter_list:
-    procedural_type_formal_parameter                                              {if(myDebug){msg("Found in procedural_type_formal_parameter_list:1---");}}
-  | procedural_type_formal_parameter_list semi procedural_type_formal_parameter   {if(myDebug){msg("Found in procedural_type_formal_parameter_list:2---");}}
+    procedural_type_formal_parameter                                              {if(myDebugPart1){msg("Found in procedural_type_formal_parameter_list:1---");}}
+  | procedural_type_formal_parameter_list semi procedural_type_formal_parameter   {if(myDebugPart1){msg("Found in procedural_type_formal_parameter_list:2---");}}
   ;
 
 procedural_type_formal_parameter:
-    id_list                         {if(myDebug){msg("Found in procedural_type_formal_parameter:1---");}}
-  | id_list ':' typename            {if(myDebug){msg("Found in procedural_type_formal_parameter:2---");}}
-  | LEX_VAR id_list ':' typename    {if(myDebug){msg("Found in procedural_type_formal_parameter:3---");}}
-  | LEX_VAR id_list                 {if(myDebug){msg("Found in procedural_type_formal_parameter:4---");}}
+    id_list                         {if(myDebugPart1){msg("Found in procedural_type_formal_parameter:1---");}}
+  | id_list ':' typename            {if(myDebugPart1){msg("Found in procedural_type_formal_parameter:2---");}}
+  | LEX_VAR id_list ':' typename    {if(myDebugPart1){msg("Found in procedural_type_formal_parameter:3---");}}
+  | LEX_VAR id_list                 {if(myDebugPart1){msg("Found in procedural_type_formal_parameter:4---");}}
   ;
 
 new_structured_type:
-    array_type              {if(myDebug){msg("Found in new_structured_type:1---");} $$ = $1;}
-  | set_type                {if(myDebug){msg("Found in new_structured_type:2---");}}
-  | record_type             {if(myDebug){msg("Found in new_structured_type:3---");}}
+    array_type              {if(myDebugPart1){msg("Found in new_structured_type:1---");} $$ = $1;}
+  | set_type                {if(myDebugPart1){msg("Found in new_structured_type:2---");}}
+  | record_type             {if(myDebugPart1){msg("Found in new_structured_type:3---");}}
   ;
 
 /* Array */
 
 array_type:
-    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebug){msg("array_type:1---"); ty_print_typetag(ty_query($6)); msg("");}
+    LEX_ARRAY '[' array_index_list ']' LEX_OF type_denoter        {if(myDebugPart1){msg("array_type:1---"); ty_print_typetag(ty_query($6)); msg("");}
                                                                     if(ty_query($6) != TYERROR && ty_query($3->type) != TYERROR){
                                                                       if(ty_query($6) != TYFUNC){
                                                                         $$ = ty_build_array($6,$3);
@@ -545,14 +546,14 @@ array_type:
   ;
 
 array_index_list:
-    ordinal_index_type                           {if(myDebug){msg("Found in array_index_list:1---");} $$ = addToArraySubList($1, NULL);}
-  | array_index_list ',' ordinal_index_type      {if(myDebug){msg("Found in array_index_list:2---");} $$ = addToArraySubList($3, $1);}
+    ordinal_index_type                           {if(myDebugPart1){msg("Found in array_index_list:1---");} $$ = addToArraySubList($1, NULL);}
+  | array_index_list ',' ordinal_index_type      {if(myDebugPart1){msg("Found in array_index_list:2---");} $$ = addToArraySubList($3, $1);}
   ;
 
 
 ordinal_index_type:
-    new_ordinal_type            {if(myDebug){msg("Found in ordinal_index_type:1---");} $$ = $1; /*this is a subrange return (for now)*/}
-  | typename                    {if(myDebug){msg("Found in ordinal_index_type:2---");} $$ = $1; /*ST_Id*/}
+    new_ordinal_type            {if(myDebugPart1){msg("Found in ordinal_index_type:1---");} $$ = $1; /*this is a subrange return (for now)*/}
+  | typename                    {if(myDebugPart1){msg("Found in ordinal_index_type:2---");} $$ = $1; /*ST_Id*/}
   ;
 
 
@@ -635,7 +636,7 @@ variable_declaration_list:
   ;
 
 variable_declaration:
-    id_list ':' type_denoter semi           {if(myDebug){msg("variable_declaration:1---"); ty_print_typetag(ty_query($3)); msg("");}
+    id_list ':' type_denoter semi           {if(myDebugPart1){msg("variable_declaration:1---"); ty_print_typetag(ty_query($3)); msg("");}
                                             LD tempLD = $1;
                                             if(tempLD != NULL){
                                               do{
@@ -724,8 +725,8 @@ directive:
   ;
 
 functiontype:
-    /* empty */                     {if(myDebug){msg("functiontype:0---");}}  //procedure
-    | ':' typename                  {if(myDebug){msg("functiontype:1--- %s", st_get_id_str($2));}
+    /* empty */                     {if(myDebugPart1){msg("functiontype:0---");}}  //procedure
+    | ':' typename                  {if(myDebugPart1){msg("functiontype:1--- %s", st_get_id_str($2));}
                                     ST_ID tempID = $2;
                                     ST_DR tempDR = st_lookup(tempID, &block);
                                     if(tempDR != NULL){
@@ -761,7 +762,7 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN statement_sequence LEX_END
+    LEX_BEGIN statement_sequence LEX_END  {/*everything withing begin and end*/}
   ;
 
 statement_sequence:
@@ -895,7 +896,7 @@ variable_or_function_access_maybe_assignment:
 
 rest_of_statement:
     /* Empty */
-  | LEX_ASSIGN expression
+  | LEX_ASSIGN expression      {/*LEX_ASSIGN  is := */}
   ;
 
 standard_procedure_statement:
@@ -1031,8 +1032,8 @@ signed_primary:
 
 primary:
     factor
-  | primary LEX_POW factor
-  | primary LEX_POWER factor
+  | primary LEX_POW factor      {/*idk what a LEX_POW is*/}
+  | primary LEX_POWER factor    {/*LEX_POWER  **   */}
   | primary LEX_IS typename
   ;
 
