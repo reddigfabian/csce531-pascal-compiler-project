@@ -83,6 +83,7 @@ INDEX_LIST rootOfUnRP;
     LD            y_listOfIDs;
     TYPE          y_type;
     INDEX_LIST    y_index_list;
+    TN            y_TN;
 }
 
 /*OUR ADDED ONES*/
@@ -95,6 +96,9 @@ INDEX_LIST rootOfUnRP;
 //%type <y_single>
 %type <y_char> sign '+' '-'
 //s%type <y_bool>
+
+%type <y_TN> variable_or_function_access_maybe_assignment
+/*END OUR ADDED*/
 
 
 %token <y_string> LEX_ID
@@ -203,8 +207,8 @@ typename:
     LEX_ID          {if(myDebugPart1){msg("Found in typename:1---");}$$ = st_enter_id($1);}
   ;
 
-identifier:
-    LEX_ID          {if(myDebugPart1){msg("Found in identifier:1---");}$$ = st_enter_id($1);}
+identifier:  /*ST_ID*/
+    LEX_ID          {if(myDebugPart1 | myDebugPart2){msg("Found in identifier:1---");}$$ = st_enter_id($1);}
   ;
 
 new_identifier:
@@ -762,11 +766,11 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN statement_sequence LEX_END  {/*everything withing begin and end*/}
+    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end*/}
   ;
 
 statement_sequence:
-    statement
+    statement                                         {/*possibly last stement in Pascal doesnt need a semi*/}
   | statement_sequence semi statement
   ;
 
@@ -885,18 +889,21 @@ actual_parameter:
 /* ASSIGNMENT and procedure calls */
 
 assignment_or_call_statement:
-    variable_or_function_access_maybe_assignment rest_of_statement
+    variable_or_function_access_maybe_assignment rest_of_statement   {/*rest_of_statement can be empty, or :=*/}
   ;
 
 variable_or_function_access_maybe_assignment:
-    identifier
-  | address_operator variable_or_function_access
-  | variable_or_function_access_no_id
+    identifier                                            {/*ST_ID*/
+                                                            if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:1--- %s", st_get_id_str($1));}
+                                                            $$ = $1;
+                                                          }
+  | address_operator variable_or_function_access          {if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");} /*We think the @ address operator is out of our scope for part2*/}
+  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:3--- NOT YET UNDERSTOOD, possibly unused");}}
   ;
 
 rest_of_statement:
     /* Empty */
-  | LEX_ASSIGN expression      {/*LEX_ASSIGN  is := */}
+  | LEX_ASSIGN expression      {/*LEX_ASSIGN  is := */   /*will need to pass $2 in some form, at some point*/}
   ;
 
 standard_procedure_statement:
@@ -1006,9 +1013,9 @@ boolean_expression:
   ;
 
 expression:
-    expression relational_operator simple_expression
-  | expression LEX_IN simple_expression
-  | simple_expression
+    expression relational_operator simple_expression     /* confirmed used in Part2 */
+  | expression LEX_IN simple_expression                  /* probably unused for part 2*/
+  | simple_expression                                    /* confirmed used in Part2 -- can break down into just a const*/
   ;
 
 simple_expression:
@@ -1139,9 +1146,9 @@ rts_fun_parlist:
   ;
 
 relational_operator:
-    LEX_NE
-  | LEX_LE
-  | LEX_GE
+    LEX_NE   /* "<>" */
+  | LEX_LE   /* "<=" */
+  | LEX_GE   /* ">=" */
   | '='
   | '<'
   | '>'

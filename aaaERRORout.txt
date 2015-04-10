@@ -1,0 +1,19 @@
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- I
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- J
+Found in identifier:1---
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- K
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- X
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- Y
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- Z
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- D
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- B
+Found in identifier:1---
+variable_or_function_access_maybe_assignment:1--- C

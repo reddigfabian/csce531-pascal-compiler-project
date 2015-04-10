@@ -88,6 +88,7 @@ Nontrivial conversions are allowed between any two numerical types (Integer, Sin
 except that Single and Real cannot be implicitly converted to Integer.
 Conversions are also allowed between subranges of the same base type and the base type itself,
 and from a pointer to void to a pointer to any non-void type.
+
 When applying a unary operator, the operand is first unary-converted before the operator is applied.
 Before applying a binary operator, both arguments are first unary-converted,
 then each argument is binary-converted based on the type of the other (the / operator being a slight exception; see above).
