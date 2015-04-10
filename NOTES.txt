@@ -435,6 +435,164 @@ statement_part:
 
     }
     <-----------b_func_epilogue()
+
+============================April 8th=================================================================================================================================
+
+entering and exiting function bodies:
+
+ONCE YOU KNOW FUNCTION NAME STORE IT SOMEWHERE GOLBALY, NOT ON THE SYMANTIC STACK (GRAMMAR)
+
+  func_decl:
+    func_heading semi:
+          {.......}
+      any_decl_part /* var decls for local vars*/
+          {
+            b_func_prologue()
+            for each formal parameter (in left-right order)
+              call b_store_formal_param()  /*returns an offset, check with offset in sysm table to check for bugs in our compiler*/
+            if function (not a precedure, aka, has a return)
+              b_alloc_return_value()
+              *He Draws a picture of the stack @ about 11mins*
+              b_alloc_local_vars( size )
+          }
+
+      statement_part semi
+          {
+            b_prepare_return( return type )  //TYVOID for procedures
+            b_func_epilogue(func name)
+          }
+
+Evaluating expresions in a local block
+        st_get_current_block()   if curr is greater than 1, then your in a local block
+
+    x := y + z
+
+    y is global (GDECL in symtable)
+    b_push_ext_addr("y")
+    y is a l-value ----> b_deref() into a r-value for the +
+
+    z is a local (LDECL, use offset)
+    b_push_loc_addr(offset)
+
+Setting the return value of a function
+
+    function fact( n:Integer ): Integer;
+
+    begin
+      if n=0 then
+          fact := 1
+      else
+          fact := n * fact(n-1)
+    end;
+
+    /*function name on left hand side of assignment sets the return value*/
+    so only exception to the assignment rules, if in a function and the left hand side matches the function name,
+      then this is setting the return value, not a normal assignment
+      we need the global function name variable to check this
+
+      so use b_set_return()      ---still check for valid type converstions
+        instead of b_assign()
+
+
+      function foo : Real;          foo has no parameters
+        foo := foo;                 set return value :=  call to foo  (weird but, legal)
+
+
+Accessing var parameters
+    Var
+      x,y:Integer
+
+    procedure swap(var a,b:Integer);
+        var
+          temp:Integer;
+
+        begin {swap //this is a comment}
+          temp := a;
+          a := b;
+          b := temp
+        end; {swap}
+
+    begin
+      x := 6;
+      y := 28;
+      swap(x,y);
+
+      {x is 28, and y is 6}
+    end;
+
+-------------------------------------
+in swap                             lets say a's offset is 0
+
+    temp := a;        b_push_loc_addr(-28) "whereever temp's offset is"
+
+                    --b_push_loc_addr(0)  "this will push the address of a onto the stack"
+      push 6        | b_deref(TYPTR)   "now we have the l-val of x on the stack"
+      onto stack    --b_deref(TYSIGNEDLONGINT)  "now we have the r-val of x, which is 6"
+
+  a  :=    b          when a var parameter is accessed, after b_push_loc_addr(offset), immediately call
+  | {x:=y} |          b_deref(TYPTR), result is still considered an l-value of the type pf the var parameter declared
+  |        |
+  |        |->deref twice
+  |                  |
+  |->deref           |
+      |              |
+      |-->b_assign<--|
+
+------------------------------------------
+Simple statements
+
+    simple_statement:
+        empty_stmt   {}     ---semi colon only seperates stements, last one doesnt need it, but it can have one
+        | assignment_or_call_stmt
+        | standard_procedure_stmt
+        | statement_extenstions  {}  ---- we dont use, not part of standard pascal
+        ;
+
+    assignment_or_call_stmt:
+        variable_of_function_access_maybe_assignment  rest_of_statement
+        ;
+
+    EXAMPLES:
+        x   := y + z
+        |  |________|
+        |      |
+        |     rest_of_statement:  LEX_ASSIGN expression
+        |                         | /*empty*/   rest_of_statement could be empty
+        |
+    variable_of_function_access_maybe_assignment
+
+        (*in a function*)
+        fact := 6
+
+        swap(x,y) <-----procedure calls
+        readNextVal <----|
+
+        foo(x)^ := 6
+
+        foo(x)  returns a r-value of pointer type
+        foo(x)^  makes it a l-value of object type
+
+
+    variable_of_function_access_maybe_assignment:
+        identifier  {var name or
+                     parameterless procedure call or
+                     name of current function (for setting return)
+                     }
+        | address_operator variable_or_fnc_access {} /*not used*/
+        | var_or_fnc_access_no_id      {like with foo(x)^ like above example}
+        ;
+
+    var_or_fcn_access_no_id
+          p_OUTPUT                        {not used}
+        | p_INPUT                         {not used}
+        | var_or_fnc_access '.' new_id    {not used}
+        | '(' expression ')'              {$$ = $2;}
+        | var_or_fnc_access pointer_char
+                          p^ := 6
+        | var_or_func_access '[' index_exp_list ']'   {for project 3, not used in part 2. for array accesses}
+        | var_or_fnc_access_no_std_fnc '(' actual_param_list ')'  {function call} expr
+        | p_NEW '(' var_access_or_typename ')'        {like a malloc in pascel}
+
 ============================Assumptions=================================================================================================================================
 
 A subrange will only ever exist with integer bounds.
