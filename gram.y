@@ -270,9 +270,18 @@ any_global_declaration_part:
   | any_global_declaration_part any_decl
   ;
 
-any_declaration_part:
+
+any_declaration_part:   /* var decls for local vars*/
     /* empty */
-  | any_declaration_part any_decl
+  | any_declaration_part any_decl {/*
+                                    b_func_prologue()
+                                    for each formal parameter (in left-right order)
+                                      call b_store_formal_param()  //returns an offset, check with offset in sysm table to check for bugs in our compiler
+                                    if function (not a precedure, aka, has a return)
+                                      b_alloc_return_value()
+                                      *He Draws a picture of the stack @ about 11mins*
+                                      b_alloc_local_vars( size )*/
+                                  }
   ;
 
 any_decl:
@@ -706,7 +715,10 @@ function_declaration:
                 */
 
     function_heading semi directive_list semi
-  | function_heading semi any_declaration_part statement_part semi
+  | function_heading semi any_declaration_part statement_part semi    {/* statement_part semi
+                                                                            b_prepare_return( return type )  //TYVOID for procedures
+                                                                            b_func_epilogue(func name)*/
+                                                                      }
   ;
 
 function_heading:
@@ -856,10 +868,22 @@ for_direction:
   ;
 
 simple_statement:
-    empty_statement
-  | assignment_or_call_statement
-  | standard_procedure_statement
-  | statement_extensions
+    empty_statement                     {/*no return, if last stement has a semi, this is the filler to allow it*/}
+  | assignment_or_call_statement        {/* needs to be implimented:
+                                          variable_or_function_access_maybe_assignment rest_of_statement*/
+                                        }
+  | standard_procedure_statement        {/*needs to be implimented i think, not covered in NOTES yet
+                                            rts_proc_onepar '(' actual_parameter ')'
+                                          | rts_proc_parlist '(' actual_parameter_list ')'
+                                          | p_WRITE optional_par_write_parameter_list
+                                          | p_WRITELN optional_par_write_parameter_list
+                                          | p_READ optional_par_actual_parameter_list
+                                          | p_READLN optional_par_actual_parameter_list
+                                          | p_PAGE optional_par_actual_parameter_list
+                                          | p_DISPOSE '(' actual_parameter ')'
+                                          | p_DISPOSE '(' actual_parameter ',' actual_parameter_list ')'*/
+                                        }
+  | statement_extensions                {/*not used, not part of standar pascal*/}
   ;
 
 empty_statement:
@@ -889,9 +913,12 @@ assignment_or_call_statement:
   ;
 
 variable_or_function_access_maybe_assignment:
-    identifier
-  | address_operator variable_or_function_access
-  | variable_or_function_access_no_id
+    identifier                                          {/*var name or
+                                                          parameterless procedure call or
+                                                          name of current function (for setting return)*/
+                                                        }
+  | address_operator variable_or_function_access        {/*not used*/}
+  | variable_or_function_access_no_id                   {/*example:    foo(x)^ := 6  */}
   ;
 
 rest_of_statement:
@@ -1066,14 +1093,14 @@ variable_or_function_access_no_standard_function:
   ;
 
 variable_or_function_access_no_id:
-    p_OUTPUT
-  | p_INPUT
-  | variable_or_function_access '.' new_identifier
-  | '(' expression ')'
-  | variable_or_function_access pointer_char
-  | variable_or_function_access '[' index_expression_list ']'
-  | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'
-  | p_NEW '(' variable_access_or_typename ')'
+    p_OUTPUT                                                     {/*not used*/}
+  | p_INPUT                                                      {/*not used*/}
+  | variable_or_function_access '.' new_identifier               {/*not used*/}
+  | '(' expression ')'                                           {$$ = $2;}
+  | variable_or_function_access pointer_char                     {/*something ex:  p^ := 6*/}
+  | variable_or_function_access '[' index_expression_list ']'    {/*for project 3, not used in part 2. for array accesses*/}
+  | variable_or_function_access_no_standard_function '(' actual_parameter_list ')' {/*function call, expr*/}
+  | p_NEW '(' variable_access_or_typename ')'                    {/*like a malloc but in pascal, continue on April 13th, monday*/}
   ;
 
 set_constructor:
