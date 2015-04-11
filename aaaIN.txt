@@ -6,21 +6,11 @@ Program T2L80_ok;
 
 var
    i,j,k : Integer;
-   x,y,z : Single;
-   c	 : Char;
-   d	 : Real;
-   b	 : Boolean;
 
 begin
 
    i := 5;
    j := i;
    k := 14;
-   x := 3.14;
-   y := 2.71;
-   z := 0.0;
-   d := 19.1999;
-   b := False;
-   c := chr(65)
 
 end.

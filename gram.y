@@ -917,21 +917,14 @@ assignment_or_call_statement:
   ;
 
 variable_or_function_access_maybe_assignment:
-<<<<<<< HEAD
-    identifier                                            {/*ST_ID*/
+    identifier                                            {/*var name or
+                                                          parameterless procedure call or
+                                                          name of current function (for setting return)*/
                                                             if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:1--- %s", st_get_id_str($1));}
                                                             $$ = $1;
                                                           }
-  | address_operator variable_or_function_access          {if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");} /*We think the @ address operator is out of our scope for part2*/}
-  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:3--- NOT YET UNDERSTOOD, possibly unused");}}
-=======
-    identifier                                          {/*var name or
-                                                          parameterless procedure call or
-                                                          name of current function (for setting return)*/
-                                                        }
-  | address_operator variable_or_function_access        {/*not used*/}
-  | variable_or_function_access_no_id                   {/*example:    foo(x)^ := 6  */}
->>>>>>> d75a2219bb06fae05ba92c27982c2a00a98c9ea5
+  | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
+  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:3--- NOT YET UNDERSTOOD, possibly unused");}/*example:    foo(x)^ := 6  */}
   ;
 
 rest_of_statement:

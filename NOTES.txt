@@ -328,6 +328,37 @@ we should store stuff on the symantic stack (good for us, not required)
     variable_declaration                  CREATS and INSTALLS vars
     functiontype                          NOT DONE YET
 
+===========================April 1st=================================================================================================================================
+experssions, statements (simple), and prodecure/func calls
+
+IDS in Pascal are cae-insensitive (incl keywords)  -- converted to initial caps
+
+lib90, lib100, pascal "built-in" functions we will be calling
+
+compatible with c calling convention (can call c funcs from Pascal & vice versa)
+
+amung the simple types:
+Ordinal Types : values are in a linearly ordered sequence : each value (except max) has a unique successor, and a unique predecessor (except min value)
+       Ordinal Types: Integer, Char, Boolean, Enumerated Types (we are not supporting these), subranges of these
+       Support: succ -- successor function
+                pred -- predecessor function
+                subranges
+                ord -- Integer value of an ordinal type value
+                        Integer : identity func
+                        Char : ASCII value
+                        Boolean : 0 for FALSE,  1 for TRUE
+                chr : Integer ----> Char
+
+Expresion vs a statement
+Expr has a value, statement does not (side effects)
+
+Parsing exprs and building syntax trees
+Parsing simple statements
+function call is considered a expression
+precudere considered a statement
+
+
+
 ============================April 6th=================================================================================================================================
 *declare vars*
 function foo(a:INTEGER; var b :REAL): CHAR;
@@ -440,7 +471,7 @@ statement_part:
 
 entering and exiting function bodies:
 
-ONCE YOU KNOW FUNCTION NAME STORE IT SOMEWHERE GOLBALY, NOT ON THE SYMANTIC STACK (GRAMMAR)
+ONCE YOU KNOW FUNCTION NAME STORE IT SOMEWHERE GLOBALY, NOT ON THE SYMANTIC STACK (GRAMMAR)
 
   func_decl:
     func_heading semi:
@@ -523,7 +554,7 @@ Accessing var parameters
 -------------------------------------
 in swap                             lets say a's offset is 0
 
-    temp := a;        b_push_loc_addr(-28) "whereever temp's offset is"
+    temp := a;        b_push_loc_addr(-28) "wherever temp's offset is"
 
                     --b_push_loc_addr(0)  "this will push the address of a onto the stack"
       push 6        | b_deref(TYPTR)   "now we have the l-val of x on the stack"
