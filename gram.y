@@ -1106,13 +1106,13 @@ address_operator:
   ;
 
 variable_or_function_access:
-    variable_or_function_access_no_standard_function
-  | standard_functions
+    variable_or_function_access_no_standard_function    {if(myDebugPart2){msg("%d variable_or_function_access:1---", block);}}
+  | standard_functions                                  {if(myDebugPart2){msg("%d variable_or_function_access:2---", block);}}
   ;
 
 variable_or_function_access_no_standard_function:
-    identifier
-  | variable_or_function_access_no_id
+    identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}}
+  | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---", block);}}
   ;
 
 variable_or_function_access_no_id:
