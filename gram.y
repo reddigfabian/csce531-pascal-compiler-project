@@ -879,11 +879,14 @@ for_direction:
   ;
 
 simple_statement:
-    empty_statement                     {/*no return, if last stement has a semi, this is the filler to allow it*/}
-  | assignment_or_call_statement        {/* needs to be implimented:
+    empty_statement                     {if(myDebugPart2){msg("%d simple_statement:1---EMPTY STATEMENT", block);}
+                                          /*no return, if last stement has a semi, this is the filler to allow it*/}
+  | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
+                                          /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
                                         }
-  | standard_procedure_statement        {/*needs to be implimented i think, not covered in NOTES yet
+  | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
+                                          /*needs to be implimented i think, not covered in NOTES yet
                                             rts_proc_onepar '(' actual_parameter ')'
                                           | rts_proc_parlist '(' actual_parameter_list ')'
                                           | p_WRITE optional_par_write_parameter_list
@@ -1116,22 +1119,22 @@ variable_or_function_access_no_standard_function:
   ;
 
 variable_or_function_access_no_id:
-    p_OUTPUT                                                     {/*not used*/}
-  | p_INPUT                                                      {/*not used*/}
-  | variable_or_function_access '.' new_identifier               {/*not used*/}
-  | '(' expression ')'                                           {if(myDebugPart2){msg("%d variable_or_function_access_no_id:4---", block);}
-                                                                  $$ = $2;
-                                                                 }
-  | variable_or_function_access pointer_char                     {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---", block);}
-                                                                  /*something ex:  p^ := 6*/
-                                                                 }
-  | variable_or_function_access '[' index_expression_list ']'    {/*for project 3, not used in part 2. for array accesses*/}
+    p_OUTPUT                                                                          {/*not used*/}
+  | p_INPUT                                                                           {/*not used*/}
+  | variable_or_function_access '.' new_identifier                                    {/*not used*/}
+  | '(' expression ')'                                                                {if(myDebugPart2){msg("%d variable_or_function_access_no_id:4---", block);}
+                                                                                        $$ = $2;
+                                                                                      }
+  | variable_or_function_access pointer_char                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---", block);}
+                                                                                        /*something ex:  p^ := 6*/
+                                                                                      }
+  | variable_or_function_access '[' index_expression_list ']'                         {/*for project 3, not used in part 2. for array accesses*/}
   | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---", block);}
                                                                                         /*function call, expr*/
                                                                                       }
-  | p_NEW '(' variable_access_or_typename ')'                    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---", block);}
-                                                                  /*like a malloc but in pascal, continue on April 13th, monday*/
-                                                                 }
+  | p_NEW '(' variable_access_or_typename ')'                                         {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---", block);}
+                                                                                        /*like a malloc but in pascal, continue on April 13th, monday*/
+                                                                                      }
   ;
 
 set_constructor:
