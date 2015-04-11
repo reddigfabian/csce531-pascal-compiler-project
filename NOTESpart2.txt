@@ -74,20 +74,86 @@ ____________________
 Backend routines (backend-x86.h)
     Look for "Routines for Project 2"
 
-b_push_ext_addr(char *id)
-    pushes the addr of id onto stack
-      (id must be emitted as a label at some point, i.e., b_global_decl())
-    use to evaluate variable references in expressions
+All of these don't pop anything:
+  b_push_ext_addr(char *id)
+      pushes the addr of id onto stack
+        (id must be emitted as a label at some point, i.e., b_global_decl())
+      use to evaluate variable references in expressions
 
-b_push_loc_addr(int offset)
-    -- params and local vars (offset from frame pointer)
+  b_push_loc_addr(int offset)
+      -- params and local vars (offset from frame pointer)
 
-b_push_const_int(int value)
+  b_push_const_int(int value)
+      --use for integer and ordinal types
 
-b_push_const_double(double value)
-    --single and Real types
+  b_push_const_double(double value)
+      --single and Real types(convert to double)
 
-b_push_const_string(shar *string)
+  b_push_const_string(char *string)
+
+
+Unary ops (1 item popped):
+
+  b_offest(int offset)
+      -- assumes some address is on stack. will pop that address, add the offset to it, and push the other address back on. ??What is "the other address"??
+      -- NOT SURE IF USED
+      -- other uses: pointer to frame pointer
+
+  b_deref(TYPETAG type)
+      -- assumes a pointer is on the stack, goes to that location, looks at the data there, assumes its of the data defined by "type", gets its value and pushes
+          that value onto the stack
+
+  b_convert(TYPETAG from_type, TYPETAG to_type)
+      -- assumes that there is a value of type "from_type" on the stack and converts it to the type to_type and pushes the converted value back onto the stack
+
+  b_negates(TYPETAG type)
+      -- unary minus (type is integer or real because the machine level operation of negation is different for the two types)
+
+  b_inc_dec(...)
+      -- increment and decrement - doesn't exist in Pascal so NOT USED
+
+Binary ops (2 items popped)
+
+  b_assign(TYPETAG type)
+      --use for assignments. Assumes there are two things on the stack. The top of the stack is the right hand
+        side of the assignment(the value(already converted to type of the left)) and underneath is the address
+        of the left hand side of the assignment. Puts the value that was assigned back on the stack. we don't want this in Pascal because,
+        unlike in C, Pascal assignments are statements, not expressions, meaning they have no return value. Therefore we need to remove the
+        assigned value from the stack after an assignment. To do this we call b_pop().
+
+  b_arith_rel_op(B_ARITH_REL_OP arop, TYPETAG type)
+      --handles all binary arithmetic operators and relational operators
+            --two operands are assumed to be of the same "type"
+            --relational operators return booleans
+            --arithmetic operators take numbers
+
+  b_funcal_by_name(char *f_name, TYPETAG return_type)
+      --he said you have to prepare the stack for a function call by loading the arguments onto it, then this calls the function call by name but you
+        have to specify the expected return type
+
+_________________________________________
+Type conversions
+      unary conversions
+      binary conversions
+      assignment conversions
+      parameter conversions
+
+      all expect r-val and return r-val, so if there is an l-val you have to dereference it.
+
+      unary - do first for all operands of an operator.
+              only one in Pascal: Single --> Real a.k.a. float --> double
+
+      binary - before a binary operator is applied:
+                    -first unary convert operands as above
+                    -binary convert the each operand based on the type of the other operand
+                            Ex:     Real + Integer  ==>  Integer first needs to be converted to Real
+                                    Only allowed binary conversion in Pascal: Integer ==> Real
+
+      assignment conversion - convert type of RHS of assignment to that of the LHS
+
+
+
+      ---------------OUT OF TIME--------------------
 
 
 ============================April 6th=================================================================================================================================
