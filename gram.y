@@ -47,6 +47,7 @@
 %{
 
 #include <stdlib.h>
+#include "encode.h"
 #include "tree.h"
 #include "types.h" //added this for use of TLIST
 /* Cause the `yydebug' variable to be defined.  */
@@ -63,6 +64,8 @@ INDEX_LIST rootOfUnRP;
 
 /* Like YYERROR but do call yyerror */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
+
+void initRootOfUnRP(TYPE type); //prototype
 %}
 
 /* Start symbol for the grammar */
@@ -97,7 +100,9 @@ INDEX_LIST rootOfUnRP;
 %type <y_char> sign '+' '-'
 //s%type <y_bool>
 
-%type <y_TN> variable_or_function_access_maybe_assignment
+%type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
+    simple_expression
+
 /*END OUR ADDED*/
 
 
@@ -639,7 +644,9 @@ one_case_constant:
 
 variable_declaration_part:
     LEX_VAR variable_declaration_list       {
-      //for each, get the id by calling ty_query_ptr(), then look up the id in the symbol table to get the stdr (which must be a TYPENAME), then call ty_resolve_ptr()
+                                              /*for each, get the id by calling ty_query_ptr(),
+                                              then look up the id in the symbol table to get the stdr (which must be a TYPENAME),
+                                              then call ty_resolve_ptr()*/
                                             }
   ;
 
@@ -778,11 +785,11 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end*/}
+    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end, could be func/procedure def*/}
   ;
 
 statement_sequence:
-    statement                                         {/*possibly last stement in Pascal doesnt need a semi*/}
+    statement                                         {/*last stement in Pascal doesnt need a semi (optional, works either way)*/}
   | statement_sequence semi statement
   ;
 
@@ -920,11 +927,11 @@ variable_or_function_access_maybe_assignment:
     identifier                                            {/*var name or
                                                           parameterless procedure call or
                                                           name of current function (for setting return)*/
-                                                            if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:1--- %s", st_get_id_str($1));}
+                                                            if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
                                                             $$ = $1;
                                                           }
   | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
-  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:3--- NOT YET UNDERSTOOD, possibly unused");}/*example:    foo(x)^ := 6  */}
+  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}/*example:    foo(x)^ := 6  */}
   ;
 
 rest_of_statement:
@@ -1038,50 +1045,60 @@ boolean_expression:
     expression
   ;
 
-expression:
-    expression relational_operator simple_expression     /* confirmed used in Part2 */
-  | expression LEX_IN simple_expression                  /* probably unused for part 2*/
-  | simple_expression                                    /* confirmed used in Part2 -- can break down into just a const*/
+expression:     /*tree node*/      /*net result of evaluating an expression, one return value push on the stack*/
+    expression relational_operator simple_expression     {if(myDebugPart2){msg("%d expression:1---", block);}
+                                                            /* confirmed used in Part2 */
+                                                         }
+  | expression LEX_IN simple_expression                  {if(myDebugPart2){msg("%d expression:2---", block);}
+                                                          /* probably unused for part 2*/
+                                                         }
+  | simple_expression                                    {if(myDebugPart2){msg("%d expression:3---", block);}
+                                                          /* confirmed used in Part2 -- can break down into just a const*/
+                                                         }
   ;
 
-simple_expression:
-    term
-  | simple_expression adding_operator term
-  | simple_expression LEX_SYMDIFF term
-  | simple_expression LEX_OR term
-  | simple_expression LEX_XOR term
+simple_expression:   /*tree node*/ /*simple statements leave the stack unchanged*/
+    term                                                {if(myDebugPart2){msg("%d simple_expression:1---", block);}}
+  | simple_expression adding_operator term              {if(myDebugPart2){msg("%d simple_expression:2---", block);}}
+  | simple_expression LEX_SYMDIFF term                  {if(myDebugPart2){msg("%d simple_expression:3---", block);}}
+  | simple_expression LEX_OR term                       {if(myDebugPart2){msg("%d simple_expression:4---", block);}}
+  | simple_expression LEX_XOR term                      {if(myDebugPart2){msg("%d simple_expression:5---", block);}}
   ;
 
 term:
-    signed_primary
-  | term multiplying_operator signed_primary
-  | term LEX_AND signed_primary
+    signed_primary                                      {if(myDebugPart2){msg("%d term:1---", block);}}
+  | term multiplying_operator signed_primary            {if(myDebugPart2){msg("%d term:2---", block);}}
+  | term LEX_AND signed_primary                         {if(myDebugPart2){msg("%d term:3---", block);}}
   ;
 
 signed_primary:
-    primary
-  | sign signed_primary
+    primary                                             {if(myDebugPart2){msg("%d signed_primary:1---", block);}}
+  | sign signed_primary                                 {if(myDebugPart2){msg("%d signed_primary:2---", block);}}
   ;
 
 primary:
-    factor
-  | primary LEX_POW factor      {/*idk what a LEX_POW is*/}
-  | primary LEX_POWER factor    {/*LEX_POWER  **   */}
-  | primary LEX_IS typename
+    factor                                              {if(myDebugPart2){msg("%d primary:1---", block);}}
+  | primary LEX_POW factor                              {if(myDebugPart2){msg("%d primary:2---", block);}
+                                                          /*idk what a LEX_POW is*/
+                                                        }
+  | primary LEX_POWER factor                            {if(myDebugPart2){msg("%d primary:3---", block);}
+                                                          /*LEX_POWER  **   */
+                                                        }
+  | primary LEX_IS typename                             {if(myDebugPart2){msg("%d primary:4---", block);}}
   ;
 
 signed_factor:
-    factor
-  | sign signed_factor
+    factor                                              {if(myDebugPart2){msg("%d signed_factor:1---", block);}}
+  | sign signed_factor                                  {if(myDebugPart2){msg("%d signed_factor:2---", block);}}
   ;
 
 factor:
-    variable_or_function_access
-  | constant_literal
-  | unsigned_number
-  | set_constructor
-  | LEX_NOT signed_factor
-  | address_operator factor
+    variable_or_function_access                         {if(myDebugPart2){msg("%d factor:1---", block);}}
+  | constant_literal                                    {if(myDebugPart2){msg("%d factor:2---", block);}}
+  | unsigned_number                                     {if(myDebugPart2){msg("%d factor:3---", block);}}
+  | set_constructor                                     {if(myDebugPart2){msg("%d factor:4---", block);}}
+  | LEX_NOT signed_factor                               {if(myDebugPart2){msg("%d factor:5---", block);}}
+  | address_operator factor                             {if(myDebugPart2){msg("%d factor:6---", block);}}
   ;
 
 address_operator:
@@ -1102,11 +1119,19 @@ variable_or_function_access_no_id:
     p_OUTPUT                                                     {/*not used*/}
   | p_INPUT                                                      {/*not used*/}
   | variable_or_function_access '.' new_identifier               {/*not used*/}
-  | '(' expression ')'                                           {$$ = $2;}
-  | variable_or_function_access pointer_char                     {/*something ex:  p^ := 6*/}
+  | '(' expression ')'                                           {if(myDebugPart2){msg("%d variable_or_function_access_no_id:4---", block);}
+                                                                  $$ = $2;
+                                                                 }
+  | variable_or_function_access pointer_char                     {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---", block);}
+                                                                  /*something ex:  p^ := 6*/
+                                                                 }
   | variable_or_function_access '[' index_expression_list ']'    {/*for project 3, not used in part 2. for array accesses*/}
-  | variable_or_function_access_no_standard_function '(' actual_parameter_list ')' {/*function call, expr*/}
-  | p_NEW '(' variable_access_or_typename ')'                    {/*like a malloc but in pascal, continue on April 13th, monday*/}
+  | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---", block);}
+                                                                                        /*function call, expr*/
+                                                                                      }
+  | p_NEW '(' variable_access_or_typename ')'                    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---", block);}
+                                                                  /*like a malloc but in pascal, continue on April 13th, monday*/
+                                                                 }
   ;
 
 set_constructor:
