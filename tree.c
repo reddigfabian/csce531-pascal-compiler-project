@@ -5,7 +5,7 @@
 
 
 /*
-typedef enum{INTCONSTANT, REALCONSTANT, ID_NODE, TYPE_NODE, NEGNUM}tagtype;
+typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, TYPE_NODE, NEGNUM, ASSIGN_NODE}tagtype;
 
 typedef struct tn{
   tagtype tag;
@@ -15,8 +15,13 @@ typedef struct tn{
     long intconstant;
     double realconstant;
     struct tn *negNode;
+    ST_ID varName;
 
-    // ST_ID id;
+    struct{
+        struct tn *varNode;
+        struct tn *expression;
+    }assign_node;
+
 		// struct{
 		// 	ST_ID id;
     //   TYPE type;
@@ -47,6 +52,21 @@ TN makeNegNumNode(TN numNode){
   return tempTN;
 }
 
+TN makeVarNode(ST_ID id){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = VAR_NODE;
+  tempTN->u.varName = id;
+  return tempTN;
+}
+
+TN makeAssignNode(TN var, TN expr){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = ASSIGN_NODE;
+  tempTN->u.assign_node.varNode = var;
+  tempTN->u.assign_node.expression = expr;
+  return tempTN;
+}
+
 
 void genBackend(TN startNode){
   /*
@@ -57,19 +77,41 @@ void genBackend(TN startNode){
   */
 }
 
-void treeNodeToString(TN node){
+void treeNodeToString(TN node, int isTop){
     //INTCONSTANT, REALCONSTANT, NEGNUM
+    if(isTop) msgn("TREE NODE    ");
     switch(node->tag){
+
       case INTCONSTANT:
-          msg("INTCONSTANT node: %ld", node->u.intconstant);
+          if(isTop) msg("INTCONSTANT node: %ld", node->u.intconstant);
+          else msgn("INTCONSTANT node: %ld", node->u.intconstant);
           break;
+
       case REALCONSTANT:
-          msg("REALCONSTANT node: %f",node->u.realconstant);
+          if(isTop) msg("REALCONSTANT node: %f",node->u.realconstant);
+          else msgn("REALCONSTANT node: %f",node->u.realconstant);
           break;
+
       case NEGNUM:
           msgn("NEGNUM node --> ");
-          treeNodeToString(node->u.negNode);
+          treeNodeToString(node->u.negNode, 0);
           break;
+
+      case VAR_NODE:
+          msg("VAR_NODE node: %s",st_get_id_str(node->u.varName));
+          break;
+
+      case ASSIGN_NODE:
+          msgn("ASSIGN_NODE var --> ");
+          treeNodeToString(node->u.assign_node.varNode, 0);
+          msgn("             Expression nodes --> ");
+          treeNodeToString(node->u.assign_node.expression, 0);
+          msg("");
+          break;
+
+      default:
+          if(isTop) msg("NULL -- THIS IS AN ERROR");
+          else msgn("NULL -- THIS IS AN ERROR");
     }
 }
 

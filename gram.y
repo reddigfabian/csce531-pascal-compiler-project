@@ -103,7 +103,7 @@ void initRootOfUnRP(TYPE type); //prototype
 
 %type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
     simple_expression rest_of_statement unsigned_number factor signed_factor primary
-    signed_primary term
+    signed_primary term assignment_or_call_statement
 
 /*END OUR ADDED*/
 
@@ -946,28 +946,38 @@ actual_parameter:
 
 /* ASSIGNMENT and procedure calls */
 
-assignment_or_call_statement:
+assignment_or_call_statement:     /*tree node*/
     variable_or_function_access_maybe_assignment rest_of_statement   {if(myDebugPart2){msg("%d assignment_or_call_statement:1---", block);}
                                                                         /*rest_of_statement can be empty, or :=*/
+                                                                        TN tempTreeNode;
+                                                                        if($1->tag == VAR_NODE){
+                                                                          tempTreeNode = makeAssignNode($1, $2);
+                                                                          treeNodeToString(tempTreeNode, 1);
+                                                                          $$ = tempTreeNode;
+                                                                        }
                                                                      }
   ;
 
-variable_or_function_access_maybe_assignment:
-    identifier                                            {/*var name or
-                                                          parameterless procedure call or
-                                                          name of current function (for setting return)*/
-                                                            if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
-                                                            $$ = $1;
+variable_or_function_access_maybe_assignment:    /*tree node*/
+    identifier                                            {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
+                                                            //if(variable name){
+                                                            $$ = makeVarNode($1);
+                                                            //}
+                                                            /*check if function name of current function definition (for setting return value)
+                                                              create function return node (or something)
+                                                            */
+                                                            /*check if a procedure call name (that has no parameters)
+                                                              go get this procedures top node, or create it i guess
+                                                            */
                                                           }
   | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
   | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}/*example:    foo(x)^ := 6  */}
   ;
 
-rest_of_statement:
+rest_of_statement:  /*tree node*/
     /* Empty */                                           {if(myDebugPart2){msg("%d rest_of_statement:0---EMPTY", block);}}
   | LEX_ASSIGN expression                                 {if(myDebugPart2){msg("%d rest_of_statement:1---", block);}
-                                                             treeNodeToString($2);
-                                                             /*cureently only handles simple expression, 1 term*/
+                                                             /*curently only handles simple expression, 1 term*/
                                                              $$ = $2;
                                                           }
   ;

@@ -5,11 +5,14 @@
 Program T2L80_ok;
 
 var
-
+   x : Integer;
+   y : Real;
    k : Boolean;
 
 begin
 
+   x := 45;
+   y := -3.6;
    k := False
 
 end.

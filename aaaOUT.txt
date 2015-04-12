@@ -1,0 +1,40 @@
+ #    2
+ #    3
+ #    4
+ #    5
+ #    6
+ #    7
+ #    8
+				# b_global_decl (X, alignment = 4, size = 4)
+.globl X
+	.data
+	.align	4
+	.type	X, @object
+	.size	X, 4
+X:
+	.zero	4
+ #    9
+				# b_global_decl (Y, alignment = 8, size = 8)
+.globl Y
+	.align	8
+	.type	Y, @object
+	.size	Y, 8
+Y:
+	.zero	8
+ #   10
+				# b_global_decl (K, alignment = 1, size = 1)
+.globl K
+	.align	1
+	.type	K, @object
+	.size	K, 1
+K:
+	.zero	1
+ #   11
+ #   12
+ #   13
+ #   14
+ #   15
+ #   16
+ #   17
+ #   18
+ #   19
