@@ -95,13 +95,15 @@ void initRootOfUnRP(TYPE type); //prototype
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
 %type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type
     new_structured_type pointer_domain_type functiontype
-%type <y_int> constant number unsigned_number LEX_INTCONST LEX_REALCONST
+%type <y_int> constant number LEX_INTCONST sign
+%type <y_real> LEX_REALCONST
 //%type <y_single>
-%type <y_char> sign '+' '-'
+%type <y_char> '+' '-'
 //s%type <y_bool>
 
 %type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
-    simple_expression
+    simple_expression rest_of_statement unsigned_number factor signed_factor primary
+    signed_primary term
 
 /*END OUR ADDED*/
 
@@ -213,7 +215,7 @@ typename:
   ;
 
 identifier:  /*ST_ID*/
-    LEX_ID          {if(myDebugPart1 | myDebugPart2){msg("Found in identifier:1---");}$$ = st_enter_id($1);}
+    LEX_ID          {if(myDebugPart1 | myDebugPart2){msg("\n %d Found in identifier:1---", block);} $$ = st_enter_id($1);}
   ;
 
 new_identifier:
@@ -326,19 +328,41 @@ constant:
   | constant_literal              {}
   ;
 
-number:
-    sign unsigned_number            {if(myDebugPart1){msg("Found in number:1---");} if($1 == '-')$$=-$2; else $$=$2;}
-  | unsigned_number                 {if(myDebugPart1){msg("Found in number:2---");} $$=$1;}
+number:     /*stripped to all ints, could be a problem. currently only effects subranges*/
+    sign unsigned_number            {if(myDebugPart1){msg("Found in number:1---");}
+                                        long tempInt;
+                                        if($2->tag == REALCONSTANT){
+                                          tempInt = (long)$2->u.realconstant;
+                                        }
+                                        else{
+                                          tempInt = $2->u.intconstant;
+                                        }
+                                        if($1 == 1)$$=-tempInt; else $$=tempInt;
+                                    }
+  | unsigned_number                 {if(myDebugPart1){msg("Found in number:2---");}
+                                        long tempInt;
+                                        if($1->tag == REALCONSTANT){
+                                          tempInt = (long)$1->u.realconstant;
+                                        }
+                                        else{
+                                          tempInt = $1->u.intconstant;
+                                        }
+                                        $$= tempInt;
+                                    }
   ;
 
-unsigned_number:
-    LEX_INTCONST                    {if(myDebugPart1){msg("Found in unsigned_number:1---");} $$ = $<y_int>1;}
-  | LEX_REALCONST                   {if(myDebugPart1){msg("Found in unsigned_number:2---");} $$ = $<y_real>1;}
+unsigned_number:  /*TREE NODE*/
+    LEX_INTCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in unsigned_number:INT CONST:%ld---",block, $1);}
+                                      $$ = makeIntConstNode($1);
+                                    }
+  | LEX_REALCONST                   {if(myDebugPart1 | myDebugPart2){msg("%d Found in unsigned_number:REAL CONST:%f---",block, $1);}
+                                      $$ = makeRealConstNode($1);
+                                    }
   ;
 
 sign:
-    '+'                            {if(myDebugPart1){msg("Found in sign:1---");} $$ = $1;}
-  | '-'                            {if(myDebugPart1){msg("Found in sign:2---");} $$ = $1;}
+    '+'                            {if(myDebugPart1 | myDebugPart2){msg("%d Found in sign:1---POSITIVE",block);} $$ = 0;}
+  | '-'                            {if(myDebugPart1 | myDebugPart2){msg("%d Found in sign:2---NEGATIVE",block);} $$ = 1;}
   ;
 
 constant_literal:
@@ -923,7 +947,9 @@ actual_parameter:
 /* ASSIGNMENT and procedure calls */
 
 assignment_or_call_statement:
-    variable_or_function_access_maybe_assignment rest_of_statement   {/*rest_of_statement can be empty, or :=*/}
+    variable_or_function_access_maybe_assignment rest_of_statement   {if(myDebugPart2){msg("%d assignment_or_call_statement:1---", block);}
+                                                                        /*rest_of_statement can be empty, or :=*/
+                                                                     }
   ;
 
 variable_or_function_access_maybe_assignment:
@@ -938,8 +964,12 @@ variable_or_function_access_maybe_assignment:
   ;
 
 rest_of_statement:
-    /* Empty */
-  | LEX_ASSIGN expression      {/*LEX_ASSIGN  is := */   /*will need to pass $2 in some form, at some point*/}
+    /* Empty */                                           {if(myDebugPart2){msg("%d rest_of_statement:0---EMPTY", block);}}
+  | LEX_ASSIGN expression                                 {if(myDebugPart2){msg("%d rest_of_statement:1---", block);}
+                                                             treeNodeToString($2);
+                                                             /*cureently only handles simple expression, 1 term*/
+                                                             $$ = $2;
+                                                          }
   ;
 
 standard_procedure_statement:
@@ -1056,49 +1086,77 @@ expression:     /*tree node*/      /*net result of evaluating an expression, one
                                                           /* probably unused for part 2*/
                                                          }
   | simple_expression                                    {if(myDebugPart2){msg("%d expression:3---", block);}
-                                                          /* confirmed used in Part2 -- can break down into just a const*/
+                                                          $$ = $1;
                                                          }
   ;
 
 simple_expression:   /*tree node*/ /*simple statements leave the stack unchanged*/
-    term                                                {if(myDebugPart2){msg("%d simple_expression:1---", block);}}
+    term                                                {if(myDebugPart2){msg("%d simple_expression:1---", block);}
+                                                          $$ = $1;
+                                                        }
   | simple_expression adding_operator term              {if(myDebugPart2){msg("%d simple_expression:2---", block);}}
   | simple_expression LEX_SYMDIFF term                  {if(myDebugPart2){msg("%d simple_expression:3---", block);}}
   | simple_expression LEX_OR term                       {if(myDebugPart2){msg("%d simple_expression:4---", block);}}
   | simple_expression LEX_XOR term                      {if(myDebugPart2){msg("%d simple_expression:5---", block);}}
   ;
 
-term:
-    signed_primary                                      {if(myDebugPart2){msg("%d term:1---", block);}}
+term:              /*TREE NODE*/
+    signed_primary                                      {if(myDebugPart2){msg("%d term:1---", block);}
+                                                          $$ = $1;
+                                                        }
   | term multiplying_operator signed_primary            {if(myDebugPart2){msg("%d term:2---", block);}}
   | term LEX_AND signed_primary                         {if(myDebugPart2){msg("%d term:3---", block);}}
   ;
 
-signed_primary:
-    primary                                             {if(myDebugPart2){msg("%d signed_primary:1---", block);}}
-  | sign signed_primary                                 {if(myDebugPart2){msg("%d signed_primary:2---", block);}}
+signed_primary:   /*TREE NODE*/
+    primary                                             {if(myDebugPart2){msg("%d signed_primary:1---", block);}
+                                                          $$ = $1;
+                                                        }
+  | sign signed_primary                                 {if(myDebugPart2){msgn("%d signed_primary:", block);}
+                                                          if($1 == 1){
+                                                            if(myDebugPart2){msg(" NEGATIVE---");}
+                                                            $$ = makeNegNumNode($2);
+                                                          }else{
+                                                            if(myDebugPart2){msg(" POSITIVE---");}
+                                                            $$ = $2;
+                                                          }
+                                                        }
   ;
 
-primary:
-    factor                                              {if(myDebugPart2){msg("%d primary:1---", block);}}
+primary:     /*TREE NODE*/
+    factor                                              {if(myDebugPart2){msg("%d primary:1---", block);}
+                                                          $$ = $1;
+                                                        }
   | primary LEX_POW factor                              {if(myDebugPart2){msg("%d primary:2---", block);}
                                                           /*idk what a LEX_POW is*/
                                                         }
   | primary LEX_POWER factor                            {if(myDebugPart2){msg("%d primary:3---", block);}
                                                           /*LEX_POWER  **   */
                                                         }
-  | primary LEX_IS typename                             {if(myDebugPart2){msg("%d primary:4---", block);}}
+  | primary LEX_IS typename                             {if(myDebugPart2){msg("%d primary:4---", block);}
+                                                          /*NOT SURE IF leX_IS NEEDS TO BE HANDLED*/
+                                                        }
   ;
 
-signed_factor:
-    factor                                              {if(myDebugPart2){msg("%d signed_factor:1---", block);}}
-  | sign signed_factor                                  {if(myDebugPart2){msg("%d signed_factor:2---", block);}}
+signed_factor:  /*TREE NODE*/
+    factor                                              {if(myDebugPart2){msg("%d signed_factor:1---", block);}
+                                                          $$ = $1;
+                                                        }
+  | sign signed_factor                                  {if(myDebugPart2){msg("%d signed_factor:2---", block);}
+                                                          if($1 == '-'){
+                                                            $$ = makeNegNumNode($2);
+                                                          }else{
+                                                            $$ = $2;
+                                                          }
+                                                        }
   ;
 
-factor:
+factor:     /*TREE NODE*/
     variable_or_function_access                         {if(myDebugPart2){msg("%d factor:1---", block);}}
   | constant_literal                                    {if(myDebugPart2){msg("%d factor:2---", block);}}
-  | unsigned_number                                     {if(myDebugPart2){msg("%d factor:3---", block);}}
+  | unsigned_number                                     {if(myDebugPart2){msg("%d factor:3---", block);}
+                                                          $$ = $1;  //int or real node
+                                                        }
   | set_constructor                                     {if(myDebugPart2){msg("%d factor:4---", block);}}
   | LEX_NOT signed_factor                               {if(myDebugPart2){msg("%d factor:5---", block);}}
   | address_operator factor                             {if(myDebugPart2){msg("%d factor:6---", block);}}

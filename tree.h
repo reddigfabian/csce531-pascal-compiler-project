@@ -1,6 +1,6 @@
 #include "symtab.h"
 
-typedef enum{INTCONSTANT, REALCONSTANT, ID_NODE, TYPE_NODE}tagtype;
+typedef enum{INTCONSTANT, REALCONSTANT, ID_NODE, TYPE_NODE, NEGNUM}tagtype;
 
 typedef struct tn{
   tagtype tag;
@@ -9,12 +9,13 @@ typedef struct tn{
 
     long intconstant;
     double realconstant;
-    ST_ID id;
+    struct tn *negNode;
 
-		struct{
-			ST_ID id;
-      TYPE type;
-		}type_node;
+    // ST_ID id;
+		// struct{
+		// 	ST_ID id;
+    //   TYPE type;
+		// }type_node;
 
   }u;
 
@@ -27,18 +28,19 @@ typedef struct LoIDs{
   struct LoIDs *next;
 }listOfIds, *LD;
 
-/*
-typedef struct arrayListofSubranges{
-  TYPE data;
-  struct arrayListofSubranges *next;
-}aLoSR, *LSR;
-*/
-
 
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
-TN makeIDNode(ST_ID id);
-TN makeTypeNode(ST_ID id, TYPE type);
+TN makeNegNumNode(TN numNode);
+
+
+void treeNodeToString(TN node);
+char *treeToString(TN node);
+
+//TN makeIDNode(ST_ID id);
+//TN makeTypeNode(ST_ID id, TYPE type);
+
+void genBackend(TN startNode);
 
 LD addToList(ST_ID id, LD oldList);
 INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);

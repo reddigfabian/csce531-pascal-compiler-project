@@ -107,6 +107,7 @@ backup:
 	-mv ../$(PROJECTNAME).tar.gz $(BACKUPFOLDER)/$(PROJECTNAME).tar.gz
 
 test:
+	-make -B
 	-./ppc3 < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
 
 error:

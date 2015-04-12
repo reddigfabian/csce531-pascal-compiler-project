@@ -427,6 +427,12 @@ A subrange will only ever exist with integer bounds.
 
 It doesn't matter that the symtab dump command outputs the type of pascal variables as their C equivalents (e.g. A real has type double when printed out via msg() command)
 
+============================QUESTION========================================================================================================================================
+
+lex_POW?
+
+
+
 ============================TO DO========================================================================================================================================
 
 Handle unresolved pointers:

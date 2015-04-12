@@ -5,12 +5,11 @@
 Program T2L80_ok;
 
 var
-   i,j,k : Integer;
+
+   k : Boolean;
 
 begin
 
-   i := 5;
-   j := i;
-   k := 14;
+   k := False
 
 end.
