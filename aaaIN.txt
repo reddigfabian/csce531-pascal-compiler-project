@@ -5,14 +5,17 @@
 Program T2L80_ok;
 
 var
-   x : Integer;
+   x,j,i : Integer;
    y : Real;
    k : Boolean;
 
 begin
 
-   x := 45;
-   y := -3.6;
-   k := False
+   i := 5;
+   j := 35;
+   x := j - i;
+   y := j/i;
+
+
 
 end.

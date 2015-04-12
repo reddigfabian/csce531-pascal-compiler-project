@@ -1,6 +1,8 @@
 #include "symtab.h"
 
-typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, TYPE_NODE, NEGNUM, ASSIGN_NODE}tagtype;
+typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
+
+typedef enum{ADD, SUB, REAL_DIV, INT_DIV, MOD, MULT}binopType;
 
 typedef struct tn{
   tagtype tag;
@@ -11,16 +13,18 @@ typedef struct tn{
     double realconstant;
     struct tn *negNode;
     ST_ID varName;
+    int boolean;
 
     struct{
         struct tn *varNode;
         struct tn *expression;
     }assign_node;
 
-		// struct{
-		// 	ST_ID id;
-    //   TYPE type;
-		// }type_node;
+    struct{
+        binopType binTag;
+        struct tn *left;
+        struct tn *right;
+    }binop;
 
   }u;
 
@@ -39,27 +43,16 @@ TN makeRealConstNode(double realconstant);
 TN makeNegNumNode(TN numNode);
 TN makeVarNode(ST_ID id);
 TN makeAssignNode(TN var, TN exp);
+TN makeBoolNode(int tempBool);
+TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType);
 
 
 void treeNodeToString(TN node, int isTop);
 char *treeToString(TN node);
 
 
-//TN makeTypeNode(ST_ID id, TYPE type);
-
 void genBackend(TN startNode);
 
 LD addToList(ST_ID id, LD oldList);
 INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);
 INDEX_LIST addToUnresolvedPtrs(TYPE object, INDEX_LIST root);
-
-
-/*
-typedef enum {
-    TYVOID, TYFLOAT, TYDOUBLE, TYLONGDOUBLE, TYSIGNEDLONGINT,
-    TYSIGNEDSHORTINT, TYSIGNEDINT, TYUNSIGNEDLONGINT,
-    TYUNSIGNEDSHORTINT, TYUNSIGNEDINT, TYUNSIGNEDCHAR,
-    TYSIGNEDCHAR, TYSTRUCT, TYUNION, TYENUM, TYARRAY, TYSET,
-    TYFUNC, TYPTR, TYBITFIELD, TYSUBRANGE, TYERROR
-} TYPETAG;
-*/

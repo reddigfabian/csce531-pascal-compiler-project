@@ -67,6 +67,22 @@ TN makeAssignNode(TN var, TN expr){
   return tempTN;
 }
 
+TN makeBoolNode(int tempBool){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = BOOL_NODE;
+  tempTN->u.boolean = tempBool;
+  return tempTN;
+}
+
+TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = BINOP_NODE;
+  tempTN->u.binop.binTag = binTagType;
+  tempTN->u.binop.left = leftSide;
+  tempTN->u.binop.right = rightSide;
+  return tempTN;
+}
+
 
 void genBackend(TN startNode){
   /*
@@ -92,6 +108,11 @@ void treeNodeToString(TN node, int isTop){
           else msgn("REALCONSTANT node: %f",node->u.realconstant);
           break;
 
+          case BOOL_NODE:
+          if(isTop) msg("BOOL_NODE node: %d",node->u.boolean);
+          else msgn("BOOL_NODE node: %d",node->u.boolean);
+              break;
+
       case NEGNUM:
           msgn("NEGNUM node --> ");
           treeNodeToString(node->u.negNode, 0);
@@ -99,6 +120,14 @@ void treeNodeToString(TN node, int isTop){
 
       case VAR_NODE:
           msg("VAR_NODE node: %s",st_get_id_str(node->u.varName));
+          break;
+
+      case BINOP_NODE:
+          msgn(" LEFT: ");
+          treeNodeToString(node->u.binop.left, 0);
+          msgn("BINOP_NODE %d ", node->u.binop.binTag);
+          msgn("RIGHT: ");
+          treeNodeToString(node->u.binop.right, 0);
           break;
 
       case ASSIGN_NODE:

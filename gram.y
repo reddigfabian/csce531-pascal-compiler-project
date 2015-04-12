@@ -95,7 +95,7 @@ void initRootOfUnRP(TYPE type); //prototype
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
 %type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type
     new_structured_type pointer_domain_type functiontype
-%type <y_int> constant number LEX_INTCONST sign
+%type <y_int> constant number LEX_INTCONST sign adding_operator multiplying_operator
 %type <y_real> LEX_REALCONST
 //%type <y_single>
 %type <y_char> '+' '-'
@@ -103,7 +103,9 @@ void initRootOfUnRP(TYPE type); //prototype
 
 %type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
     simple_expression rest_of_statement unsigned_number factor signed_factor primary
-    signed_primary term assignment_or_call_statement
+    signed_primary term assignment_or_call_statement constant_literal predefined_literal
+    variable_or_function_access variable_or_function_access_no_standard_function
+
 
 /*END OUR ADDED*/
 
@@ -365,20 +367,20 @@ sign:
   | '-'                            {if(myDebugPart1 | myDebugPart2){msg("%d Found in sign:2---NEGATIVE",block);} $$ = 1;}
   ;
 
-constant_literal:
-    string
-  | predefined_literal
+constant_literal:        /*TREE NODE*/
+    string                         {/*might be needed later*/}
+  | predefined_literal             {$$ = $1;}
   ;
 
-predefined_literal:
-    LEX_NIL
-  | p_FALSE
-  | p_TRUE
+predefined_literal:     /*TREE NODE*/
+    LEX_NIL                        {/*idk if used*/}
+  | p_FALSE                        {$$ = makeBoolNode(0);}
+  | p_TRUE                         {$$ = makeBoolNode(1);}
   ;
 
-string:
-    LEX_STRCONST
-  | string LEX_STRCONST
+string:                  /*TREE NODE*/
+    LEX_STRCONST                    {/*might be needed later*/}
+  | string LEX_STRCONST             {/*might be needed later*/}
   ;
 
 type_definition_part:
@@ -1104,8 +1106,15 @@ simple_expression:   /*tree node*/ /*simple statements leave the stack unchanged
     term                                                {if(myDebugPart2){msg("%d simple_expression:1---", block);}
                                                           $$ = $1;
                                                         }
-  | simple_expression adding_operator term              {if(myDebugPart2){msg("%d simple_expression:2---", block);}}
-  | simple_expression LEX_SYMDIFF term                  {if(myDebugPart2){msg("%d simple_expression:3---", block);}}
+  | simple_expression adding_operator term              {if(myDebugPart2){msg("%d simple_expression:2---", block);}
+                                                          binopType tempBinopType;
+
+                                                          if($2 == 1) tempBinopType = ADD;
+                                                          else tempBinopType = SUB;
+
+                                                          $$ = makeBinopNode($1, $3, tempBinopType);
+                                                        }
+  | simple_expression LEX_SYMDIFF term                  {if(myDebugPart2){msg("%d simple_expression:3---", block);}} //NO CLUE WHAT THIS IS >.<
   | simple_expression LEX_OR term                       {if(myDebugPart2){msg("%d simple_expression:4---", block);}}
   | simple_expression LEX_XOR term                      {if(myDebugPart2){msg("%d simple_expression:5---", block);}}
   ;
@@ -1114,7 +1123,21 @@ term:              /*TREE NODE*/
     signed_primary                                      {if(myDebugPart2){msg("%d term:1---", block);}
                                                           $$ = $1;
                                                         }
-  | term multiplying_operator signed_primary            {if(myDebugPart2){msg("%d term:2---", block);}}
+  | term multiplying_operator signed_primary            {if(myDebugPart2){msg("%d term:2---", block);}
+                                                          binopType tempBinopType;
+                                                          if($2 == 0){//integer division
+                                                            tempBinopType = INT_DIV;
+                                                          }else if($2 == 1){//modulus
+                                                            tempBinopType = MOD;
+                                                          }else if($2 == 2){//real division
+                                                            tempBinopType = REAL_DIV;
+                                                          }else if($2 == 3){//multiplication
+                                                            tempBinopType = MULT;
+                                                          }
+
+                                                          $$ = makeBinopNode($1, $3, tempBinopType);
+
+                                                        }
   | term LEX_AND signed_primary                         {if(myDebugPart2){msg("%d term:3---", block);}}
   ;
 
@@ -1162,8 +1185,12 @@ signed_factor:  /*TREE NODE*/
   ;
 
 factor:     /*TREE NODE*/
-    variable_or_function_access                         {if(myDebugPart2){msg("%d factor:1---", block);}}
-  | constant_literal                                    {if(myDebugPart2){msg("%d factor:2---", block);}}
+    variable_or_function_access                         {if(myDebugPart2){msg("%d factor:1---", block);}
+                                                          $$ = $1;
+                                                        }
+  | constant_literal                                    {if(myDebugPart2){msg("%d factor:2---", block);}
+                                                          $$ = $1;
+                                                        }
   | unsigned_number                                     {if(myDebugPart2){msg("%d factor:3---", block);}
                                                           $$ = $1;  //int or real node
                                                         }
@@ -1177,12 +1204,16 @@ address_operator:
   ;
 
 variable_or_function_access:
-    variable_or_function_access_no_standard_function    {if(myDebugPart2){msg("%d variable_or_function_access:1---", block);}}
+    variable_or_function_access_no_standard_function    {if(myDebugPart2){msg("%d variable_or_function_access:1---", block);}
+                                                          $$ = $1;
+                                                        }
   | standard_functions                                  {if(myDebugPart2){msg("%d variable_or_function_access:2---", block);}}
   ;
 
 variable_or_function_access_no_standard_function:
-    identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}}
+    identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}
+                                                          $$ = makeVarNode($1);
+                                                        }
   | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---", block);}}
   ;
 
@@ -1276,16 +1307,16 @@ relational_operator:
   | '>'
   ;
 
-multiplying_operator:
-    LEX_DIV
-  | LEX_MOD
-  | '/'
-  | '*'
+multiplying_operator:    /*int type*/
+    LEX_DIV                  {$$ = 0;}
+  | LEX_MOD                  {$$ = 1;}
+  | '/'                      {$$ = 2;}
+  | '*'                      {$$ = 3;}
   ;
 
-adding_operator:
-    '-'
-  | '+'
+adding_operator:   /*int type*/
+    '-'                     {$$ = 0;}
+  | '+'                     {$$ = 1;}
   ;
 
 semi:
