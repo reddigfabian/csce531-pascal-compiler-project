@@ -1,4 +1,5 @@
 #include "symtab.h"
+#include "backend-x86.h"
 
 typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
 
@@ -13,11 +14,11 @@ typedef struct tn{
     double realconstant;
     struct tn *negNode;
     int boolean;
-          
+
     struct{
       ST_ID varName;
       int isInstalled;
-      ST_DR *DR;
+      ST_DR DR;
       STDR_TAG DRtag;
       TYPE type;
       TYPETAG typetag;
@@ -49,7 +50,7 @@ typedef struct LoIDs{
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
 TN makeNegNumNode(TN numNode);
-TN makeVarNode(ST_ID id);
+TN makeVarNode(ST_ID id, int block);
 TN makeAssignNode(TN var, TN exp);
 TN makeBoolNode(int tempBool);
 TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType);

@@ -967,7 +967,7 @@ assignment_or_call_statement:     /*tree node*/
 variable_or_function_access_maybe_assignment:    /*tree node*/
     identifier                                            {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
                                                             //if(variable name){
-                                                            $$ = makeVarNode($1);
+                                                            $$ = makeVarNode($1, &block);
                                                             //}
                                                             /*check if function name of current function definition (for setting return value)
                                                               create function return node (or something)
@@ -1216,7 +1216,7 @@ variable_or_function_access:
 
 variable_or_function_access_no_standard_function:
     identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}
-                                                          $$ = makeVarNode($1);
+                                                          $$ = makeVarNode($1, &block);
                                                         }
   | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---", block);}}
   ;
