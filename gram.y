@@ -56,7 +56,7 @@
 void set_yydebug(int);
 void yyerror(const char *);
 
-int myDebugPart1 = 0;
+int myDebugPart1 = 1;
 int myDebugPart2 = 1;
 int myDump = 0;
 int block;
@@ -105,6 +105,7 @@ void initRootOfUnRP(TYPE type); //prototype
     simple_expression rest_of_statement unsigned_number factor signed_factor primary
     signed_primary term assignment_or_call_statement constant_literal predefined_literal
     variable_or_function_access variable_or_function_access_no_standard_function
+
 
 
 /*END OUR ADDED*/
@@ -195,11 +196,11 @@ pascal_program:
   ;
 
 main_program_declaration:
-    program_heading semi any_global_declaration_part statement_part
+    program_heading semi any_global_declaration_part statement_part  {if(myDebugPart2){msg("%d main_program_declaration:1---",block);}}
   ;
 
 program_heading:
-    LEX_PROGRAM new_identifier optional_par_id_list
+    LEX_PROGRAM new_identifier optional_par_id_list            {if(myDebugPart2){msg("%d program_heading:1---%s",block,st_get_id_str($2));}}
   ;
 
 optional_par_id_list:
@@ -213,19 +214,19 @@ id_list:
   ;
 
 typename:
-    LEX_ID          {if(myDebugPart1){msg("Found in typename:1---");}$$ = st_enter_id($1);}
+    LEX_ID          {if(myDebugPart1 | myDebugPart2){msg("%d Found in typename:LEX_ID---%s",block, $1);}$$ = st_enter_id($1);}
   ;
 
 identifier:  /*ST_ID*/
-    LEX_ID          {if(myDebugPart1 | myDebugPart2){msg("\n %d Found in identifier:1---", block);} $$ = st_enter_id($1);}
+    LEX_ID          {if(myDebugPart1 | myDebugPart2){msg("\n %d identifier:LEX_ID---%s", block, $1);} $$ = st_enter_id($1);}
   ;
 
 new_identifier:
-    new_identifier_1    {if(myDebugPart1){msg("Found in new_identifier:1---");}  $$ = $1;}
+    new_identifier_1    {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier:new_identifier_1---%s",block, st_get_id_str($1));}  $$ = $1;}
   ;
 
 new_identifier_1:
-    LEX_ID              {if(myDebugPart1){msg("Found in new_identifier_1:1---");} $$ = st_enter_id($1);}
+    LEX_ID              {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:LEX_ID---%s",block,$1);} $$ = st_enter_id($1);}
 /* Standard Pascal constants */
   | p_MAXINT  {}
   | p_FALSE  {}
@@ -285,8 +286,9 @@ any_global_declaration_part:
 
 
 any_declaration_part:   /* var decls for local vars*/
-    /* empty */
-  | any_declaration_part any_decl {/*
+    /* empty */                     {if(myDebugPart2){msg("%d any_declaration_part:0---EMPTY",block);}}
+  | any_declaration_part any_decl {if(myDebugPart2){msg("%d any_declaration_part:1---",block);}
+                                    /*
                                     b_func_prologue()
                                     for each formal parameter (in left-right order)
                                       call b_store_formal_param()  //returns an offset, check with offset in sysm table to check for bugs in our compiler
@@ -298,14 +300,14 @@ any_declaration_part:   /* var decls for local vars*/
   ;
 
 any_decl:
-    simple_decl
-  | function_declaration
+    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---",block);}}
+  | function_declaration               {if(myDebugPart2){msg("%d any_decl:function_declaration---",block);}}
   ;
 
 simple_decl:
-    constant_definition_part           {if(myDebugPart1){msg("Found in simple_decl:1---");}}
-  | type_definition_part               {if(myDebugPart1){msg("Found in simple_decl:2---");}}
-  | variable_declaration_part          {if(myDebugPart1){msg("Found in simple_decl:3---");}}
+    constant_definition_part           {if(myDebugPart1 | myDebugPart2){msg("%d Found in simple_decl:constant_definition_part---",block);}}
+  | type_definition_part               {if(myDebugPart1 | myDebugPart2){msg("%d Found in simple_decl:type_definition_part---",block);}}
+  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d Found in simple_decl:variable_declaration_part---",block);}}
   ;
 
 /* constant definition part */
@@ -669,16 +671,13 @@ one_case_constant:
    using a simple inherited attribute of type int */
 
 variable_declaration_part:
-    LEX_VAR variable_declaration_list       {
-                                              /*for each, get the id by calling ty_query_ptr(),
-                                              then look up the id in the symbol table to get the stdr (which must be a TYPENAME),
-                                              then call ty_resolve_ptr()*/
-                                            }
+    LEX_VAR variable_declaration_list           {if(myDebugPart2){msg("%d variable_declaration_part---",block);}}
+
   ;
 
 variable_declaration_list:
-    variable_declaration
-  | variable_declaration_list variable_declaration
+    variable_declaration                            {if(myDebugPart2){msg("%d variable_declaration_list:1---",block);}}
+  | variable_declaration_list variable_declaration  {if(myDebugPart2){msg("%d variable_declaration_list:2---",block);}}
   ;
 
 variable_declaration:
@@ -751,8 +750,9 @@ function_declaration:
                 }
                 */
 
-    function_heading semi directive_list semi
-  | function_heading semi any_declaration_part statement_part semi    {/* statement_part semi
+    function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---",block);}}
+  | function_heading semi any_declaration_part statement_part semi    {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---",block);}
+                                                                              /* statement_part semi
                                                                             b_prepare_return( return type )  //TYVOID for procedures
                                                                             b_func_epilogue(func name)*/
                                                                       }
@@ -764,13 +764,13 @@ function_heading:
   ;
 
 directive_list:
-    directive
-  | directive_list semi directive
+    directive                       {if(myDebugPart2){msg("%d directive_list:directive---",block);}}
+  | directive_list semi directive   {if(myDebugPart2){msg("%d directive_list:directive_list---",block);}}
   ;
 
 directive:
-    LEX_FORWARD
-  | LEX_EXTERNAL
+    LEX_FORWARD                     {if(myDebugPart2){msg("%d directive:LEX_FORWARD---",block);}}
+  | LEX_EXTERNAL                    {if(myDebugPart2){msg("%d directive:LEX_EXTERNAL---",block);}}
   ;
 
 functiontype:
@@ -811,11 +811,15 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end, could be func/procedure def*/}
+    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end, could be func/procedure def*/
+                                                        if(myDebugPart2){msg("%d compound_statement:BEGIN and END---", block);}
+                                                      }
   ;
 
 statement_sequence:
-    statement                                         {/*last stement in Pascal doesnt need a semi (optional, works either way)*/}
+    statement                                         {/*last stement in Pascal doesnt need a semi (optional, works either way)*/
+
+                                                      }
   | statement_sequence semi statement
   ;
 

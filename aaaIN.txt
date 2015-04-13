@@ -5,17 +5,16 @@
 Program T2L80_ok;
 
 var
-   x,j,i : Integer;
-   y : Real;
-   k : Boolean;
+   i : Integer;
+   x : Real;
+
+Function get_real : Real;
+  begin
+     x := 56.8
+  end; { get_real }
 
 begin
 
    i := 5;
-   j := 35;
-   x := j - i;
-   y := j/i;
-
-
 
 end.

@@ -5,7 +5,9 @@
 
 
 /*
-typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, TYPE_NODE, NEGNUM, ASSIGN_NODE}tagtype;
+typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
+
+typedef enum{ADD, SUB, REAL_DIV, INT_DIV, MOD, MULT}binopType;
 
 typedef struct tn{
   tagtype tag;
@@ -16,16 +18,18 @@ typedef struct tn{
     double realconstant;
     struct tn *negNode;
     ST_ID varName;
+    int boolean;
 
     struct{
         struct tn *varNode;
         struct tn *expression;
     }assign_node;
 
-		// struct{
-		// 	ST_ID id;
-    //   TYPE type;
-		// }type_node;
+    struct{
+        binopType binTag;
+        struct tn *left;
+        struct tn *right;
+    }binop;
 
   }u;
 
@@ -84,13 +88,48 @@ TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
 }
 
 
-void genBackend(TN startNode){
+void genBackendAssigment(TN startNode){
   /*
   b_negates(TYPETAG type)
   deal with unary negative
 
+  typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
 
+  typedef enum{ADD, SUB, REAL_DIV, INT_DIV, MOD, MULT}binopType;
   */
+  switch(startNode->tag){
+
+    case INTCONSTANT:
+
+        break;
+
+    case REALCONSTANT:
+
+        break;
+
+    case BOOL_NODE:
+
+        break;
+
+    case NEGNUM:
+
+        break;
+
+    case VAR_NODE:
+
+        break;
+
+    case BINOP_NODE:
+
+        break;
+
+    case ASSIGN_NODE:
+
+        break;
+
+    default:
+      bug("BACKEND ASSIGNEMTN -- THIS IS AN ERROR");
+    }
 }
 
 void treeNodeToString(TN node, int isTop){
@@ -142,13 +181,6 @@ void treeNodeToString(TN node, int isTop){
           if(isTop) msg("NULL -- THIS IS AN ERROR");
           else msgn("NULL -- THIS IS AN ERROR");
     }
-}
-
-
-char *treeToString(TN node){
-    //init
-    //recurse
-    //return
 }
 
 
