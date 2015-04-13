@@ -5,16 +5,36 @@
 Program T2L80_ok;
 
 var
-   i : Integer;
-   x : Real;
+   i,j,k : Integer; {# b_global_decl (K, alignment = 4, size = 4)
+                     # b_global_decl (J, alignment = 4, size = 4)
+                     # b_global_decl (I, alignment = 4, size = 4)}
 
-Function get_real : Real;
-  begin
-     x := 56.8
-  end; { get_real }
+   x : Real;        {# b_global_decl (X, alignment = 8, size = 8)}
 
-begin
+begin               {# b_func_prologue (main)}
 
-   i := 5;
+   i := 5;          {# b_push_ext_addr (I)
+                     # b_push_const_int (5)
+                     # b_assign (signed long int)
+                     # b_pop ()}
 
-end.
+   j := -3;         {# b_push_ext_addr (J)
+                     # b_push_const_int (-3)
+                     # b_assign (signed long int)
+                     # b_pop ()}
+
+   k := i + j;      {# b_push_ext_addr (K)
+                     # b_push_ext_addr (I)
+                     # b_deref (signed long int)
+                     # b_push_ext_addr (J)
+                     # b_deref (signed long int)
+                     # b_arith_rel_op ( + , signed long int)
+                     # b_assign (signed long int)
+                     # b_pop ()}
+
+   x := 5.4         {# b_push_ext_addr (X)
+                     # b_push_const_double (5.4000000000000004e+00)
+                     # b_assign (double)
+                     # b_pop ()}
+
+end.                {# b_func_epilogue (main)}

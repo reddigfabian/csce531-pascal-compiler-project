@@ -12,8 +12,16 @@ typedef struct tn{
     long intconstant;
     double realconstant;
     struct tn *negNode;
-    ST_ID varName;
     int boolean;
+          
+    struct{
+      ST_ID varName;
+      int isInstalled;
+      ST_DR *DR;
+      STDR_TAG DRtag;
+      TYPE type;
+      TYPETAG typetag;
+    }var_node;
 
     struct{
         struct tn *varNode;

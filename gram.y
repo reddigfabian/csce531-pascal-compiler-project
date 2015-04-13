@@ -958,7 +958,7 @@ assignment_or_call_statement:     /*tree node*/
                                                                         TN tempTreeNode;
                                                                         if($1->tag == VAR_NODE){
                                                                           tempTreeNode = makeAssignNode($1, $2);
-                                                                          treeNodeToString(tempTreeNode, 1);
+                                                                          if(myDebugPart2){treeNodeToString(tempTreeNode, 1);}
                                                                           $$ = tempTreeNode;
                                                                         }
                                                                      }

@@ -3,6 +3,16 @@
 #include "tree.h"
 #include "types.h"
 
+/*
+typedef enum {
+    TYVOID, TYFLOAT, TYDOUBLE, TYLONGDOUBLE, TYSIGNEDLONGINT,
+    TYSIGNEDSHORTINT, TYSIGNEDINT, TYUNSIGNEDLONGINT,
+    TYUNSIGNEDSHORTINT, TYUNSIGNEDINT, TYUNSIGNEDCHAR,
+    TYSIGNEDCHAR, TYSTRUCT, TYUNION, TYENUM, TYARRAY, TYSET,
+    TYFUNC, TYPTR, TYBITFIELD, TYSUBRANGE, TYERROR
+} TYPETAG;
+*/
+
 
 /*
 typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
@@ -17,8 +27,16 @@ typedef struct tn{
     long intconstant;
     double realconstant;
     struct tn *negNode;
-    ST_ID varName;
     int boolean;
+
+    struct{
+      ST_ID varName;
+      int isInstalled;
+      ST_DR *DR;
+      STDR_TAG DRtag;
+      TYPE type;
+      TYPETAG typetag;
+    }var_node;
 
     struct{
         struct tn *varNode;
@@ -59,7 +77,33 @@ TN makeNegNumNode(TN numNode){
 TN makeVarNode(ST_ID id){
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = VAR_NODE;
-  tempTN->u.varName = id;
+  tempTN->u.var_node.varName = id;
+
+  ST_DR tempDR = st_lookup(id, $block);
+  if(tempDR != NULL){
+      tempTN->u.var_node.isInstalled = 1;
+      tempTN->u.var_node.DR = tempDR;
+      tempTN->u.var_node.DRtag = tempDR->tag;
+      if(tempDR->tag == GDECL | tempDR->tag == LDECL | tempDR->tag == PDECL | tempDR->tag == FDECL){
+          tempTN->u.var_node.type = tempDR->u.decl.type;
+          tempTN->u.var_node.typetag = ty_query(tempDR->u.decl.type);
+      }else if(tempDR->tag == ECONST){
+          tempTN->u.var_node.type = tempDR->u.econst.type;
+          tempTN->u.var_node.typetag = ty_query(tempDR->u.econst.type);
+      }else if(tempDR->tag == TYPENAME){
+          tempTN->u.var_node.type = tempDR->u.typename.type;
+          tempTN->u.var_node.typetag = ty_query(tempDR->u.typename.type);
+      }else{
+          bug("Bad DR tag in makeVarNode()");
+      }
+  }else{ //tempDR == NULL
+      tempTN->u.var_node.isInstalled = 0;
+      tempTN->u.var_node.DR = NULL;
+      tempTN->u.var_node.DRtag = NULL;
+      tempTN->u.var_node.type = NULL;
+      tempTN->u.var_node.typetag = NULL;
+  }
+
   return tempTN;
 }
 
@@ -87,51 +131,98 @@ TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
   return tempTN;
 }
 
+/*
+**********BACKEND STUFF*******
+*/
 
-void genBackendAssigment(TN startNode){
+TYPETAG genBackendAssigment(TN startNode, int FromExpr){
   /*
   b_negates(TYPETAG type)
   deal with unary negative
-
-  typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
 
   typedef enum{ADD, SUB, REAL_DIV, INT_DIV, MOD, MULT}binopType;
   */
   switch(startNode->tag){
 
     case INTCONSTANT:
-
-        break;
+        long tempInt = startNode->u.intconstant;
+        b_push_const_int(tempInt);
+        return TYSIGNEDLONGINT;   //not 100% yet
 
     case REALCONSTANT:
-
-        break;
+        double tempReal = startNode->u.realconstant;
+        b_push_const_double(tempReal);
+        return TYDOUBLE;  //not 100% yet
 
     case BOOL_NODE:
-
-        break;
+          //HANDLE BOOLEAN NODE BACKEND
+        return NULL;
 
     case NEGNUM:
+        TN tempNode = startNode->u.negNode;
+        tagtype tempTagType = tempNode->tag;
+        if(tag == INTCONSTANT){
+          long tempInt = -1 * tempNode->u.intconstant;
+          b_push_const_int(tempInt);
+          return TYSIGNEDLONGINT;   //not 100% yet
 
-        break;
+        }else if(tag == REALCONSTANT){
+          double tempReal = -1 * tempNode->u.realconstant;
+          b_push_const_double(tempReal);
+          return TYDOUBLE;  //not 100% yet
+
+        }else{
+          bug("unchecked tag in NEGNUM genBackendAssigment()");
+          return NULL;
+        }
 
     case VAR_NODE:
-
-        break;
+        if(fromExpr){
+          if(startNode->u.var_node.isInstalled){
+              char *tempIdString = st_get_id_str(startNode->u.var_node.varName);
+              b_push_ext_addr(tempIdString);
+              TYPETAG tempTypeTag = startNode->u.var_node.typetag;
+              b_deref(tempTypeTag);
+              return tempTypeTag;
+          }else{ //var_node not installed in symbol table
+              error("variable in expression has not been initilized");
+              return NULL;
+          }
+        }else{ //var is on the left hand side of an assignment, dont deref
+          char *tempIdString = st_get_id_str(startNode->u.varName);
+          b_push_ext_addr(tempIdString);
+          TYPETAG tempTypeTag = startNode->u.var_node.typetag;
+          return tempTypeTag;
+        }
 
     case BINOP_NODE:
-
-        break;
+          //HANDLE BINOP NODE BACKEND
+        return NULL;
 
     case ASSIGN_NODE:
+        TYPETAG varTypeTag = genBackendAssigment(tempTN->u.assign_node.varNode, 0);
+        TYPETAG expTypeTag = genBackendAssigment(tempTN->u.assign_node.expression, 1);
 
-        break;
+        b_assigntempTypeTag(varTypeTag);
+        b_pop();
+        return expTypeTag;
 
     default:
       bug("BACKEND ASSIGNEMTN -- THIS IS AN ERROR");
+      return NULL;
     }
+}//END genBackendAssigment()
+
+TYPETAG getTYPETAG(TN node){
+  TYPETAG tempTypeTag = NULL;
+
+  return tempTypeTag;
 }
 
+
+/*
+**********DEBUGGING STUFF**************
+*/
 void treeNodeToString(TN node, int isTop){
     //INTCONSTANT, REALCONSTANT, NEGNUM
     if(isTop) msgn("TREE NODE    ");
