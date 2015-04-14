@@ -300,40 +300,40 @@ any_declaration_part:   /* var decls for local vars*/
   ;
 
 any_decl:
-    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---",block);}}
+    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---",block);} b_func_prologue("main");/*this is called at the end of var section (main)*/}
   | function_declaration               {if(myDebugPart2){msg("%d any_decl:function_declaration---",block);}}
   ;
 
 simple_decl:
-    constant_definition_part           {if(myDebugPart1 | myDebugPart2){msg("%d Found in simple_decl:constant_definition_part---",block);}}
-  | type_definition_part               {if(myDebugPart1 | myDebugPart2){msg("%d Found in simple_decl:type_definition_part---",block);}}
-  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d Found in simple_decl:variable_declaration_part---",block);}}
+    constant_definition_part           {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:constant_definition_part---",block);}}
+  | type_definition_part               {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:type_definition_part---",block);}}
+  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d imple_decl:variable_declaration_part---",block);}}
   ;
 
 /* constant definition part */
 
 constant_definition_part:
-    LEX_CONST constant_definition_list
+    LEX_CONST constant_definition_list            {if(myDebugPart2){msg("%d constant_definition_part:LEX_CONST---",block);}}
   ;
 
 constant_definition_list:
-    constant_definition
-  | constant_definition_list constant_definition
+    constant_definition                           {if(myDebugPart2){msg("%d constant_definition_list:constant_definition---",block);}}
+  | constant_definition_list constant_definition  {if(myDebugPart2){msg("%d constant_definition_list:constant_definition_list---",block);}}
   ;
 
 constant_definition:
-    new_identifier '=' static_expression semi
+    new_identifier '=' static_expression semi     {if(myDebugPart2){msg("%d constant_definition:new_identifier = ---",block);}}
   ;
 
 constant:
     identifier                    {}
   | sign identifier               {}
-  | number                        {if(myDebugPart1){msg("Found in constant:3---");} $$=$1;}
+  | number                        {if(myDebugPart1){msg("constant:number---");} $$=$1;}
   | constant_literal              {}
   ;
 
 number:     /*stripped to all ints, could be a problem. currently only effects subranges*/
-    sign unsigned_number            {if(myDebugPart1){msg("Found in number:1---");}
+    sign unsigned_number            {if(myDebugPart1){msg("number:sign unsigned_number---");}
                                         long tempInt;
                                         if($2->tag == REALCONSTANT){
                                           tempInt = (long)$2->u.realconstant;
@@ -759,8 +759,8 @@ function_declaration:
   ;
 
 function_heading:
-    LEX_PROCEDURE new_identifier optional_par_formal_parameter_list
-  | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype
+    LEX_PROCEDURE new_identifier optional_par_formal_parameter_list                {if(myDebugPart2){msg("%d function_heading:LEX_PROCEDURE---",block);}}
+  | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype    {if(myDebugPart2){msg("%d function_heading:LEX_FUNCTION---",block);}}
   ;
 
 directive_list:
@@ -914,6 +914,7 @@ simple_statement:
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
                                           /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
+                                          genBackendAssigment($1, 0);
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
                                           /*needs to be implimented i think, not covered in NOTES yet
@@ -967,7 +968,7 @@ assignment_or_call_statement:     /*tree node*/
 variable_or_function_access_maybe_assignment:    /*tree node*/
     identifier                                            {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
                                                             //if(variable name){
-                                                            $$ = makeVarNode($1, &block);
+                                                            $$ = makeVarNode($1);
                                                             //}
                                                             /*check if function name of current function definition (for setting return value)
                                                               create function return node (or something)
@@ -1216,7 +1217,7 @@ variable_or_function_access:
 
 variable_or_function_access_no_standard_function:
     identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}
-                                                          $$ = makeVarNode($1, &block);
+                                                          $$ = makeVarNode($1);
                                                         }
   | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---", block);}}
   ;

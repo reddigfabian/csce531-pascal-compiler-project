@@ -50,7 +50,7 @@ typedef struct LoIDs{
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
 TN makeNegNumNode(TN numNode);
-TN makeVarNode(ST_ID id, int block);
+TN makeVarNode(ST_ID id);
 TN makeAssignNode(TN var, TN exp);
 TN makeBoolNode(int tempBool);
 TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType);
@@ -60,7 +60,7 @@ void treeNodeToString(TN node, int isTop);
 char *treeToString(TN node);
 
 
-void genBackend(TN startNode);
+TYPETAG genBackendAssigment(TN startNode, int fromExpr);
 
 LD addToList(ST_ID id, LD oldList);
 INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);

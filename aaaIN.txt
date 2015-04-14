@@ -11,6 +11,12 @@ var
 
    x : Real;        {# b_global_decl (X, alignment = 8, size = 8)}
 
+Function get_integer : Integer;
+   begin
+      i := 10;
+   end; { get_integer }
+
+
 begin               {# b_func_prologue (main)}
 
    i := 5;          {# b_push_ext_addr (I)
@@ -32,7 +38,7 @@ begin               {# b_func_prologue (main)}
                      # b_assign (signed long int)
                      # b_pop ()}
 
-   x := 5.4         {# b_push_ext_addr (X)
+   x := 5.4;         {# b_push_ext_addr (X)
                      # b_push_const_double (5.4000000000000004e+00)
                      # b_assign (double)
                      # b_pop ()}

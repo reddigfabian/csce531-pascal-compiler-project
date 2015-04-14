@@ -75,11 +75,12 @@ TN makeNegNumNode(TN numNode){
   return tempTN;
 }
 
-TN makeVarNode(ST_ID id, int block){ //here we pass block from gram.y through to makeVarNode in order to pass it as the output parameter of st_lookup. NOT SURE IF CORRECT
+TN makeVarNode(ST_ID id){ //here we pass block from gram.y through to makeVarNode in order to pass it as the output parameter of st_lookup. NOT SURE IF CORRECT
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = VAR_NODE;
   tempTN->u.var_node.varName = id;
 
+  int block;
   ST_DR tempDR = st_lookup(id, &block);
   if(tempDR != NULL){
     tempTN->u.var_node.isInstalled = 1;
@@ -153,6 +154,7 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
 
     }case REALCONSTANT:{
       double tempReal = startNode->u.realconstant;
+      printf("tempReal: %g",tempReal);
       b_push_const_double(tempReal);
       return TYDOUBLE;  //not 100% yet
 
@@ -205,7 +207,7 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
       TYPETAG varTypeTag = genBackendAssigment(startNode->u.assign_node.varNode, 0);
       TYPETAG expTypeTag = genBackendAssigment(startNode->u.assign_node.expression, 1);
 
-      b_assigntempTypeTag(varTypeTag);
+      b_assign(varTypeTag);
       b_pop();
       return expTypeTag;
 
