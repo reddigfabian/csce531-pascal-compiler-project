@@ -60,6 +60,7 @@ int myDebugPart1 = 1;
 int myDebugPart2 = 1;
 int myDump = 0;
 int block;
+ST_ID funcST_ID;
 INDEX_LIST rootOfUnRP;
 
 /* Like YYERROR but do call yyerror */
@@ -104,7 +105,7 @@ void initRootOfUnRP(TYPE type); //prototype
 %type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
     simple_expression rest_of_statement unsigned_number factor signed_factor primary
     signed_primary term assignment_or_call_statement constant_literal predefined_literal
-    variable_or_function_access variable_or_function_access_no_standard_function
+    variable_or_function_access variable_or_function_access_no_standard_function function_heading
 
 
 
@@ -280,23 +281,17 @@ new_identifier_1:
   ;
 
 any_global_declaration_part:
-    /* empty */
-  | any_global_declaration_part any_decl
+    /* empty */                               {if(myDebugPart2){msg("%d any_global_declaration_part:0---EMPTY",block);}}
+  | any_global_declaration_part any_decl      {if(myDebugPart2){msg("%d any_global_declaration_part:1---",block);}
+  }
   ;
 
 
 any_declaration_part:   /* var decls for local vars*/
     /* empty */                     {if(myDebugPart2){msg("%d any_declaration_part:0---EMPTY",block);}}
-  | any_declaration_part any_decl {if(myDebugPart2){msg("%d any_declaration_part:1---",block);}
-                                    /*
-                                    b_func_prologue()
-                                    for each formal parameter (in left-right order)
-                                      call b_store_formal_param()  //returns an offset, check with offset in sysm table to check for bugs in our compiler
-                                    if function (not a precedure, aka, has a return)
-                                      b_alloc_return_value()
-                                      *He Draws a picture of the stack @ about 11mins*
-                                      b_alloc_local_vars( size )*/
-                                  }
+  | any_declaration_part any_decl   {if(myDebugPart2){msg("%d any_declaration_part:1---",block);}
+
+                                    }
   ;
 
 any_decl:
@@ -753,8 +748,15 @@ function_declaration:
                 }
                 */
 
-    function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---",block);}}
-  | function_heading semi any_declaration_part statement_part semi    {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---",block);}
+    function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---",block);}
+                                                                        //EXTERNAL DECLARED FUNCTIONS/PARAMETERS
+                                                                        //cant have params (inputs)
+                                                                      }
+  | function_heading semi {
+                            funcST_ID = $1->u.func_node.funcName;
+                          }
+    any_declaration_part {b_func_prologue(st_get_id_str(funcST_ID));}
+    statement_part semi  {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---",block);}
                                                                           /* statement_part semi
                                                                             b_prepare_return( return type )  //TYVOID for procedures
                                                                             b_func_epilogue(func name)*/
@@ -763,7 +765,21 @@ function_declaration:
 
 function_heading:
     LEX_PROCEDURE new_identifier optional_par_formal_parameter_list                {if(myDebugPart2){msg("%d function_heading:LEX_PROCEDURE---",block);}}
-  | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype    {if(myDebugPart2){msg("%d function_heading:LEX_FUNCTION---",block);}}
+  | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype    {if(myDebugPart2){msg("%d function_heading:LEX_FUNCTION---",block);}
+                                                                                      TYPETAG tempTYPETAG;
+                                                                                      if($4 == NULL){
+                                                                                        tempTYPETAG = TYVOID;
+                                                                                      }else{
+                                                                                        tempTYPETAG = ty_query($4);
+                                                                                      }
+                                                                                      ST_ID tempSTID = $2;
+                                                                                      $$ = makeFuncNode(tempSTID, tempTYPETAG);
+                                                                                      /*MAKE FUNCTION NODE - fill it
+                                                                                        new identifier for name
+                                                                                        optional_par_formal_parameter_list for parameters
+                                                                                        functiontype for type
+                                                                                      */
+                                                                                   }
   ;
 
 directive_list:
@@ -918,8 +934,8 @@ simple_statement:
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
                                           /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
-                                          if(myDebugPar2){msg("Calling genBackendAssigment()");}
-                                          //genBackendAssigment($1, 0);
+                                          if(myDebugPart2){msg("Calling genBackendAssigment()");}
+                                          genBackendAssigment($1, 0);
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
                                           /*needs to be implimented i think, not covered in NOTES yet

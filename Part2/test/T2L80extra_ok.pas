@@ -21,7 +21,7 @@ Function get_integer : Integer; External;
 
 begin
 
-   i := 5;		
+   i := 5;
    j := i;
    k := 14;
    x := 3.14;
@@ -60,7 +60,7 @@ begin
 
    print_globals;
 
-   { constant folding }
+   { constant(FUCKING NOT VARS a.k.a. INTEGERS OR REALS) folding }
    i := 99 + 17;
    x := -19.99;
    d := 99 * 17.76;

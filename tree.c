@@ -15,7 +15,7 @@ TYFUNC, TYPTR, TYBITFIELD, TYSUBRANGE, TYERROR
 
 
 /*
-typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE}tagtype;
+typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE, FUNC_NODE}tagtype;
 
 typedef enum{ADD, SUB, REAL_DIV, INT_DIV, MOD, MULT}binopType;
 
@@ -39,6 +39,18 @@ typedef struct tn{
     }var_node;
 
     struct{
+      ST_ID funcName;
+      int isInstalled;
+      ST_DR DR;
+      STDR_TAG DRtag;
+      TYPE type;
+      TYPETAG typeTag
+
+      //PARAMETERLIST PARAMS - add this
+
+    }func_node; //PLAY THAT FUNC-Y MUSIC...WHIIIIIIIITE BOI
+
+    struct{
       struct tn *varNode;
       struct tn *expression;
     }assign_node;
@@ -48,6 +60,7 @@ typedef struct tn{
       struct tn *left;
       struct tn *right;
     }binop;
+
 
   }u;
 
@@ -88,13 +101,13 @@ TN makeVarNode(ST_ID id){ //here we pass block from gram.y through to makeVarNod
     tempTN->u.var_node.DRtag = tempDR->tag;
     if(tempDR->tag == GDECL | tempDR->tag == LDECL | tempDR->tag == PDECL | tempDR->tag == FDECL){
       tempTN->u.var_node.type = tempDR->u.decl.type;
-      tempTN->u.var_node.typetag = ty_query(tempDR->u.decl.type);
+      tempTN->u.var_node.typeTag = ty_query(tempDR->u.decl.type);
     }else if(tempDR->tag == ECONST){
       tempTN->u.var_node.type = tempDR->u.econst.type;
-      tempTN->u.var_node.typetag = ty_query(tempDR->u.econst.type);
+      tempTN->u.var_node.typeTag = ty_query(tempDR->u.econst.type);
     }else if(tempDR->tag == TYPENAME){
       tempTN->u.var_node.type = tempDR->u.typename.type;
-      tempTN->u.var_node.typetag = ty_query(tempDR->u.typename.type);
+      tempTN->u.var_node.typeTag = ty_query(tempDR->u.typename.type);
     }else{
       bug("Bad DR tag in makeVarNode()");
     }
@@ -103,7 +116,7 @@ TN makeVarNode(ST_ID id){ //here we pass block from gram.y through to makeVarNod
     //tempTN->u.var_node.DR = NULL;
     //tempTN->u.var_node.DRtag = NULL;
     //tempTN->u.var_node.type = NULL;
-    //tempTN->u.var_node.typetag = NULL;
+    //tempTN->u.var_node.typeTag = NULL;
   }
 
   return tempTN;
@@ -130,6 +143,13 @@ TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
   tempTN->u.binop.binTag = binTagType;
   tempTN->u.binop.left = leftSide;
   tempTN->u.binop.right = rightSide;
+  return tempTN;
+}
+
+TN makeFuncNode(ST_ID id, TYPETAG typeTag){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->u.func_node.funcName = id;
+  tempTN->u.func_node.typeTag = typeTag;
   return tempTN;
 }
 
@@ -184,7 +204,7 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
         if(startNode->u.var_node.isInstalled){
           char *tempIdString = st_get_id_str(startNode->u.var_node.varName);
           b_push_ext_addr(tempIdString);
-          TYPETAG tempTypeTag = startNode->u.var_node.typetag;
+          TYPETAG tempTypeTag = startNode->u.var_node.typeTag;
           b_deref(tempTypeTag);
           return tempTypeTag;
         }else{ //var_node not installed in symbol table
@@ -194,7 +214,7 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
       }else{ //var is on the left hand side of an assignment, dont deref
         char *tempIdString = st_get_id_str(startNode->u.var_node.varName);
         b_push_ext_addr(tempIdString);
-        TYPETAG tempTypeTag = startNode->u.var_node.typetag;
+        TYPETAG tempTypeTag = startNode->u.var_node.typeTag;
         return tempTypeTag;
       }
 
@@ -220,7 +240,7 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
 
   TYPETAG getTYPETAG(TN node){
     if(node->tag == VAR_NODE){
-      TYPETAG tempTypeTag = node->u.var_node.typetag;
+      TYPETAG tempTypeTag = node->u.var_node.typeTag;
       return tempTypeTag;
     }
     return TYERROR;
@@ -256,7 +276,9 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
       break;
 
       case VAR_NODE:
-      msg("VAR_NODE node: %s",st_get_id_str(node->u.var_node.varName));
+      msgn("VAR_NODE node: %s of type: ",st_get_id_str(node->u.var_node.varName));
+      ty_print_typetag(node->u.var_node.typeTag);
+      msg("");
       break;
 
       case BINOP_NODE:
@@ -274,6 +296,11 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
       treeNodeToString(node->u.assign_node.expression, 0);
       msg("");
       break;
+
+      case FUNC_NODE:{
+        msgn("FUNC_NODE node: %s of type: ",st_get_id_str(node->u.func_node.funcName));
+        ty_print_typetag(node->u.func_node.typeTag);
+      }
 
       default:
       if(isTop) msg("NULL -- THIS IS AN ERROR");

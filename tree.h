@@ -1,7 +1,7 @@
 #include "symtab.h"
 #include "backend-x86.h"
 
-typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE, FUN_NODE}tagtype;
+typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, BINOP_NODE, FUNC_NODE}tagtype;
 
 typedef enum{ADD, SUB, REAL_DIV, INT_DIV, MOD, MULT}binopType;
 
@@ -21,27 +21,27 @@ typedef struct tn{
       ST_DR DR;
       STDR_TAG DRtag;
       TYPE type;
-      TYPETAG typetag;
+      TYPETAG typeTag;
     }var_node;
 
     struct{
-      ST_ID funName;
+      ST_ID funcName;
       int isInstalled;
       ST_DR DR;
       STDR_TAG DRtag;
       TYPE type;
-      TYPETAG typetag;
-    }fun_node;
+      TYPETAG typeTag;
+    }func_node; //PLAY THAT FUNC-Y MUSIC...WHIIIIIIIITE BOI
 
     struct{
-        struct tn *varNode;
-        struct tn *expression;
+      struct tn *varNode;
+      struct tn *expression;
     }assign_node;
 
     struct{
-        binopType binTag;
-        struct tn *left;
-        struct tn *right;
+      binopType binTag;
+      struct tn *left;
+      struct tn *right;
     }binop;
 
 
@@ -64,6 +64,7 @@ TN makeVarNode(ST_ID id);
 TN makeAssignNode(TN var, TN exp);
 TN makeBoolNode(int tempBool);
 TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType);
+TN makeFuncNode(ST_ID id, TYPETAG typeTag);
 
 
 void treeNodeToString(TN node, int isTop);

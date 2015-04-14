@@ -34,7 +34,7 @@ begin               {# b_func_prologue (main)}
                      # b_assign (signed long int)
                      # b_pop ()}
 
-   k := i + j;      {# b_push_ext_addr (K)
+   k := i;      {# b_push_ext_addr (K)
                      # b_push_ext_addr (I)
                      # b_deref (signed long int)
                      # b_push_ext_addr (J)

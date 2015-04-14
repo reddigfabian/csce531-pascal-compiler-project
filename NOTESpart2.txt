@@ -9,7 +9,7 @@ lib90, lib100, pascal "built-in" functions we will be calling
 
 compatible with c calling convention (can call c funcs from Pascal & vice versa)
 
-amung the simple types:
+among the simple types:
 Ordinal Types : values are in a linearly ordered sequence : each value (except max) has a unique successor, and a unique predecessor (except min value)
        Ordinal Types: Integer, Char, Boolean, Enumerated Types (we are not supporting these), subranges of these
        Support: succ -- successor function
@@ -271,8 +271,15 @@ entering and exiting function bodies:
 ONCE YOU KNOW FUNCTION NAME STORE IT SOMEWHERE GLOBALY, NOT ON THE SYMANTIC STACK (GRAMMAR)
 
   func_decl:
+
+  He breaks down this production
+
+  function declaration --> function_heading semi any_declaration_part statement_part semi
+
+  as follows:
+
     func_heading semi:
-          {.......}
+          {.......} "TALKED ABOUT ON MONDAY"
       any_decl_part /* var decls for local vars*/
           {
             b_func_prologue()
@@ -435,7 +442,14 @@ lex_POW?
 
 ============================TO DO========================================================================================================================================
 
-Handle unresolved pointers:
-(for each, get the id by calling ty_query_ptr(), then look up the id in the symbol table to get the stdr (which must be a TYPENAME), then call ty_resolve_ptr()
+Extern functions
 
-Check grammar for mistakes when building basic types. It seems the wrong C equivalent is being passed. REALS vs INTS
+binops backend
+
+compare var and expression types (and error check/ convert when can)
+
+built-in pascal functions
+
+boolean backend
+
+constant folding (for EC)
