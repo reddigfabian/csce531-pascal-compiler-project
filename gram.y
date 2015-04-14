@@ -300,14 +300,17 @@ any_declaration_part:   /* var decls for local vars*/
   ;
 
 any_decl:
-    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---",block);} b_func_prologue("main");/*this is called at the end of var section (main)*/}
+    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---",block);}
+                                          //b_func_prologue("main");  //was our test
+                                          /*this is called at the end of var section (main)*/
+                                       }
   | function_declaration               {if(myDebugPart2){msg("%d any_decl:function_declaration---",block);}}
   ;
 
 simple_decl:
     constant_definition_part           {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:constant_definition_part---",block);}}
   | type_definition_part               {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:type_definition_part---",block);}}
-  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d imple_decl:variable_declaration_part---",block);}}
+  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:variable_declaration_part---",block);}}
   ;
 
 /* constant definition part */
@@ -752,7 +755,7 @@ function_declaration:
 
     function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---",block);}}
   | function_heading semi any_declaration_part statement_part semi    {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---",block);}
-                                                                              /* statement_part semi
+                                                                          /* statement_part semi
                                                                             b_prepare_return( return type )  //TYVOID for procedures
                                                                             b_func_epilogue(func name)*/
                                                                       }
@@ -774,7 +777,7 @@ directive:
   ;
 
 functiontype:
-    /* empty */                     {if(myDebugPart1){msg("functiontype:0---");}}  //procedure
+    /* empty */                     {if(myDebugPart1){msg("functiontype:0---EMPTY");}}  //procedure
     | ':' typename                  {if(myDebugPart1){msg("functiontype:1--- %s", st_get_id_str($2));}
                                     ST_ID tempID = $2;
                                     ST_DR tempDR = st_lookup(tempID, &block);
@@ -811,8 +814,9 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end, could be func/procedure def*/
+    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end, could be func/procedure def, or main*/
                                                         if(myDebugPart2){msg("%d compound_statement:BEGIN and END---", block);}
+                                                        //is called on the line END in the sequence
                                                       }
   ;
 
@@ -914,7 +918,8 @@ simple_statement:
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
                                           /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
-                                          genBackendAssigment($1, 0);
+                                          if(myDebugPar2){msg("Calling genBackendAssigment()");}
+                                          //genBackendAssigment($1, 0);
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
                                           /*needs to be implimented i think, not covered in NOTES yet

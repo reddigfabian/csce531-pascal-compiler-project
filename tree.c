@@ -154,7 +154,6 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
 
     }case REALCONSTANT:{
       double tempReal = startNode->u.realconstant;
-      printf("tempReal: %g",tempReal);
       b_push_const_double(tempReal);
       return TYDOUBLE;  //not 100% yet
 

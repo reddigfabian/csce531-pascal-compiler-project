@@ -12,9 +12,14 @@ var
    x : Real;        {# b_global_decl (X, alignment = 8, size = 8)}
 
 Function get_integer : Integer;
-   begin
-      i := 10;
-   end; { get_integer }
+  begin
+    i := 10;
+  end; { get_integer }
+
+Function get_real : Real;
+  begin
+     i := 15.4;
+  end; { get_real }
 
 
 begin               {# b_func_prologue (main)}
