@@ -453,3 +453,8 @@ built-in pascal functions
 boolean backend
 
 constant folding (for EC)
+
+general error checking (compare with his errors)
+
+=====================
+His solution isnt backend-ing the inside of our section function in the test file (function get_Real)

@@ -5,21 +5,36 @@
 Program T2L80_ok;
 
 var
-   i,j,k : Integer; {# b_global_decl (K, alignment = 4, size = 4)
-                     # b_global_decl (J, alignment = 4, size = 4)
-                     # b_global_decl (I, alignment = 4, size = 4)}
+   i,j,k,f : Integer; {# b_global_decl (F, alignment = 4, size = 4)
+                       # b_global_decl (K, alignment = 4, size = 4)
+                       # b_global_decl (J, alignment = 4, size = 4)
+                       # b_global_decl (I, alignment = 4, size = 4)}
 
-   x : Real;        {# b_global_decl (X, alignment = 8, size = 8)}
+   x : Real;          {# b_global_decl (X, alignment = 8, size = 8)}
 
-Function get_integer : Integer;
+Function get_integer : Integer;       {# b_init_formal_param_offset ()
+                                        # b_func_prologue (Get_integer)
+                                        # b_alloc_return_value ( )
+                                        # b_alloc_local_vars ( size = 8 )
+                                        # b_alloc_local_vars ( size = 0 )}
   begin
-    i := 10;
-  end; { get_integer }
+    i := 10;                          {# b_push_ext_addr (I)
+                                        # b_push_const_int (10)
+                                        # b_assign (signed long int)
+                                        # b_pop ()}
 
-Function get_real : Real;
+  end; { get_integer }                {# b_prepare_return (signed long int)
+                                        # b_func_epilogue (Get_integer)}
+
+Function get_real : Real;             {# b_init_formal_param_offset ()
+                                        # b_func_prologue (Get_real)
+                                        # b_alloc_return_value ( )
+                                        # b_alloc_local_vars ( size = 8 )
+                                        # b_alloc_local_vars ( size = 0 )}
   begin
      i := 15.4;
-  end; { get_real }
+  end; { get_real }                   {# b_prepare_return (double)
+                                        # b_func_epilogue (Get_real)}
 
 
 begin               {# b_func_prologue (main)}
@@ -34,7 +49,7 @@ begin               {# b_func_prologue (main)}
                      # b_assign (signed long int)
                      # b_pop ()}
 
-   k := i;      {# b_push_ext_addr (K)
+   k := i+j;      {# b_push_ext_addr (K)
                      # b_push_ext_addr (I)
                      # b_deref (signed long int)
                      # b_push_ext_addr (J)
@@ -42,6 +57,12 @@ begin               {# b_func_prologue (main)}
                      # b_arith_rel_op ( + , signed long int)
                      # b_assign (signed long int)
                      # b_pop ()}
+
+  f := 6 - 2;     {# b_push_ext_addr (F)
+                    # b_push_const_int (4)
+                    # b_assign (signed long int)
+                    # b_pop ()}
+
 
    x := 5.4;         {# b_push_ext_addr (X)
                      # b_push_const_double (5.4000000000000004e+00)
