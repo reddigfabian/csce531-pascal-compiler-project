@@ -444,17 +444,18 @@ lex_POW?
 
 Extern functions
 
-binops backend
+PROGRESS --- binops backend
 
 compare var and expression types (and error check/ convert when can)
 
 built-in pascal functions
 
-boolean backend
+DONE --- boolean backend
 
 constant folding (for EC)
 
 general error checking (compare with his errors)
+        --- currently converting rightside to type of var BEFORE binop applied.  makeing assingment work even if they types are supposed to error
 
 =====================
-His solution isnt backend-ing the inside of our section function in the test file (function get_Real)
+His solution isnt backend-ing the inside of our section function in the test file (function get_Real) -- FIXED, we were assigning a double to a int var

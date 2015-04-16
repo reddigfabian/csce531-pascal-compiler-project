@@ -935,7 +935,7 @@ simple_statement:
                                           /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
                                           if(myDebugPart2){msg("Calling genBackendAssigment()");}
-                                          genBackendAssigment($1, 0);
+                                          genBackendAssigment($1, 0, TYVOID);
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
                                           /*needs to be implimented i think, not covered in NOTES yet

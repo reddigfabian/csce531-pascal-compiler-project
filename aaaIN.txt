@@ -12,6 +12,8 @@ var
 
    x : Real;          {# b_global_decl (X, alignment = 8, size = 8)}
 
+   b : Boolean;
+
 Function get_integer : Integer;       {# b_init_formal_param_offset ()
                                         # b_func_prologue (Get_integer)
                                         # b_alloc_return_value ( )
@@ -32,41 +34,42 @@ Function get_real : Real;             {# b_init_formal_param_offset ()
                                         # b_alloc_local_vars ( size = 8 )
                                         # b_alloc_local_vars ( size = 0 )}
   begin
-     i := 15.4;
+     x := 15.4;                       {# b_push_ext_addr (X)
+                                       # b_push_const_double (1.5400000000000000e+01)
+                                       # b_assign (double)
+                                       # b_pop ()}
+
   end; { get_real }                   {# b_prepare_return (double)
                                         # b_func_epilogue (Get_real)}
 
 
 begin               {# b_func_prologue (main)}
 
-   i := 5;          {# b_push_ext_addr (I)
-                     # b_push_const_int (5)
-                     # b_assign (signed long int)
-                     # b_pop ()}
-
-   j := -3;         {# b_push_ext_addr (J)
-                     # b_push_const_int (-3)
-                     # b_assign (signed long int)
-                     # b_pop ()}
 
    k := i+j;      {# b_push_ext_addr (K)
-                     # b_push_ext_addr (I)
-                     # b_deref (signed long int)
-                     # b_push_ext_addr (J)
-                     # b_deref (signed long int)
-                     # b_arith_rel_op ( + , signed long int)
-                     # b_assign (signed long int)
-                     # b_pop ()}
+                   # b_push_ext_addr (I)
+                   # b_deref (signed long int)
+                   # b_push_ext_addr (J)
+                   # b_deref (signed long int)
+                   # b_arith_rel_op ( + , signed long int)
+                   # b_assign (signed long int)
+                   # b_pop ()}
 
   f := 6 - 2;     {# b_push_ext_addr (F)
-                    # b_push_const_int (4)
-                    # b_assign (signed long int)
+                   # b_push_const_int (4)
+                   # b_assign (signed long int)
+                   # b_pop ()}
+
+  i := x;         {int := realVar, line 63: ERROR -- Illegal conversion}
+
+  i := 7.8;       {int := realconst, line 65: ERROR -- Illegal conversion}
+
+  b := True;       {# b_push_ext_addr (B)
+                    # b_push_const_int (1)
+                    # b_convert (signed long int -> signed char)
+                    # b_assign (signed char)
                     # b_pop ()}
 
-
-   x := 5.4;         {# b_push_ext_addr (X)
-                     # b_push_const_double (5.4000000000000004e+00)
-                     # b_assign (double)
-                     # b_pop ()}
+  b := False;
 
 end.                {# b_func_epilogue (main)}

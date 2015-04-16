@@ -68,8 +68,8 @@ TN makeFuncNode(ST_ID id, TYPETAG typeTag);
 
 void treeNodeToString(TN node, int isTop);
 
-TYPETAG genBackendAssigment(TN startNode, int fromExpr);
-TYPETAG handleBINOP_NODE(TN node);
+TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE);
+TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value);
 TYPETAG getTYPETAG(TN node);
 
 LD addToList(ST_ID id, LD oldList);

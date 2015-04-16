@@ -3,6 +3,10 @@
 #include "tree.h"
 #include "types.h"
 
+int myDebug = 1;
+char* tagtypeStrings[] = {"INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE"};
+char* binopTypeStrings[] = {"ADD", "SUB", "REAL_DIV", "INT_DIV", "MOD", "MULT"};
+
 /*
 typedef enum {
 TYVOID, TYFLOAT, TYDOUBLE, TYLONGDOUBLE, TYSIGNEDLONGINT,
@@ -162,7 +166,7 @@ TN makeFuncNode(ST_ID id, TYPETAG typeTag){
 ********************************BACKEND STUFF****************************
 */
 
-TYPETAG genBackendAssigment(TN startNode, int fromExpr){
+TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
   /*
   b_negates(TYPETAG type)
   deal with unary negative
@@ -181,8 +185,10 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
       return TYDOUBLE;  //not 100% yet
 
     }case BOOL_NODE:{
-      //HANDLE BOOLEAN NODE BACKEND
-      break;
+      int tempBool = startNode->u.boolean;
+      b_push_const_int(tempBool);
+      b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
+      return TYSIGNEDCHAR;
 
     }case NEGNUM:{
       TN tempNode = startNode->u.negNode;
@@ -224,11 +230,19 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
 
     }case BINOP_NODE:{
       int ConstValue; //potenital idea for cont folding, currently unused
-      return handleBINOP_NODE(startNode, &ConstValue);
+      return handleBINOP_NODE(startNode, assTYPE, &ConstValue);
 
     }case ASSIGN_NODE:{
-      TYPETAG varTypeTag = genBackendAssigment(startNode->u.assign_node.varNode, 0);
-      TYPETAG expTypeTag = genBackendAssigment(startNode->u.assign_node.expression, 1);
+      TYPETAG varTypeTag = genBackendAssigment(startNode->u.assign_node.varNode, 0, TYVOID);
+      TYPETAG expTypeTag = genBackendAssigment(startNode->u.assign_node.expression, 1, varTypeTag);
+
+      if(myDebug){
+        msgn("ASSIGNMENT: ");
+        ty_print_typetag(varTypeTag);
+        msgn(" := ");
+        ty_print_typetag(expTypeTag);
+        msg(";");
+      }
 
       b_assign(varTypeTag);
       b_pop();
@@ -257,73 +271,121 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr){
                    # b_assign (signed long int)
                    # b_pop ()}
 
-                   b_arith_rel_op() TYPES for first ARG
-                   B_ADD       add (+)
-                   B_SUB       substract (-)
-                   B_MULT      multiply (*)
-                   B_DIV       divide (/)
-                   B_MOD       mod (%)
-                   B_LT        less than (<)
-                   B_LE        less than or equal to (<=)
-                   B_GT        greater than (>)
-                   B_GE        greater than or equal to (>=)
-                   B_EQ        equal (==)
-                   B_NE        not equal (!=)
+ b := True;       {# b_push_ext_addr (B)
+                   # b_push_const_int (1)
+                   # b_convert (signed long int -> signed char)
+                   # b_assign (signed char)
+                   # b_pop ()}
+
+                   b_arith_rel_op() TYPES for first ARG:
+                       B_ADD       add (+)
+                       B_SUB       substract (-)
+                       B_MULT      multiply (*)
+                       B_DIV       divide (/)
+                       B_MOD       mod (%)
+                       B_LT        less than (<)
+                       B_LE        less than or equal to (<=)
+                       B_GT        greater than (>)
+                       B_GE        greater than or equal to (>=)
+                       B_EQ        equal (==)
+                       B_NE        not equal (!=)
   */
-TYPETAG handleBINOP_NODE(TN node, int *value){
+TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
  //returning the value might be harder than i anticipated for doing const folding.
  //maybe a data struct to pass up, so can contain diff types?
   if(node->tag == BINOP_NODE){
     switch(node->u.binop.binTag){
+      //**************************************************************************************************
       case ADD:{
         int valueLeft;
         int valueRight;
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left);
-        TYPETAG typeTagRight = genBackendAssigment((node->u.binop.right);
-        if(typeTagLeft == typeTagRight){
-          b_arith_rel_op(B_ADD , typeTagLeft);
-          return typeTagLeft;
-        }else if(typeTagLeft == TYDOUBLE){
 
-        }
-        //
-        break;
+        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
 
+        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        b_arith_rel_op(B_ADD, assTYPE);
+        return assTYPE;
+        //**************************************************************************************************
       }case SUB:{
         int valueLeft;
         int valueRight;
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left);
-        TYPETAG typeTagRight = genBackendAssigment((node->u.binop.right);
-        break;
 
+        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        b_arith_rel_op(B_SUB, assTYPE);
+        return assTYPE;
+        //**************************************************************************************************
       }case INT_DIV:{
         int valueLeft;
         int valueRight;
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left);
-        TYPETAG typeTagRight = genBackendAssigment((node->u.binop.right);
-        break;
 
+        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        b_arith_rel_op(B_DIV, assTYPE);
+        return assTYPE;
+        //**************************************************************************************************
       }case REAL_DIV:{
         int valueLeft;
         int valueRight;
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left);
-        TYPETAG typeTagRight = genBackendAssigment((node->u.binop.right);
-        break;
 
+        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        b_arith_rel_op(B_DIV, assTYPE);
+        return assTYPE;
+        //**************************************************************************************************
       }case MOD:{
         int valueLeft;
         int valueRight;
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left);
-        TYPETAG typeTagRight = genBackendAssigment((node->u.binop.right);
-        break;
 
+        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        b_arith_rel_op(B_MOD, assTYPE);
+        return assTYPE;
+      //**************************************************************************************************
       }case MULT:{
         int valueLeft;
         int valueRight;
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left);
-        TYPETAG typeTagRight = genBackendAssigment((node->u.binop.right);
-        break;
 
+        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+
+        b_arith_rel_op(B_MULT, assTYPE);
+        return assTYPE;
+        //**************************************************************************************************
       }default:{
         bug("handleBINOP_NODE() bad binopType-- THIS IS AN ERROR");
         break;
@@ -332,6 +394,7 @@ TYPETAG handleBINOP_NODE(TN node, int *value){
   }//end if BINOP_NODE
 
   else{ //not a BINOP_NODE, left or right side of a BINOP_NODE
+    bug("handleBINOP_NODE() was passed NON-BINOP_NODE");
     /*
     switch(node->tag){
 
@@ -376,7 +439,7 @@ TYPETAG handleBINOP_NODE(TN node, int *value){
       }
     }//end switch for NOT a BINOP_NODE
     */
-    bug("handleBINOP_NODE() was passed NON-BINOP_NODE");
+
   }//end else (NOT a BINOP_NODE)
 
 }//end handleBINOP_NODE
@@ -387,7 +450,7 @@ TYPETAG handleBINOP_NODE(TN node, int *value){
   TYPETAG getTYPETAG(TN node){
     if(node->tag == VAR_NODE){
       TYPETAG tempTypeTag = node->u.var_node.typeTag;
-      if(tempTypeTag == NULL){
+      if(tempTypeTag != NULL){
          return tempTypeTag;
       }else{
          msg("getTYPETAG, returned TYERROR:");
@@ -408,18 +471,18 @@ TYPETAG handleBINOP_NODE(TN node, int *value){
     switch(node->tag){
 
       case INTCONSTANT:
-      if(isTop) msg("INTCONSTANT node: %ld", node->u.intconstant);
-      else msgn("INTCONSTANT node: %ld", node->u.intconstant);
+      if(isTop) msg("INTCONSTANT node: %ld ", node->u.intconstant);
+      else msgn("INTCONSTANT node: %ld ", node->u.intconstant);
       break;
 
       case REALCONSTANT:
-      if(isTop) msg("REALCONSTANT node: %f",node->u.realconstant);
-      else msgn("REALCONSTANT node: %f",node->u.realconstant);
+      if(isTop) msg("REALCONSTANT node: %f ",node->u.realconstant);
+      else msgn("REALCONSTANT node: %f ",node->u.realconstant);
       break;
 
       case BOOL_NODE:
-      if(isTop) msg("BOOL_NODE node: %d",node->u.boolean);
-      else msgn("BOOL_NODE node: %d",node->u.boolean);
+      if(isTop) msg("BOOL_NODE node: %d ",node->u.boolean);
+      else msgn("BOOL_NODE node: %d ",node->u.boolean);
       break;
 
       case NEGNUM:
@@ -436,7 +499,7 @@ TYPETAG handleBINOP_NODE(TN node, int *value){
       case BINOP_NODE:
       msgn(" LEFT: ");
       treeNodeToString(node->u.binop.left, 0);
-      msgn("BINOP_NODE %d ", node->u.binop.binTag);
+      msgn("BINOP_NODE %s ", binopTypeStrings[node->u.binop.binTag]);
       msgn("RIGHT: ");
       treeNodeToString(node->u.binop.right, 0);
       break;
