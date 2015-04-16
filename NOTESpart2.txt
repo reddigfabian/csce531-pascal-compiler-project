@@ -444,18 +444,18 @@ lex_POW?
 
 Extern functions
 
-PROGRESS --- binops backend
+PROGRESS, nearly done, maybe some more checks --- binops backend
 
-compare var and expression types (and error check/ convert when can)
+WORKING, EASY to add more. still need to type cast. compare var and expression types (and error check/ convert when can)
 
 handle unary ops (negative vars, built-in pascal functions)
 
 DONE --- boolean backend
 
-constant folding (for EC)
+WORKING, for what binops inplimented, constant folding (for EC)
 
-general error checking (compare with his errors)
-        --- currently converting rightside to type of var BEFORE binop applied.  makeing assingment work even if they types are supposed to error
+PROGRESS general error checking (compare with his errors)
+
 
 
 =====================

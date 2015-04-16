@@ -68,10 +68,10 @@ TN makeFuncNode(ST_ID id, TYPETAG typeTag);
 
 void treeNodeToString(TN node, int isTop);
 
-TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE);
-TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value);
+TYPETAG genBackendAssigment(TN startNode, int fromExpr, int genBackend);
+TYPETAG handleBINOP_NODE(TN node, int genBackend);
 TYPETAG getTYPETAG(TN node);
-void getBinopInfo(TN node, TYPETAG *tag, tagType *nodeType);
+//void getBinopInfo(TN node, TYPETAG *tag, tagtype *nodeType);
 
 LD addToList(ST_ID id, LD oldList);
 INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);

@@ -166,7 +166,7 @@ TN makeFuncNode(ST_ID id, TYPETAG typeTag){
 ********************************BACKEND STUFF****************************
 */
 
-TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
+TYPETAG genBackendAssigment(TN startNode, int fromExpr, int genBackend){
   /*
   b_negates(TYPETAG type)
   deal with unary negative
@@ -176,18 +176,18 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
     case INTCONSTANT:{
       long tempInt;
       tempInt = startNode->u.intconstant;
-      b_push_const_int(tempInt);
+      if(genBackend) b_push_const_int(tempInt);
       return TYSIGNEDLONGINT;   //not 100% yet
 
     }case REALCONSTANT:{
       double tempReal = startNode->u.realconstant;
-      b_push_const_double(tempReal);
+      if(genBackend) b_push_const_double(tempReal);
       return TYDOUBLE;  //not 100% yet
 
     }case BOOL_NODE:{
       int tempBool = startNode->u.boolean;
-      b_push_const_int(tempBool);
-      b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
+      if(genBackend) b_push_const_int(tempBool);
+      if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
       return TYSIGNEDCHAR;
 
     }case NEGNUM:{
@@ -195,12 +195,12 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
       tagtype tempTagType = tempNode->tag;
       if(tempTagType == INTCONSTANT){
         long tempInt = -1 * tempNode->u.intconstant;
-        b_push_const_int(tempInt);
+        if(genBackend) b_push_const_int(tempInt);
         return TYSIGNEDLONGINT;   //not 100% yet
 
       }else if(tempTagType == REALCONSTANT){
         double tempReal = -1 * tempNode->u.realconstant;
-        b_push_const_double(tempReal);
+        if(genBackend) b_push_const_double(tempReal);
         return TYDOUBLE;  //not 100% yet
 
       }else{
@@ -212,9 +212,9 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
       if(fromExpr){
         if(startNode->u.var_node.isInstalled){
           char *tempIdString = st_get_id_str(startNode->u.var_node.varName);
-          b_push_ext_addr(tempIdString);
+          if(genBackend) b_push_ext_addr(tempIdString);
           TYPETAG tempTypeTag = getTYPETAG(startNode);
-          b_deref(tempTypeTag);
+          if(genBackend) b_deref(tempTypeTag);
           return tempTypeTag;
         }else{ //var_node not installed in symbol table
           error("variable in expression has not been initilized");
@@ -222,19 +222,20 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
         }
       }else{ //var is on the left hand side of an assignment, dont deref
         char *tempIdString = st_get_id_str(startNode->u.var_node.varName);
-        b_push_ext_addr(tempIdString);
+        if(genBackend) b_push_ext_addr(tempIdString);
         TYPETAG tempTypeTag = getTYPETAG(startNode);
         return tempTypeTag;
       }
 
 
     }case BINOP_NODE:{
-      int ConstValue; //potenital idea for cont folding, currently unused
-      return handleBINOP_NODE(startNode, assTYPE, &ConstValue);
+      return handleBINOP_NODE(startNode, genBackend);
 
     }case ASSIGN_NODE:{
-      TYPETAG varTypeTag = genBackendAssigment(startNode->u.assign_node.varNode, 0, TYVOID);
-      TYPETAG expTypeTag = genBackendAssigment(startNode->u.assign_node.expression, 1, varTypeTag);
+      //just get what the return TYPETAGS would be, before generating any backend
+      TYPETAG varTypeTag = genBackendAssigment(startNode->u.assign_node.varNode, 0, 0);
+      TYPETAG expTypeTag = genBackendAssigment(startNode->u.assign_node.expression, 1, 0);
+
 
       if(myDebug){
         msgn("ASSIGNMENT: ");
@@ -244,8 +245,19 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
         msg(";");
       }
 
-      b_assign(varTypeTag);
-      b_pop();
+      //check TYPETAG values for the assignment, then error check or gen the backend
+      int INVALID = 1;
+      if(varTypeTag == expTypeTag) INVALID = 0;
+      if(varTypeTag == TYDOUBLE && expTypeTag == TYSIGNEDLONGINT) INVALID = 0;
+
+      if(INVALID) error("Illegal conversion");
+      else{
+        genBackendAssigment(startNode->u.assign_node.varNode, 0, 1);
+        genBackendAssigment(startNode->u.assign_node.expression, 1, 1);
+
+        b_assign(varTypeTag);
+        b_pop();
+      }
       return expTypeTag;
 
     }default:{
@@ -290,19 +302,15 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE){
                        B_EQ        equal (==)
                        B_NE        not equal (!=)
   */
-TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
- //returning the value might be harder than i anticipated for doing const folding.
- //maybe a data struct to pass up, so can contain diff types?
+TYPETAG handleBINOP_NODE(TN node, int genBackend){
   if(node->tag == BINOP_NODE){
     switch(node->u.binop.binTag){
       //**************************************************************************************************
       case ADD:{
-        TYPETAG Ltag;
-        TYPETAG Rtag;
-        tagType LnodeType;
-        tagType RnodeType;
-        getBinopInfo(node->u.binop.left, &Ltag, &LnodeType);
-        getBinopInfo(node->u.binop.right, &Rtag, &RnodeType);
+        TYPETAG Ltag = genBackendAssigment(node->u.binop.left, 1, 0); //just get return type
+        TYPETAG Rtag = genBackendAssigment(node->u.binop.right, 1, 0);
+        tagtype LnodeType = node->u.binop.left->tag;
+        tagtype RnodeType = node->u.binop.right->tag;
 
         //DOESNT HANDLE NEGNUMS YET
         //CONSTANT FOLDING of const ints/doubles
@@ -313,89 +321,145 @@ TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
                  long left = node->u.binop.left->u.intconstant;
                  long right = node->u.binop.right->u.intconstant;
                  long tempInt = left + right;
-                 b_push_const_int(tempInt);
+                 if(genBackend) b_push_const_int(tempInt);
+                 return TYSIGNEDLONGINT;
                }else{ //both doubles
                  double left = node->u.binop.left->u.realconstant;
                  double right = node->u.binop.right->u.realconstant;
                  double tempReal = left + right;
-                 b_push_const_double(tempReal);
+                 if(genBackend) b_push_const_double(tempReal);
+                 return TYDOUBLE;
                }
              }else{ //one of them is a double, other is an INT
                  if(Ltag == TYDOUBLE){
                    double left = node->u.binop.left->u.realconstant;
                    double right = (double)node->u.binop.right->u.intconstant;
                    double tempReal = left + right;
-                   b_push_const_double(tempReal);
-                 }else{
+                   if(genBackend) b_push_const_double(tempReal);
+                   return TYDOUBLE;
+                 }else{ //Ltag == TYSIGNEDLONGINT
                    double left = (double)node->u.binop.left->u.intconstant;
                    double right = node->u.binop.right->u.realconstant;
                    double tempReal = left + right;
-                   b_push_const_double(tempReal);
+                   if(genBackend) b_push_const_double(tempReal);
+                   return TYDOUBLE;
                  }
              }
         }//END CONSTANT FOLDING of const ints/doubles
         else{
-          TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
-          TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
-          b_arith_rel_op(B_ADD, assTYPE);
-        }
+          TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
+          if(LnodeType == VAR_NODE){
+             genBackendAssigment(node->u.binop.left, 1, genBackend);
+             //b_convert (TYPETAG from, TYPETAG to) if needed
+           }else if(LnodeType == BINOP_NODE){
+              genBackendAssigment(node->u.binop.left, 1, genBackend);
+            }else{
+              bug("something not handled in handleBINOP_NODE ADD, left side");
+            }
 
-        return assTYPE;
+           if(RnodeType == VAR_NODE){
+             genBackendAssigment(node->u.binop.right, 1, genBackend );
+             //b_convert (TYPETAG from, TYPETAG to) if needed
+           }else if(RnodeType == BINOP_NODE){
+              genBackendAssigment(node->u.binop.left, 1, genBackend);
+            }else{
+              bug("something not handled in handleBINOP_NODE ADD, right side");
+            }
+
+
+          if(genBackend) b_arith_rel_op(B_ADD, tempTYPETAG);
+          return tempTYPETAG;
+        }//else not doing constant folding
+
         //**************************************************************************************************
       }case SUB:{
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
-        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
+        TYPETAG Ltag = genBackendAssigment(node->u.binop.left, 1, 0); //just get return type
+        TYPETAG Rtag = genBackendAssigment(node->u.binop.right, 1, 0);
+        tagtype LnodeType = node->u.binop.left->tag;
+        tagtype RnodeType = node->u.binop.right->tag;
 
-        b_arith_rel_op(B_SUB, assTYPE);
-        return assTYPE;
+        //DOESNT HANDLE NEGNUMS YET
+        //CONSTANT FOLDING of const ints/doubles
+        if((LnodeType == INTCONSTANT | LnodeType == REALCONSTANT) &&
+           (RnodeType == INTCONSTANT | RnodeType == REALCONSTANT)){
+             if(Ltag == Rtag){ //they are the same type
+               if(Ltag == TYSIGNEDLONGINT){ //both ints
+                 long left = node->u.binop.left->u.intconstant;
+                 long right = node->u.binop.right->u.intconstant;
+                 long tempInt = left - right;
+                 if(genBackend) b_push_const_int(tempInt);
+                 return TYSIGNEDLONGINT;
+               }else{ //both doubles
+                 double left = node->u.binop.left->u.realconstant;
+                 double right = node->u.binop.right->u.realconstant;
+                 double tempReal = left - right;
+                 if(genBackend) b_push_const_double(tempReal);
+                 return TYDOUBLE;
+               }
+             }else{ //one of them is a double, other is an INT
+                 if(Ltag == TYDOUBLE){
+                   double left = node->u.binop.left->u.realconstant;
+                   double right = (double)node->u.binop.right->u.intconstant;
+                   double tempReal = left - right;
+                   if(genBackend) b_push_const_double(tempReal);
+                   return TYDOUBLE;
+                 }else{ //Ltag == TYSIGNEDLONGINT
+                   double left = (double)node->u.binop.left->u.intconstant;
+                   double right = node->u.binop.right->u.realconstant;
+                   double tempReal = left - right;
+                   if(genBackend) b_push_const_double(tempReal);
+                   return TYDOUBLE;
+                 }
+             }
+        }//END CONSTANT FOLDING of const ints/doubles
+        else{
+          TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking or converting yet
+          if(LnodeType == VAR_NODE){
+             genBackendAssigment(node->u.binop.left, 1, genBackend);
+             //b_convert (TYPETAG from, TYPETAG to) if needed
+           }else if(LnodeType == BINOP_NODE){
+              genBackendAssigment(node->u.binop.left, 1, genBackend);
+            }else{
+              bug("something not handled in handleBINOP_NODE ADD, left side");
+            }
+
+           if(RnodeType == VAR_NODE){
+             genBackendAssigment(node->u.binop.right, 1, genBackend );
+             //b_convert (TYPETAG from, TYPETAG to) if needed
+           }else if(RnodeType == BINOP_NODE){
+              genBackendAssigment(node->u.binop.left, 1, genBackend);
+            }else{
+              bug("something not handled in handleBINOP_NODE ADD, right side");
+            }
+
+        if(genBackend) b_arith_rel_op(B_SUB, tempTYPETAG);
+        return tempTYPETAG;
+      }//else not doing constant folding
+
         //**************************************************************************************************
       }case INT_DIV:{
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+        TYPETAG tempTYPETAG;
 
-        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
-
-        b_arith_rel_op(B_DIV, assTYPE);
-        return assTYPE;
+        b_arith_rel_op(B_DIV, tempTYPETAG);
+        return tempTYPETAG;
         //**************************************************************************************************
       }case REAL_DIV:{
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+        TYPETAG tempTYPETAG;
 
-        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
-
-        b_arith_rel_op(B_DIV, assTYPE);
-        return assTYPE;
+        b_arith_rel_op(B_DIV, tempTYPETAG);
+        return tempTYPETAG;
         //**************************************************************************************************
       }case MOD:{
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+        TYPETAG tempTYPETAG;
 
-        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
-
-        b_arith_rel_op(B_MOD, assTYPE);
-        return assTYPE;
+        b_arith_rel_op(B_MOD, tempTYPETAG);
+        return tempTYPETAG;
       //**************************************************************************************************
       }case MULT:{
-        TYPETAG typeTagLeft = genBackendAssigment(node->u.binop.left, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagLeft == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagLeft == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
+        TYPETAG tempTYPETAG;
 
-        TYPETAG typeTagRight = genBackendAssigment(node->u.binop.right, 1, assTYPE);
-        if(assTYPE == TYDOUBLE && typeTagRight == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-        if(assTYPE == TYSIGNEDLONGINT && typeTagRight == TYDOUBLE) b_convert(TYDOUBLE, TYSIGNEDLONGINT);
-
-        b_arith_rel_op(B_MULT, assTYPE);
-        return assTYPE;
+        b_arith_rel_op(B_MULT, tempTYPETAG);
+        return tempTYPETAG;
         //**************************************************************************************************
       }default:{
         bug("handleBINOP_NODE() bad binopType-- THIS IS AN ERROR");
@@ -473,7 +537,9 @@ TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
   }//END getTYPETAG()
 
 
-  void getBinopInfo(TN node, TYPETAG *tag, tagType *nodeType){
+//i think this is obsolete now that i added the "genBackend boolean to the main function to just return TYPETAGS"
+/*
+  void getBinopInfo(TN node, TYPETAG *tag, tagtype *nodeType){
 
     switch(node->tag){
       case INTCONSTANT:{
@@ -489,11 +555,11 @@ TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
       }case BOOL_NODE:{
         *tag = TYSIGNEDCHAR;
         *nodeType = BOOL_NODE;
-        return TYSIGNEDCHAR;
+        break;
 
       }case NEGNUM:{
         TN tempNode = node->u.negNode;
-        *nodeType = tempNode->tag;
+        *nodeType = NEGNUM;
         if(nodeType == INTCONSTANT){
           *tag = TYSIGNEDLONGINT;
           break;
@@ -508,7 +574,7 @@ TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
       }case VAR_NODE:{
         *nodeType = VAR_NODE;
         if(node->u.var_node.isInstalled){
-          *tag = getTYPETAG(startNode);
+          *tag = getTYPETAG(node);
         }else{ //var_node not installed in symbol table
           *tag = TYVOID;
         }
@@ -526,6 +592,7 @@ TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value){
         break;
       }}
   }//END getBinopInfo()
+  */
 
 
   /*
