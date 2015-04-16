@@ -71,6 +71,7 @@ void treeNodeToString(TN node, int isTop);
 TYPETAG genBackendAssigment(TN startNode, int fromExpr, TYPETAG assTYPE);
 TYPETAG handleBINOP_NODE(TN node, TYPETAG assTYPE, int *value);
 TYPETAG getTYPETAG(TN node);
+void getBinopInfo(TN node, TYPETAG *tag, tagType *nodeType);
 
 LD addToList(ST_ID id, LD oldList);
 INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);
