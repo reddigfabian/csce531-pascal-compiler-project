@@ -26,6 +26,7 @@ typedef struct tn{
 
     struct{
       ST_ID funcName;
+      STORAGE_CLASS SC;
       int isInstalled;
       ST_DR DR;
       STDR_TAG DRtag;
@@ -64,7 +65,7 @@ TN makeVarNode(ST_ID id);
 TN makeAssignNode(TN var, TN exp);
 TN makeBoolNode(int tempBool);
 TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType);
-TN makeFuncNode(ST_ID id, TYPETAG typeTag);
+TN makeFuncNode(ST_ID id, TYPETAG typeTag, TYPE type);
 
 void treeNodeToString(TN node, int isTop);
 

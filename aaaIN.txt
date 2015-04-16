@@ -5,71 +5,53 @@
 Program T2L80_ok;
 
 var
-   i,j,k,f : Integer; {# b_global_decl (F, alignment = 4, size = 4)
-                       # b_global_decl (K, alignment = 4, size = 4)
-                       # b_global_decl (J, alignment = 4, size = 4)
-                       # b_global_decl (I, alignment = 4, size = 4)}
+   i,j,k : Integer;
+   x,y,z : Single;
+   c	 : Char;
+   d	 : Real;
+   b	 : Boolean;
 
-   x : Real;          {# b_global_decl (X, alignment = 8, size = 8)}
+Procedure print_globals; External;
 
-   b : Boolean;
+Function get_real : Real; External;
 
-Function get_integer : Integer;       {# b_init_formal_param_offset ()
-                                        # b_func_prologue (Get_integer)
-                                        # b_alloc_return_value ( )
-                                        # b_alloc_local_vars ( size = 8 )
-                                        # b_alloc_local_vars ( size = 0 )}
-  begin
-    i := 10;                          {# b_push_ext_addr (I)
-                                        # b_push_const_int (10)
-                                        # b_assign (signed long int)
-                                        # b_pop ()}
+Function get_integer : Integer; External;
 
-  end; { get_integer }                {# b_prepare_return (signed long int)
-                                        # b_func_epilogue (Get_integer)}
+begin
 
-Function get_real : Real;             {# b_init_formal_param_offset ()
-                                        # b_func_prologue (Get_real)
-                                        # b_alloc_return_value ( )
-                                        # b_alloc_local_vars ( size = 8 )
-                                        # b_alloc_local_vars ( size = 0 )}
-  begin
-     x := 15.4;                       {# b_push_ext_addr (X)
-                                       # b_push_const_double (1.5400000000000000e+01)
-                                       # b_assign (double)
-                                       # b_pop ()}
+   i := 5;
+   j := i;
+   k := 14;
+   x := 3.14;
+   y := 2.71;
+   z := 0.0;
+   d := 19.1999;
+   b := False;
+   c := chr(65);
 
-  end; { get_real }                   {# b_prepare_return (double)
-                                        # b_func_epilogue (Get_real)}
+   print_globals;		{ link in print_globals later }
 
+   k := i + j;
+   j := i - k * k div (i + k);
+   i := k mod 7;
+   b := k > j;
+   c := succ(c);
 
-begin               {# b_func_prologue (main)}
+   print_globals;
 
+   y := k;
+   x := y;
+   d := k;
+   c := pred(chr(k));
+   z := ord(c) * i + (-d) - x;
+   b := c < chr(34);
+   b := b <= (i = 19);
 
-   k := i+j;      {# b_push_ext_addr (K)
-                   # b_push_ext_addr (I)
-                   # b_deref (signed long int)
-                   # b_push_ext_addr (J)
-                   # b_deref (signed long int)
-                   # b_arith_rel_op ( + , signed long int)
-                   # b_assign (signed long int)
-                   # b_pop ()}
+   print_globals;
 
-  f := 6 - 2;     {# b_push_ext_addr (F)
-                   # b_push_const_int (4)
-                   # b_assign (signed long int)
-                   # b_pop ()}
+   i := get_integer + 9; 	{ get_integer also linked in }
+   d := get_real + 9.9; 	{ get_real also linked in }
 
-  i := x;         {int := realVar, line 63: ERROR -- Illegal conversion}
+   print_globals
 
-  i := 7.8;       {int := realconst, line 65: ERROR -- Illegal conversion}
-
-  b := True;       {# b_push_ext_addr (B)
-                    # b_push_const_int (1)
-                    # b_convert (signed long int -> signed char)
-                    # b_assign (signed char)
-                    # b_pop ()}
-
-  b := False;
-
-end.                {# b_func_epilogue (main)}
+end.

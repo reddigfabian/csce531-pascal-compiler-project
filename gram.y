@@ -58,7 +58,8 @@ void yyerror(const char *);
 
 int myDebugPart1 = 1;
 int myDebugPart2 = 1;
-int myDump = 0;
+int myDump = 1;
+int insideFunc = 0;
 int block;
 ST_ID funcST_ID;
 INDEX_LIST rootOfUnRP;
@@ -96,7 +97,7 @@ void initRootOfUnRP(TYPE type); //prototype
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
 %type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type
     new_structured_type pointer_domain_type functiontype
-%type <y_int> constant number LEX_INTCONST sign adding_operator multiplying_operator
+%type <y_int> constant number LEX_INTCONST sign adding_operator multiplying_operator directive_list directive
 %type <y_real> LEX_REALCONST
 //%type <y_single>
 %type <y_char> '+' '-'
@@ -264,11 +265,11 @@ new_identifier_1:
   | p_PACK  {}
   | p_UNPACK  {}
 /* Standard Pascal ordinal functions */
-  | p_ORD  {}
-  | p_CHR  {}
-  | p_SUCC  {}
-  | p_PRED  {}
-  | p_ODD  {}
+  | p_ORD   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_ORD---",block);};}
+  | p_CHR   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_CHR---",block);};}
+  | p_SUCC  {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_SUCC---",block);};}
+  | p_PRED  {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_PRED---",block);};}
+  | p_ODD   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_ODD---",block);};}
 /* Other extensions */
   | BREAK  {}
   | CONTINUE  {}
@@ -702,7 +703,7 @@ variable_declaration:
                                                       int alignment = getAlignmentSize(typeToInstall);
                                                       int size = getSize(typeToInstall, alignment);
                                                       int amount = size;
-                                                      b_global_decl (idName, alignment, size);
+                                                      b_global_decl(idName, alignment, size);
                                                       b_skip(amount);
                                                     }
                                                   }else{
@@ -725,6 +726,12 @@ variable_declaration:
 function_declaration:
 
                 /*
+                typedef enum {
+                    STATIC_SC, EXTERN_SC, AUTO_SC, TYPEDEF_SC, REGISTER_SC, NO_SC
+                } STORAGE_CLASS;
+
+
+
                 { install function name FDECL
                     two possibilities:
                         if function name is not already in symbol table: then install it as a fresh FDECL
@@ -751,29 +758,69 @@ function_declaration:
     function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---",block);}
                                                                         //EXTERNAL DECLARED FUNCTIONS/PARAMETERS
                                                                         //cant have params (inputs)
-                                                                      }
+                                                                        int directive = $3;
+                                                                        TN tempFuncNode = $1;
+                                                                        ST_ID funcName = tempFuncNode->u.func_node.funcName;
+                                                                        TYPETAG funcTYPETAG = tempFuncNode->u.func_node.typeTag;
+                                                                        TYPE funcTYPE = tempFuncNode->u.func_node.type;
+                                                                        ST_DR IDtoInstall = st_lookup(funcName, &block);
+                                                                        if(IDtoInstall == NULL){
+                                                                          //install it
+                                                                          ST_DR DRtoInstall = stdr_alloc();
+                                                                          DRtoInstall->tag = FDECL;
+                                                                          DRtoInstall->u.decl.sc = EXTERN_SC;
+                                                                          DRtoInstall->u.decl.type = funcTYPE;
+                                                                          if(!(st_install(funcName,DRtoInstall))){
+                                                                            bug("st_install failed in external function declaration");
+                                                                          }else{
+                                                                            if(myDump) stdr_dump(DRtoInstall);
+                                                                            }
+
+                                                                        }else{
+                                                                          if(IDtoInstall->tag == FDECL) error("duplicate declaration");
+                                                                          if(IDtoInstall->tag == GDECL){
+                                                                            if(IDtoInstall->u.decl.type != funcTYPE){
+                                                                              error("symantic error: duplicate function name, differnt types");
+                                                                            }else{
+                                                                              if(IDtoInstall->u.decl.sc == EXTERN_SC) error("symantic error: duplicate function name");
+                                                                            }
+                                                                          }//END GDECL check
+                                                                        }//END Already installed check
+                                                                      }//END function_heading semi directive_list semi
   | function_heading semi {
                             funcST_ID = $1->u.func_node.funcName;
                           }
-    any_declaration_part {b_func_prologue(st_get_id_str(funcST_ID));}
-    statement_part semi  {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---",block);}
-                                                                          /* statement_part semi
-                                                                            b_prepare_return( return type )  //TYVOID for procedures
-                                                                            b_func_epilogue(func name)*/
+    any_declaration_part {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---line %d",block,sc_line());}
+                            b_func_prologue(st_get_id_str(funcST_ID));
+                            insideFunc = 1;
+                         }
+    statement_part semi  {if(myDebugPart2){msg("%d function_declaration:statement_part---line %d",block,sc_line());}
+                                                                          /* statement_part semi*/
+                                                                          TN tempFuncNode = $1;
+                                                                          ST_ID funcName = tempFuncNode->u.func_node.funcName;
+                                                                          TYPETAG funcTYPETAG = tempFuncNode->u.func_node.typeTag;
+                                                                          TYPE funcTYPE = tempFuncNode->u.func_node.type;
+                                                                          //need to handle assignments to func names first (aka returns)
+                                                                          //b_prepare_return(funcTYPETAG);  //TYVOID for procedures
+                                                                          b_func_epilogue(st_get_id_str(funcName));
                                                                       }
   ;
 
 function_heading:
-    LEX_PROCEDURE new_identifier optional_par_formal_parameter_list                {if(myDebugPart2){msg("%d function_heading:LEX_PROCEDURE---",block);}}
+    LEX_PROCEDURE new_identifier optional_par_formal_parameter_list                {if(myDebugPart2){msg("%d function_heading:LEX_PROCEDURE---",block);}
+                                                                                      TYPETAG tempTYPETAG = TYVOID;
+                                                                                      ST_ID tempSTID = $2;
+                                                                                      $$ = makeFuncNode(tempSTID, tempTYPETAG, ty_build_basic(tempTYPETAG));
+                                                                                   }
   | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype    {if(myDebugPart2){msg("%d function_heading:LEX_FUNCTION---",block);}
                                                                                       TYPETAG tempTYPETAG;
-                                                                                      if($4 == NULL){
-                                                                                        tempTYPETAG = TYVOID;
+                                                                                      if(ty_query($4) == TYERROR){
+                                                                                        error("No return type for function");
                                                                                       }else{
                                                                                         tempTYPETAG = ty_query($4);
                                                                                       }
                                                                                       ST_ID tempSTID = $2;
-                                                                                      $$ = makeFuncNode(tempSTID, tempTYPETAG);
+                                                                                      $$ = makeFuncNode(tempSTID, tempTYPETAG, $4);
                                                                                       /*MAKE FUNCTION NODE - fill it
                                                                                         new identifier for name
                                                                                         optional_par_formal_parameter_list for parameters
@@ -783,17 +830,17 @@ function_heading:
   ;
 
 directive_list:
-    directive                       {if(myDebugPart2){msg("%d directive_list:directive---",block);}}
-  | directive_list semi directive   {if(myDebugPart2){msg("%d directive_list:directive_list---",block);}}
+    directive                       {if(myDebugPart2){msg("%d directive_list:directive---",block);} $$ = $1;}
+  | directive_list semi directive   {if(myDebugPart2){msg("%d directive_list:directive_list---",block);}/*assume not used for now*/}
   ;
 
 directive:
-    LEX_FORWARD                     {if(myDebugPart2){msg("%d directive:LEX_FORWARD---",block);}}
-  | LEX_EXTERNAL                    {if(myDebugPart2){msg("%d directive:LEX_EXTERNAL---",block);}}
+    LEX_FORWARD                     {if(myDebugPart2){msg("%d directive:LEX_FORWARD---",block);} $$ = 1;}
+  | LEX_EXTERNAL                    {if(myDebugPart2){msg("%d directive:LEX_EXTERNAL---",block);} $$ = 0;}
   ;
 
 functiontype:
-    /* empty */                     {if(myDebugPart1){msg("functiontype:0---EMPTY");}}  //procedure
+    /* empty */                     {if(myDebugPart1){msg("functiontype:0---EMPTY");} $$ = ty_build_basic(TYERROR);}  //procedure
     | ':' typename                  {if(myDebugPart1){msg("functiontype:1--- %s", st_get_id_str($2));}
                                     ST_ID tempID = $2;
                                     ST_DR tempDR = st_lookup(tempID, &block);
@@ -830,9 +877,12 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN statement_sequence LEX_END              {/*everything withing begin and end, could be func/procedure def, or main*/
-                                                        if(myDebugPart2){msg("%d compound_statement:BEGIN and END---", block);}
-                                                        //is called on the line END in the sequence
+    LEX_BEGIN {if(!insideFunc)b_func_prologue("main");}
+    statement_sequence
+    LEX_END              {/*everything withing begin and end, could be func/procedure def, or main*/
+                                                        if(myDebugPart2){msg("%d compound_statement:BEGIN and END---line %d", block, sc_line());}
+                                                        if(!insideFunc)b_func_epilogue("main");
+                                                        insideFunc = 0;
                                                       }
   ;
 

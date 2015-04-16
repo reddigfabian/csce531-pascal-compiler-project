@@ -155,10 +155,11 @@ TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
   return tempTN;
 }
 
-TN makeFuncNode(ST_ID id, TYPETAG typeTag){
+TN makeFuncNode(ST_ID id, TYPETAG typeTag, TYPE type){
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->u.func_node.funcName = id;
   tempTN->u.func_node.typeTag = typeTag;
+  tempTN->u.func_node.type = type;
   return tempTN;
 }
 
@@ -248,7 +249,7 @@ TYPETAG genBackendAssigment(TN startNode, int fromExpr, int genBackend){
       //check TYPETAG values for the assignment, then error check or gen the backend
       int INVALID = 1;
       if(varTypeTag == expTypeTag) INVALID = 0;
-      if(varTypeTag == TYDOUBLE && expTypeTag == TYSIGNEDLONGINT) INVALID = 0;
+      if(varTypeTag == TYDOUBLE && expTypeTag == TYSIGNEDLONGINT) INVALID = 0;  //needs to do the conversion
 
       if(INVALID) error("Illegal conversion");
       else{
@@ -470,52 +471,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
 
   else{ //not a BINOP_NODE, left or right side of a BINOP_NODE
     bug("handleBINOP_NODE() was passed NON-BINOP_NODE");
-    /*
-    switch(node->tag){
-
-      case INTCONSTANT:{
-        long tempInt = node->u.intconstant;
-        b_push_const_int(tempInt);
-        return TYSIGNEDLONGINT;   //not 100% yet
-
-      }case REALCONSTANT:{
-        double tempReal = startNode->u.realconstant;
-        b_push_const_double(tempReal);
-        return TYDOUBLE;  //not 100% yet
-
-      }case BOOL_NODE:{
-        //HANDLE BOOLEAN NODE BACKEND
-        break;
-
-      }case NEGNUM:{
-        TN tempNode = startNode->u.negNode;
-        tagtype tempTagType = tempNode->tag;
-        if(tempTagType == INTCONSTANT){
-          long tempInt = -1 * tempNode->u.intconstant;
-          b_push_const_int(tempInt);
-          return TYSIGNEDLONGINT;   //not 100% yet
-
-        }else if(tempTagType == REALCONSTANT){
-          double tempReal = -1 * tempNode->u.realconstant;
-          b_push_const_double(tempReal);
-          return TYDOUBLE;  //not 100% yet
-
-        }else{
-          bug("unchecked tag in NEGNUM genBackendAssigment()");
-          break;
-        }
-
-      }case VAR_NODE:{
-
-
-      }default:{
-        ERRPR("Wrong type on right side of assignment -- THIS IS AN ERROR");
-        break;
-      }
-    }//end switch for NOT a BINOP_NODE
-    */
-
-  }//end else (NOT a BINOP_NODE)
+  }
 
 }//end handleBINOP_NODE
 
@@ -535,64 +491,6 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
     msg("VAR_NODE, getTYPETAG, returned TYERROR:");
     return TYERROR;
   }//END getTYPETAG()
-
-
-//i think this is obsolete now that i added the "genBackend boolean to the main function to just return TYPETAGS"
-/*
-  void getBinopInfo(TN node, TYPETAG *tag, tagtype *nodeType){
-
-    switch(node->tag){
-      case INTCONSTANT:{
-        *tag = TYSIGNEDLONGINT;
-        *nodeType = INTCONSTANT;
-        break;
-
-      }case REALCONSTANT:{
-        *tag = TYDOUBLE;
-        *nodeType = REALCONSTANT;
-        break;
-
-      }case BOOL_NODE:{
-        *tag = TYSIGNEDCHAR;
-        *nodeType = BOOL_NODE;
-        break;
-
-      }case NEGNUM:{
-        TN tempNode = node->u.negNode;
-        *nodeType = NEGNUM;
-        if(nodeType == INTCONSTANT){
-          *tag = TYSIGNEDLONGINT;
-          break;
-        }else if(nodeType == REALCONSTANT){
-          *tag = TYDOUBLE;
-          break;
-        }else{
-          bug("unchecked tag in NEGNUM getBinopInfo()");
-          break;
-        }
-
-      }case VAR_NODE:{
-        *nodeType = VAR_NODE;
-        if(node->u.var_node.isInstalled){
-          *tag = getTYPETAG(node);
-        }else{ //var_node not installed in symbol table
-          *tag = TYVOID;
-        }
-        break;
-
-
-      }case BINOP_NODE:{
-        //some nested crap going on here maaaan
-        *nodeType = BINOP_NODE;
-        *tag = TYVOID;
-        break;
-
-      }default:{
-        bug("getBinopInfo() -- THIS IS AN ERROR");
-        break;
-      }}
-  }//END getBinopInfo()
-  */
 
 
   /*

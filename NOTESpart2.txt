@@ -442,21 +442,19 @@ lex_POW?
 
 ============================TO DO========================================================================================================================================
 
-Extern functions
-
-PROGRESS, nearly done, maybe some more checks --- binops backend
-
-WORKING, EASY to add more. still need to type cast. compare var and expression types (and error check/ convert when can)
-
 handle unary ops (negative vars, built-in pascal functions)
 
-DONE --- boolean backend
+WORKING, for what binops implimented, constant folding (for EC)
 
-WORKING, for what binops inplimented, constant folding (for EC)
+main backend thing
 
 PROGRESS general error checking (compare with his errors)
+
+=================100% part
+
+forwards function directive
+function definitions
 
 
 
 =====================
-His solution isnt backend-ing the inside of our section function in the test file (function get_Real) -- FIXED, we were assigning a double to a int var
