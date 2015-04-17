@@ -97,16 +97,18 @@ void initRootOfUnRP(TYPE type); //prototype
 %type <y_ST_ID> new_identifier new_identifier_1 typename identifier
 %type <y_type> type_denoter new_ordinal_type subrange_type array_type ordinal_index_type new_pointer_type new_procedural_type
     new_structured_type pointer_domain_type functiontype
-%type <y_int> constant number LEX_INTCONST sign adding_operator multiplying_operator directive_list directive
+%type <y_int> constant number LEX_INTCONST sign adding_operator multiplying_operator directive_list directive rts_fun_onepar
+                  rts_fun_parlist relational_operator
 %type <y_real> LEX_REALCONST
 //%type <y_single>
 %type <y_char> '+' '-'
 //s%type <y_bool>
 
 %type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
-    simple_expression rest_of_statement unsigned_number factor signed_factor primary
-    signed_primary term assignment_or_call_statement constant_literal predefined_literal
-    variable_or_function_access variable_or_function_access_no_standard_function function_heading
+    simple_expression rest_of_statement unsigned_number factor signed_factor primary standard_functions
+    signed_primary term assignment_or_call_statement constant_literal predefined_literal actual_parameter
+    variable_or_function_access variable_or_function_access_no_standard_function function_heading actual_parameter_list
+
 
 
 
@@ -984,20 +986,11 @@ simple_statement:
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
                                           /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
-                                          if(myDebugPart2){msg("Calling genBackendAssigment()");}
-                                          genBackendAssigment($1, 0, 0); //always call with (node, 0, 0) from gramar
+                                          if(myDebugPart2){msg("Calling genBackendAssignment()");}
+                                          genBackendAssignment($1, 0, 0); //always call with (node, 0, 0) from gramar
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
-                                          /*needs to be implimented i think, not covered in NOTES yet
-                                            rts_proc_onepar '(' actual_parameter ')'
-                                          | rts_proc_parlist '(' actual_parameter_list ')'
-                                          | p_WRITE optional_par_write_parameter_list
-                                          | p_WRITELN optional_par_write_parameter_list
-                                          | p_READ optional_par_actual_parameter_list
-                                          | p_READLN optional_par_actual_parameter_list
-                                          | p_PAGE optional_par_actual_parameter_list
-                                          | p_DISPOSE '(' actual_parameter ')'
-                                          | p_DISPOSE '(' actual_parameter ',' actual_parameter_list ')'*/
+
                                         }
   | statement_extensions                {/*not used, not part of standar pascal*/}
   ;
@@ -1019,7 +1012,7 @@ actual_parameter_list:
   ;
 
 actual_parameter:
-    expression
+    expression  {$$ = $1;}
   ;
 
 /* ASSIGNMENT and procedure calls */
@@ -1038,15 +1031,31 @@ assignment_or_call_statement:     /*tree node*/
 
 variable_or_function_access_maybe_assignment:    /*tree node*/
     identifier                                            {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
-                                                            //if(variable name){
-                                                            $$ = makeVarNode($1);
-                                                            //}
-                                                            /*check if function name of current function definition (for setting return value)
-                                                              create function return node (or something)
-                                                            */
-                                                            /*check if a procedure call name (that has no parameters)
-                                                              go get this procedures top node, or create it i guess
-                                                            */
+
+                                                            ST_DR tempDR = st_lookup($1,&block);
+                                                            STDR_TAG tempSTDR_TAG;
+                                                            TYPE tempTYPE;
+                                                            if(tempDR == NULL){
+                                                              error("variable or function undeclared");
+                                                            }else{
+                                                              //ECONST, GDECL, LDECL, PDECL, FDECL, TYPENAME
+                                                              tempSTDR_TAG = tempDR->tag;
+                                                              tempTYPE = tempDR->u.decl.type;
+
+                                                              if(tempSTDR_TAG == GDECL | tempSTDR_TAG == LDECL){
+                                                                $$ = makeVarNode($1);
+                                                              }else if(tempSTDR_TAG == FDECL){
+                                                                $$ = makeFuncNode($1, ty_query(tempTYPE), tempTYPE);
+                                                              }else{
+                                                                bug("variable_or_function_access_maybe_assignment:identifier unhandled STDR_TAG");
+                                                              }
+                                                              /*check if function name of current function definition (for setting return value)
+                                                                create function return node (or something)
+                                                              */
+                                                              /*check if a procedure call name (that has no parameters)
+                                                                go get this procedures top node, or create it i guess
+                                                              */
+                                                          }//was found in the DR
                                                           }
   | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
   | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}/*example:    foo(x)^ := 6  */}
@@ -1168,7 +1177,8 @@ boolean_expression:
 
 expression:     /*tree node*/      /*net result of evaluating an expression, one return value push on the stack*/
     expression relational_operator simple_expression     {if(myDebugPart2){msg("%d expression:1---", block);}
-                                                            /* confirmed used in Part2 */
+                                                            relationalType relType = $2;
+                                                            $$ = makeRelopNode($1, relType, $3);
                                                          }
   | expression LEX_IN simple_expression                  {if(myDebugPart2){msg("%d expression:2---", block);}
                                                           /* probably unused for part 2*/
@@ -1328,10 +1338,31 @@ member_designator:
   ;
 
 standard_functions:
-    rts_fun_onepar '(' actual_parameter ')'
-  | rts_fun_optpar optional_par_actual_parameter
-  | rts_fun_parlist '(' actual_parameter_list ')'
+    rts_fun_onepar '(' actual_parameter ')'     {if(myDebugPart2){msg("%d standard_functions:rts_fun_onepar(actual_parameter)---",block);}
+                                                  unopType tempUnopType;
+                                                  if($1 == pas_ORD){
+                                                    tempUnopType = ORD;
+                                                  }else if($1 == pas_CHR){
+                                                    tempUnopType = CHR;
+                                                  }else{
+                                                    bug("Unexpected \"rts_fun_onepar\" value");
+                                                  }
+                                                  $$ = makeUnopNode($3,tempUnopType);
+                                                }
+  | rts_fun_optpar optional_par_actual_parameter  {}
+  | rts_fun_parlist '(' actual_parameter_list ')' {if(myDebugPart2){msg("%d standard_functions:rts_fun_parlist(actual_parameter_list)---",block);}
+                                                    unopType tempUnopType;
+                                                    if($1 == pas_SUCC){
+                                                      tempUnopType = SUCC;
+                                                    }else if($1 == pas_PRED){
+                                                      tempUnopType = PRED;
+                                                    }else{
+                                                      bug("Unexpected \"rts_fun_onepar\" value");
+                                                    }
+                                                    $$ = makeUnopNode($3,tempUnopType);
+                                                  }
   ;
+
 
 optional_par_actual_parameter:
     /* empty */
@@ -1343,44 +1374,44 @@ rts_fun_optpar:
   | p_EOLN
   ;
 
-rts_fun_onepar:
-    p_ABS
-  | p_SQR
-  | p_SIN
-  | p_COS
-  | p_EXP
-  | p_LN
-  | p_SQRT
-  | p_ARCTAN
-  | p_ARG
-  | p_TRUNC
-  | p_ROUND
-  | p_CARD
-  | p_ORD
-  | p_CHR
-  | p_ODD
-  | p_EMPTY
-  | p_POSITION
-  | p_LASTPOSITION
-  | p_LENGTH
-  | p_TRIM
-  | p_BINDING
-  | p_DATE
-  | p_TIME
+rts_fun_onepar:   /*type is enum rtsFunOnePar*/
+    p_ABS           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ABS---",block);};}
+  | p_SQR           {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQR---",block);};}
+  | p_SIN           {if(myDebugPart2){msg("%d rts_fun_onepar:p_SIN---",block);};}
+  | p_COS           {if(myDebugPart2){msg("%d rts_fun_onepar:p_COS---",block);};}
+  | p_EXP           {if(myDebugPart2){msg("%d rts_fun_onepar:p_EXP---",block);};}
+  | p_LN            {if(myDebugPart2){msg("%d rts_fun_onepar:p_LN---",block);};}
+  | p_SQRT          {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQRT---",block);};}
+  | p_ARCTAN        {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARCTAN---",block);};}
+  | p_ARG           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARG---",block);};}
+  | p_TRUNC         {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRUNC---",block);};}
+  | p_ROUND         {if(myDebugPart2){msg("%d rts_fun_onepar:p_ROUND---",block);};}
+  | p_CARD          {if(myDebugPart2){msg("%d rts_fun_onepar:p_CARD---",block);};}
+  | p_ORD           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ORD---",block);}; $$ = pas_ORD;}
+  | p_CHR           {if(myDebugPart2){msg("%d rts_fun_onepar:p_CHR---",block);}; $$ = pas_CHR;}
+  | p_ODD           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ODD---",block);};}
+  | p_EMPTY         {if(myDebugPart2){msg("%d rts_fun_onepar:p_EMPTY---",block);};}
+  | p_POSITION      {if(myDebugPart2){msg("%d rts_fun_onepar:p_POSITION---",block);};}
+  | p_LASTPOSITION  {if(myDebugPart2){msg("%d rts_fun_onepar:p_LASTPOSITION---",block);};}
+  | p_LENGTH        {if(myDebugPart2){msg("%d rts_fun_onepar:p_LENGTH---",block);};}
+  | p_TRIM          {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRIM---",block);};}
+  | p_BINDING       {if(myDebugPart2){msg("%d rts_fun_onepar:p_BINDING---",block);};}
+  | p_DATE          {if(myDebugPart2){msg("%d rts_fun_onepar:p_DATE---",block);};}
+  | p_TIME          {if(myDebugPart2){msg("%d rts_fun_onepar:p_TIME---",block);};}
   ;
 
 rts_fun_parlist:
-    p_SUCC    /* One or two args */
-  | p_PRED    /* One or two args */
+    p_SUCC          {if(myDebugPart2){msg("%d rts_fun_parlist:p_SUCC---",block);}; $$ = pas_SUCC;}/* One or two args */
+  | p_PRED          {if(myDebugPart2){msg("%d rts_fun_parlist:p_PRED---",block);}; $$ = pas_PRED;}/* One or two args */
   ;
 
-relational_operator:
-    LEX_NE   /* "<>" */
-  | LEX_LE   /* "<=" */
-  | LEX_GE   /* ">=" */
-  | '='
-  | '<'
-  | '>'
+relational_operator:   //typedef enum{NE,LE,GE,EQ,LT,GT}relationalType;
+    LEX_NE   /* "<>" */     {$$ = NE;}
+  | LEX_LE   /* "<=" */     {$$ = LE;}
+  | LEX_GE   /* ">=" */     {$$ = GE;}
+  | '='                     {$$ = EQ;}
+  | '<'                     {$$ = LT;}
+  | '>'                     {$$ = GT;}
   ;
 
 multiplying_operator:    /*int type*/

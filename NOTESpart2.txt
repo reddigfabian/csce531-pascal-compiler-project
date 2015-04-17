@@ -21,7 +21,7 @@ Ordinal Types : values are in a linearly ordered sequence : each value (except m
                         Boolean : 0 for FALSE,  1 for TRUE
                 chr : Integer ----> Char
 
-Expresion vs a statement
+Expression vs a statement
 Expr has a value, statement does not (side effects)
 
 Parsing exprs and building syntax trees
@@ -450,6 +450,32 @@ main backend thing
 
 PROGRESS general error checking (compare with his errors)
 
+---------------------------------------------
+
+For the 80% level of this assignment,
+you can assume that expressions and statements will only be made up of:
+the assignment operator (:=), DONE
+the basic arithmetic binary operators (+,-,*,div,mod,/),
+the unary plus and minus arithmetic operator (+ and -),
+integer constants, DONE
+real (floating-point) constants, DONE
+the basic comparison operators (=,<,>,<>,<=,>=),
+the unary operators ord, chr, succ, pred,
+(you may assume that succ and pred are never called with more than one argument, although the grammar allows one or two),
+global variables (only types Char, Integer, Single, Real, or Boolean), DONE
+parentheses,
+and calls to external procedures and functions with no actual arguments. DONE
+You can ignore any other constructs such as labels and control flow constructs (loops, if-statements, goto's, etc.). DONE
+Only the assignment operator and procedure calls make statements; the rest of the components mentioned produce expressions.
+
+At runtime, we evaluate expressions using the control stack (a "stack machine").
+To evaluate an atomic expression (e.g., a variable or constant), we generate code to push that value onto the stack. DONE
+To apply an operator to one or more operands, we pop the operands off the stack, apply the operator to them, DONE
+then push the result back onto the stack. The routines in the back-end for encoding expressions generate code to do this. DONE
+
+---------------------------------------------
+
+
 =================100% part
 
 forwards function directive
@@ -458,3 +484,9 @@ function definitions
 
 
 =====================
+
+
+
+int a[10];
+
+a[6] = 3;  ====>   *(a+6) = 3; ====>  *(6+a) = 3; ====> 6[a] = 3;

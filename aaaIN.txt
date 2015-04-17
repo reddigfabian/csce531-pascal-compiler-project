@@ -42,6 +42,8 @@ begin
    y := k;
    x := y;
    d := k;
+   c := chr(k);
+   c := pred(c); {pred cant take an int}
    c := pred(chr(k));
    z := ord(c) * i + (-d) - x;
    b := c < chr(34);
