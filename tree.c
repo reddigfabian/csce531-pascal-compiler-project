@@ -221,6 +221,7 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
       char *tempName = st_get_id_str(startNode->u.func_node.funcName);
       b_alloc_arglist(0);  //for exterens and forwards (no args)
       b_funcall_by_name(tempName, tempTYPETAG);
+      return tempTYPETAG;
 
     }case STRINGCONSTANT:{
       char *tempStr;
@@ -427,7 +428,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         }//END CONSTANT FOLDING of const ints/doubles
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
-          if(LnodeType == VAR_NODE | LnodeType == NEGNUM){
+          if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.left, 1, genBackend);
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(LnodeType == BINOP_NODE | LnodeType ==  UNOP_NODE){
@@ -440,7 +441,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               bug("something not handled in handleBINOP_NODE ADD, left side");
             }
 
-           if(RnodeType == VAR_NODE | RnodeType == NEGNUM){
+           if(RnodeType == VAR_NODE | RnodeType == NEGNUM | RnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.right, 1, genBackend );
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(RnodeType == BINOP_NODE | RnodeType ==  UNOP_NODE){
@@ -501,7 +502,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         }//END CONSTANT FOLDING of const ints/doubles
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
-          if(LnodeType == VAR_NODE | LnodeType == NEGNUM){
+          if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.left, 1, genBackend);
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(LnodeType == BINOP_NODE | LnodeType ==  UNOP_NODE){
@@ -514,7 +515,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               bug("something not handled in handleBINOP_NODE SUB, left side");
             }
 
-           if(RnodeType == VAR_NODE | RnodeType == NEGNUM){
+           if(RnodeType == VAR_NODE | RnodeType == NEGNUM | RnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.right, 1, genBackend );
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(RnodeType == BINOP_NODE | RnodeType ==  UNOP_NODE){
@@ -574,7 +575,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         }//END CONSTANT FOLDING of const ints/doubles
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
-          if(LnodeType == VAR_NODE | LnodeType == NEGNUM){
+          if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.left, 1, genBackend);
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(LnodeType == BINOP_NODE | LnodeType ==  UNOP_NODE){
@@ -587,7 +588,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               bug("something not handled in handleBINOP_NODE INT_DIV, left side");
             }
 
-           if(RnodeType == VAR_NODE | RnodeType == NEGNUM){
+           if(RnodeType == VAR_NODE | RnodeType == NEGNUM | RnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.right, 1, genBackend );
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(RnodeType == BINOP_NODE | RnodeType ==  UNOP_NODE){
@@ -648,7 +649,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         }//END CONSTANT FOLDING of const ints/doubles
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
-          if(LnodeType == VAR_NODE | LnodeType == NEGNUM){
+          if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.left, 1, genBackend);
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(LnodeType == BINOP_NODE | LnodeType ==  UNOP_NODE){
@@ -661,7 +662,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               bug("something not handled in handleBINOP_NODE REAL_DIV, left side");
             }
 
-           if(RnodeType == VAR_NODE | RnodeType == NEGNUM){
+           if(RnodeType == VAR_NODE | RnodeType == NEGNUM | RnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.right, 1, genBackend );
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(RnodeType == BINOP_NODE | RnodeType ==  UNOP_NODE){
@@ -702,7 +703,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         }//END CONSTANT FOLDING of const ints/doubles
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
-          if(LnodeType == VAR_NODE | LnodeType == NEGNUM){
+          if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.left, 1, genBackend);
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(LnodeType == BINOP_NODE | LnodeType ==  UNOP_NODE){
@@ -715,7 +716,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               bug("something not handled in handleBINOP_NODE MOD, left side");
             }
 
-           if(RnodeType == VAR_NODE | RnodeType == NEGNUM){
+           if(RnodeType == VAR_NODE | RnodeType == NEGNUM | RnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.right, 1, genBackend );
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(RnodeType == BINOP_NODE | RnodeType == UNOP_NODE){
@@ -776,7 +777,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         }//END CONSTANT FOLDING of const ints/doubles
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
-          if(LnodeType == VAR_NODE | LnodeType == NEGNUM){
+          if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.left, 1, genBackend);
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(LnodeType == BINOP_NODE | LnodeType ==  UNOP_NODE){
@@ -789,7 +790,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               bug("something not handled in handleBINOP_NODE MULT, left side");
             }
 
-           if(RnodeType == VAR_NODE | RnodeType == NEGNUM){
+           if(RnodeType == VAR_NODE | RnodeType == NEGNUM | RnodeType == FUNC_NODE){
              genBackendAssignment(node->u.binop.right, 1, genBackend );
              //b_convert (TYPETAG from, TYPETAG to) if needed
            }else if(RnodeType == BINOP_NODE | RnodeType ==  UNOP_NODE){
@@ -1021,6 +1022,7 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
       case FUNC_NODE:{
         msgn("FUNC_NODE node: %s of type: ",st_get_id_str(node->u.func_node.funcName));
         ty_print_typetag(node->u.func_node.typeTag);
+        break;
       }
 
       default:

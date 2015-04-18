@@ -987,10 +987,8 @@ simple_statement:
     empty_statement                     {if(myDebugPart2){msg("%d simple_statement:1---EMPTY STATEMENT", block);}
                                           /*no return, if last stement has a semi, this is the filler to allow it*/}
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
-                                          /* needs to be implimented:
-                                          variable_or_function_access_maybe_assignment rest_of_statement*/
                                           if(myDebugPart2){msg("Calling genBackendAssignment() on");treeNodeToString($1, 1);}
-                                          //always call with (node, 0, 0) from gramar
+                                          //always call an assigment with (node, 0, 0) from gramar
                                           if($1->tag != ERROR_NODE) genBackendAssignment($1, 0, 0);
 
                                         }
@@ -1027,10 +1025,43 @@ assignment_or_call_statement:     /*tree node*/
                                                                         /*rest_of_statement can be empty, or :=*/
                                                                         TN tempTreeNode;
                                                                         if($1->tag == VAR_NODE){
+                                                                          if($2->tag == FUNC_NODE && $2->u.func_node.typeTag == TYVOID){
+                                                                            error("Cannot convert between nondata types");
+                                                                            $$ = makeErrorNode();
+
+                                                                          }else if($2->tag != ERROR_NODE){
                                                                           tempTreeNode = makeAssignNode($1, $2);
                                                                           $$ = tempTreeNode;
+                                                                        }else{
+                                                                            error("Expected procedure name, saw data");
+                                                                            $$ = $2;
                                                                         }
-                                                                     }
+
+                                                                      }else if($1->tag == FUNC_NODE){
+                                                                        if($2->tag == ERROR_NODE){
+                                                                          //rest of statement is empty for function calls
+                                                                          $$ = $1;
+                                                                        }else{ //assigning to a function name
+                                                                          //error("not a return inside a function definition");
+                                                                          error("Assignment requires l-value on the left");
+                                                                          $$ = makeErrorNode();
+                                                                        }
+
+                                                                      }else if($1->tag == ERROR_NODE){
+                                                                        //undeclared id
+                                                                        $$ = $1;
+
+                                                                      }else if($1->tag != VAR_NODE && $2->tag != ERROR_NODE){
+                                                                        error("Assignment requires l-value on the left");
+                                                                        $$ = makeErrorNode();
+
+
+                                                                      }else{
+                                                                        error("Procedure call expected");
+                                                                        $$ = makeErrorNode();
+                                                                      }
+
+                                                                    }//END of assignment_or_call_statement
   ;
 
 variable_or_function_access_maybe_assignment:    /*tree node*/
@@ -1069,25 +1100,21 @@ variable_or_function_access_maybe_assignment:    /*tree node*/
                                                               */
                                                           }//was found in the DR
                                                           }
+
   | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
+
   | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}
                                                             /*example:    foo(x)^ := 6  */
-                                                            if($1->tag == VAR_NODE || $1->tag == FUNC_NODE){
                                                               $$ = $1;
-                                                            }else{
-                                                              error("Procedure call expected");
-                                                            }
-                                                            /*  WE ARE HERE
-                                                            check for:    Assignment requires l-value on the left
-                                                            */
-
                                                           }
   ;
 
 rest_of_statement:  /*tree node*/
-    /* Empty */                                           {if(myDebugPart2){msg("%d rest_of_statement:0---EMPTY", block);}}
+    /* Empty */                                           {if(myDebugPart2){msg("%d rest_of_statement:0---EMPTY", block);}
+                                                            //Procedure or function call
+                                                            $$ = makeErrorNode();
+                                                          }
   | LEX_ASSIGN expression                                 {if(myDebugPart2){msg("%d rest_of_statement:1---", block);}
-                                                             /*curently only handles simple expression, 1 term*/
                                                              $$ = $2;
                                                           }
   ;
@@ -1321,8 +1348,43 @@ variable_or_function_access:
 
 variable_or_function_access_no_standard_function:
     identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}
-                                                          $$ = makeVarNode($1);
-                                                        }
+
+
+                                                          ST_DR tempDR = st_lookup($1,&block);
+                                                          STDR_TAG tempSTDR_TAG;
+                                                          TYPE tempTYPE;
+                                                          if(tempDR == NULL){
+                                                            error("Undeclared identifier \"%s\" in expression",st_get_id_str($1));
+                                                            $$ = makeErrorNode();
+                                                          }else{
+                                                            //ECONST, GDECL, LDECL, PDECL, FDECL, TYPENAME
+                                                            tempSTDR_TAG = tempDR->tag;
+                                                            tempTYPE = tempDR->u.decl.type;
+
+                                                            if(tempSTDR_TAG == GDECL | tempSTDR_TAG == LDECL){
+                                                              if(tempDR->u.decl.sc == EXTERN_SC){
+                                                                $$ = makeFuncNode($1, ty_query(tempTYPE), tempTYPE);
+                                                              }else if(tempDR->u.decl.sc == NO_SC){
+                                                                $$ = makeVarNode($1);
+                                                              }else{
+                                                                bug("unhandled storage class in variable_or_function_access_maybe_assignment:identifier");
+                                                              }
+
+                                                            }else if(tempSTDR_TAG == FDECL){
+                                                              $$ = makeFuncNode($1, ty_query(tempTYPE), tempTYPE);
+                                                            }else{
+                                                              bug("variable_or_function_access_maybe_assignment:identifier unhandled STDR_TAG");
+                                                            }
+                                                            // check if function name of current function definition (for setting return value)
+                                                            //   create function return node (or something)
+                                                            //
+                                                            // check if a procedure call name (that has no parameters)
+                                                            //   go get this procedures top node, or create it i guess
+
+                                                        }//was found in the DR
+
+                                                      }//END identifier
+
   | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---", block);}}
   ;
 
