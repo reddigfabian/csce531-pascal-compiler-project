@@ -56,7 +56,7 @@ PROJECTNAME = pas-proj2
 #
 # For tesing function
 #
-FILEIN = ./aaaIN.txt
+FILEIN = ./Part2/test/T2L80_err.pas
 #Part2/test/T2L80_ok.pas
 
 ERRORIN = Part2/test/T2L80_err.pas
@@ -117,9 +117,14 @@ test:
 	-cat $(FILEOUT) | grep '#' > aaaSOLout.txt
 	-cat aaaSOLout.txt > $(FILEOUT)
 	-rm aaaSOLout.txt
+	-cat $(ERROROUT) | grep 'ERROR' > aaaSOLout.txt
+	-cat $(ERROROUT) > tempfile.txt
+	-cat aaaSOLout.txt > $(ERROROUT)
+	-cat tempfile.txt >> $(ERROROUT)
+	-rm aaaSOLout.txt tempfile.txt
+
 
 testSol:
-	-make -B
 	-./Part2/ppc3-sol < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
 	-cat $(FILEOUT) | grep '#' > aaaSOLout.txt
 	-cat aaaSOLout.txt > $(FILEOUT)

@@ -1,7 +1,7 @@
 #include "symtab.h"
 #include "backend-x86.h"
 
-typedef enum{INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE}tagtype;
+typedef enum{STRINGCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE, ERROR_NODE}tagtype;
 
 typedef enum{CHR, ORD, SUCC, PRED, NEG}unopType;
 
@@ -28,6 +28,7 @@ typedef struct tn{
     double realconstant;
     struct tn *negNode;
     int boolean;
+    char *string;
 
     struct{
       ST_ID varName;
@@ -82,9 +83,10 @@ typedef struct LoIDs{
   struct LoIDs *next;
 }listOfIds, *LD;
 
-
+TN makeErrorNode();
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
+TN makeStringConstNode(char *stringconstant);
 TN makeNegNumNode(TN numNode);
 TN makeVarNode(ST_ID id);
 TN makeAssignNode(TN var, TN exp);

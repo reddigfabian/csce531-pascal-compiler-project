@@ -10,7 +10,7 @@
 # This script must be run under the bash shell!
 
 # edit as needed
-$project_directory = "$ENV{HOME}/public_html/csce531/handouts/pas-proj2";
+$project_directory = "$ENV{HOME}/CSCE531/Project/Part2/pas-proj2";
 $semester = 'sp15';
 
 # This varies by system
@@ -21,7 +21,7 @@ $semester = 'sp15';
 
 ############ You should not have to edit below this line ##############
 
-$testSuiteDir = "$project_directory/test";
+$testSuiteDir = "$project_directory/Part2/test";
 $submissionRoot = "$ENV{HOME}/courses/csce531/$semester/pas-proj2/submissions";
 $testFilePrefix = 'T2L';
 $hwDir = 'pas-proj2';
@@ -364,7 +364,7 @@ sub test_execution {
 	    $error_counts{$base}++;
 	    next;
 	}
-	    
+
 	unlink "a.out"
 	    if -e "a.out";
 
@@ -547,7 +547,7 @@ sub now {
     } else {
 	$ret .= "EST";
     }
-    return $ret;    
+    return $ret;
 }
 
 

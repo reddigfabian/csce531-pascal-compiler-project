@@ -56,9 +56,9 @@
 void set_yydebug(int);
 void yyerror(const char *);
 
-int myDebugPart1 = 1;
+int myDebugPart1 = 0;
 int myDebugPart2 = 1;
-int myDump = 1;
+int myDump = 0;
 int insideFunc = 0;
 int block;
 ST_ID funcST_ID;
@@ -102,9 +102,10 @@ void initRootOfUnRP(TYPE type); //prototype
 %type <y_real> LEX_REALCONST
 //%type <y_single>
 %type <y_char> '+' '-'
+%type <y_string> LEX_STRCONST
 //s%type <y_bool>
 
-%type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id
+%type <y_TN> variable_or_function_access_maybe_assignment expression variable_or_function_access_no_id string
     simple_expression rest_of_statement unsigned_number factor signed_factor primary standard_functions
     signed_primary term assignment_or_call_statement constant_literal predefined_literal actual_parameter
     variable_or_function_access variable_or_function_access_no_standard_function function_heading actual_parameter_list
@@ -382,8 +383,10 @@ predefined_literal:     /*TREE NODE*/
   ;
 
 string:                  /*TREE NODE*/
-    LEX_STRCONST                    {/*might be needed later*/}
-  | string LEX_STRCONST             {/*might be needed later*/}
+    LEX_STRCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:1---",block);}
+                                      $$ = makeStringConstNode($1);
+                                    }
+  | string LEX_STRCONST             {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:2---",block);}}
   ;
 
 type_definition_part:
@@ -769,7 +772,7 @@ function_declaration:
                                                                         if(IDtoInstall == NULL){
                                                                           //install it
                                                                           ST_DR DRtoInstall = stdr_alloc();
-                                                                          DRtoInstall->tag = FDECL;
+                                                                          DRtoInstall->tag = GDECL;
                                                                           DRtoInstall->u.decl.sc = EXTERN_SC;
                                                                           DRtoInstall->u.decl.type = funcTYPE;
                                                                           if(!(st_install(funcName,DRtoInstall))){
@@ -779,8 +782,8 @@ function_declaration:
                                                                             }
 
                                                                         }else{
-                                                                          if(IDtoInstall->tag == FDECL) error("duplicate declaration");
-                                                                          if(IDtoInstall->tag == GDECL){
+                                                                          if(IDtoInstall->tag == GDECL) error("Duplicate forward or external function declaration");
+                                                                          if(IDtoInstall->tag == FDECL){
                                                                             if(IDtoInstall->u.decl.type != funcTYPE){
                                                                               error("symantic error: duplicate function name, differnt types");
                                                                             }else{
@@ -986,8 +989,10 @@ simple_statement:
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
                                           /* needs to be implimented:
                                           variable_or_function_access_maybe_assignment rest_of_statement*/
-                                          if(myDebugPart2){msg("Calling genBackendAssignment()");}
-                                          genBackendAssignment($1, 0, 0); //always call with (node, 0, 0) from gramar
+                                          if(myDebugPart2){msg("Calling genBackendAssignment() on");treeNodeToString($1, 1);}
+                                          //always call with (node, 0, 0) from gramar
+                                          if($1->tag != ERROR_NODE) genBackendAssignment($1, 0, 0);
+
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
 
@@ -1023,7 +1028,6 @@ assignment_or_call_statement:     /*tree node*/
                                                                         TN tempTreeNode;
                                                                         if($1->tag == VAR_NODE){
                                                                           tempTreeNode = makeAssignNode($1, $2);
-                                                                          if(myDebugPart2){treeNodeToString(tempTreeNode, 1);}
                                                                           $$ = tempTreeNode;
                                                                         }
                                                                      }
@@ -1036,14 +1040,22 @@ variable_or_function_access_maybe_assignment:    /*tree node*/
                                                             STDR_TAG tempSTDR_TAG;
                                                             TYPE tempTYPE;
                                                             if(tempDR == NULL){
-                                                              error("variable or function undeclared");
+                                                              error("Undeclared identifier \"%s\" in expression",st_get_id_str($1));
+                                                              $$ = makeErrorNode();
                                                             }else{
                                                               //ECONST, GDECL, LDECL, PDECL, FDECL, TYPENAME
                                                               tempSTDR_TAG = tempDR->tag;
                                                               tempTYPE = tempDR->u.decl.type;
 
                                                               if(tempSTDR_TAG == GDECL | tempSTDR_TAG == LDECL){
-                                                                $$ = makeVarNode($1);
+                                                                if(tempDR->u.decl.sc == EXTERN_SC){
+                                                                  $$ = makeFuncNode($1, ty_query(tempTYPE), tempTYPE);
+                                                                }else if(tempDR->u.decl.sc == NO_SC){
+                                                                  $$ = makeVarNode($1);
+                                                                }else{
+                                                                  bug("unhandled storage class in variable_or_function_access_maybe_assignment:identifier");
+                                                                }
+
                                                               }else if(tempSTDR_TAG == FDECL){
                                                                 $$ = makeFuncNode($1, ty_query(tempTYPE), tempTYPE);
                                                               }else{
@@ -1058,7 +1070,18 @@ variable_or_function_access_maybe_assignment:    /*tree node*/
                                                           }//was found in the DR
                                                           }
   | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
-  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}/*example:    foo(x)^ := 6  */}
+  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}
+                                                            /*example:    foo(x)^ := 6  */
+                                                            if($1->tag == VAR_NODE || $1->tag == FUNC_NODE){
+                                                              $$ = $1;
+                                                            }else{
+                                                              error("Procedure call expected");
+                                                            }
+                                                            /*  WE ARE HERE
+                                                            check for:    Assignment requires l-value on the left
+                                                            */
+
+                                                          }
   ;
 
 rest_of_statement:  /*tree node*/
