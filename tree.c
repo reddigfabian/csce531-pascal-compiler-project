@@ -426,6 +426,16 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
                  }
              }
         }//END CONSTANT FOLDING of const ints/doubles
+
+        /*
+        SUNDAY--I think the issue with line 65 error lies here
+        Should the return value of genBackendAssignment be stored?
+        This section exists for every binop so whatever gets changed here needs to be changed in every one of the sections.
+        I believe we need to check for the presence of a char(sisgned or unsigned) in either the VAR_NODE or FUNC_NODE return
+        and if there is a char it needs to be an error because you can't do arithmetic on chars. If I'm not mistaken char is the only
+        exception to the rule out of our basic data types since it also encompasses booleans. Integers, Reals, and Singles should all be
+        allowed and just need to undergo the necessary backend conversion, which also needs to be handled here.
+        */
         else{
           TYPETAG tempTYPETAG = Ltag; //not accurate, does no type checking, converting yet
           if(LnodeType == VAR_NODE | LnodeType == NEGNUM | LnodeType == FUNC_NODE){
