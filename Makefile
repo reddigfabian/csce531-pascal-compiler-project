@@ -56,7 +56,7 @@ PROJECTNAME = pas-proj2
 #
 # For tesing function
 #
-FILEIN = ./Part2/test/T2L80_err.pas
+FILEIN = ./aaaIN.txt
 #Part2/test/T2L80_ok.pas
 
 ERRORIN = Part2/test/T2L80_err.pas

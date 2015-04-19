@@ -101,6 +101,7 @@ void treeNodeToString(TN node, int isTop);
 TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend);
 TYPETAG handleUNOP_NODE(TN node, int genBackend);
 TYPETAG handleBINOP_NODE(TN node, int genBackend);
+TYPETAG handleConstantFolding(binopType op, TN node, TYPETAG Ltag, TYPETAG Rtag, int genBackend);
 TYPETAG handleRELOP_NODE(TN startNode, int genBackend);
 TYPETAG getTYPETAG(TN node);
 //void getBinopInfo(TN node, TYPETAG *tag, tagtype *nodeType);

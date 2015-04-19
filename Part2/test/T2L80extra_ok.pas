@@ -60,7 +60,7 @@ begin
 
    print_globals;
 
-   { constant(FUCKING NOT VARS a.k.a. INTEGERS OR REALS) folding }
+   { constant folding }
    i := 99 + 17;
    x := -19.99;
    d := 99 * 17.76;

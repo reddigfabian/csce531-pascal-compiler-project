@@ -1343,7 +1343,9 @@ variable_or_function_access:
     variable_or_function_access_no_standard_function    {if(myDebugPart2){msg("%d variable_or_function_access:1---", block);}
                                                           $$ = $1;
                                                         }
-  | standard_functions                                  {if(myDebugPart2){msg("%d variable_or_function_access:2---", block);}}
+  | standard_functions                                  {if(myDebugPart2){msg("%d variable_or_function_access:2---", block);}
+                                                          $$ = $1;
+                                                        }
   ;
 
 variable_or_function_access_no_standard_function:
