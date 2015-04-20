@@ -1,0 +1,7 @@
+line 41: ERROR -- Undeclared identifier "Inner" in expression
+line 80: ERROR -- Duplicate variable declaration: "C1"
+line 104: ERROR -- Illegal conversion
+line 104: ERROR -- Incompatible argument type
+line 105: ERROR -- Wrong number of arguments to procedure or function call
+line 106: ERROR -- Reference parameter argument is not an l-value
+line 107: ERROR -- Reference parameter argument is not an l-value
