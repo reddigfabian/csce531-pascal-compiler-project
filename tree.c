@@ -3,7 +3,7 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 1;
+int myDebug = 0;
 int errorCalled = 0;
 int inAssignment = 0;
 char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
@@ -375,7 +375,7 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
       }else{
         genBackendAssignment(startNode->u.assign_node.varNode, 0, 1);
 
-        genBackendAssignment(startNode->u.assign_node.expression, 1, 1);
+        expTypeTag = genBackendAssignment(startNode->u.assign_node.expression, 1, 1);
 
         inAssignment = 0;
         if(varTypeTag == TYDOUBLE && expTypeTag == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT,TYDOUBLE);
@@ -495,7 +495,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
 
           if(genBackend){
 
-          genBackendAssignment(node->u.relop.left, 1, genBackend);
+          Ltag = genBackendAssignment(node->u.relop.left, 1, genBackend);
           //Left cast up to Right
           if(Ltag == TYSIGNEDLONGINT && Rtag == TYFLOAT){  b_convert(TYSIGNEDLONGINT, TYFLOAT); Ltag = TYFLOAT;}
           if(Ltag == TYSIGNEDLONGINT && Rtag == TYDOUBLE){ b_convert(TYSIGNEDLONGINT, TYDOUBLE); Ltag = TYDOUBLE;}
@@ -503,11 +503,11 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
           //if(Ltag == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT); Ltag = TYSIGNEDLONGINT;}
           //if(Ltag == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); Ltag = TYSIGNEDLONGINT;}
 
-          genBackendAssignment(node->u.relop.right, 1, genBackend);
+          Rtag = genBackendAssignment(node->u.relop.right, 1, genBackend);
           //Right cast up to Left
-          if(Rtag == TYSIGNEDLONGINT && Ltag == TYFLOAT)   b_convert(TYSIGNEDLONGINT, TYFLOAT);
-          if(Rtag == TYSIGNEDLONGINT && Ltag == TYDOUBLE)  b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-          if(Rtag == TYFLOAT && Ltag == TYDOUBLE)          b_convert(TYFLOAT, TYDOUBLE);
+          if(Rtag == TYSIGNEDLONGINT && Ltag == TYFLOAT){   b_convert(TYSIGNEDLONGINT, TYFLOAT); Rtag = TYFLOAT;}
+          if(Rtag == TYSIGNEDLONGINT && Ltag == TYDOUBLE){  b_convert(TYSIGNEDLONGINT, TYDOUBLE); Rtag = TYDOUBLE;}
+          if(Rtag == TYFLOAT && Ltag == TYDOUBLE){          b_convert(TYFLOAT, TYDOUBLE); Rtag = TYDOUBLE;}
           //if(Rtag == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT);}
           //if(Rtag == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT);}
 
@@ -520,8 +520,8 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
               if(genBackend) b_arith_rel_op(B_ADD, Ltag);
               return Ltag;
           }case SUB:{
-            if(genBackend) b_arith_rel_op(B_SUB, Ltag);
-            return Ltag;
+              if(genBackend) b_arith_rel_op(B_SUB, Ltag);
+              return Ltag;
           }case INT_DIV:{
               if(genBackend) b_arith_rel_op(B_DIV, Ltag);
               return Ltag;
