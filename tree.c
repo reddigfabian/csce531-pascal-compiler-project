@@ -3,7 +3,7 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 0;
+int myDebug = 1;
 int errorCalled = 0;
 int inAssignment = 0;
 char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
@@ -304,7 +304,7 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
         return TYDOUBLE;  //not 100% yet
 
       }else if(tempTagType == VAR_NODE){
-        TYPETAG varTypeTag = genBackendAssignment(startNode->u.assign_node.varNode, 0, genBackend);
+        TYPETAG varTypeTag = genBackendAssignment(startNode->u.assign_node.varNode, 1, genBackend);
         if(genBackend) b_negate(varTypeTag);
         return varTypeTag;
 
@@ -711,31 +711,31 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
   if(rhsTYPETAG == TYFLOAT && lhsTYPETAG == TYDOUBLE)  inValid = 0;
 
   //NOT OK
-  if(lhsTYPETAG == TYFLOAT && rhsTYPETAG == TYSIGNEDCHAR)  inValid = 1;
-  if(rhsTYPETAG == TYFLOAT && lhsTYPETAG == TYSIGNEDCHAR)  inValid = 1;
+  if(lhsTYPETAG == TYDOUBLE && rhsTYPETAG == TYSIGNEDCHAR)  inValid = 1;
+  if(rhsTYPETAG == TYDOUBLE && lhsTYPETAG == TYSIGNEDCHAR)  inValid = 1;
 
   if(inValid == 0){
 
     if(genBackend){
 
-    genBackendAssignment(startNode->u.relop.left, 1, genBackend);
-    //Left cast up to Right
-    if(lhsTYPETAG == TYSIGNEDLONGINT && rhsTYPETAG == TYFLOAT){  b_convert(TYSIGNEDLONGINT, TYFLOAT); lhsTYPETAG = TYFLOAT;}
-    if(lhsTYPETAG == TYSIGNEDLONGINT && rhsTYPETAG == TYDOUBLE){ b_convert(TYSIGNEDLONGINT, TYDOUBLE); lhsTYPETAG = TYDOUBLE;}
-    if(lhsTYPETAG == TYFLOAT && rhsTYPETAG == TYDOUBLE){         b_convert(TYFLOAT, TYDOUBLE); lhsTYPETAG = TYDOUBLE;}
-    if(lhsTYPETAG == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
-    if(lhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
-    if(lhsTYPETAG == rhsTYPETAG && lhsTYPETAG == TYFLOAT){       b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYDOUBLE;}
+      genBackendAssignment(startNode->u.relop.left, 1, genBackend);
+      //Left cast up to Right
+      if(lhsTYPETAG == TYSIGNEDLONGINT && rhsTYPETAG == TYFLOAT){  b_convert(TYSIGNEDLONGINT, TYFLOAT); lhsTYPETAG = TYFLOAT;}
+      if(lhsTYPETAG == TYSIGNEDLONGINT && rhsTYPETAG == TYDOUBLE){ b_convert(TYSIGNEDLONGINT, TYDOUBLE); lhsTYPETAG = TYDOUBLE;}
+      if(lhsTYPETAG == TYFLOAT && rhsTYPETAG == TYDOUBLE){         b_convert(TYFLOAT, TYDOUBLE); lhsTYPETAG = TYDOUBLE;}
+      if(lhsTYPETAG == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
+      if(lhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
+      if(lhsTYPETAG == rhsTYPETAG && lhsTYPETAG == TYFLOAT){       b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYDOUBLE;}
 
-    genBackendAssignment(startNode->u.relop.right, 1, genBackend);
-    //Right cast up to Left
-    if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYFLOAT)   b_convert(TYSIGNEDLONGINT, TYFLOAT);
-    if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYDOUBLE)  b_convert(TYSIGNEDLONGINT, TYDOUBLE);
-    if(rhsTYPETAG == TYFLOAT && lhsTYPETAG == TYDOUBLE)          b_convert(TYFLOAT, TYDOUBLE);
-    if(rhsTYPETAG == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT);}
-    if(rhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT);}
+      genBackendAssignment(startNode->u.relop.right, 1, genBackend);
+      //Right cast up to Left
+      if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYFLOAT)   b_convert(TYSIGNEDLONGINT, TYFLOAT);
+      if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYDOUBLE)  b_convert(TYSIGNEDLONGINT, TYDOUBLE);
+      if(rhsTYPETAG == TYFLOAT && lhsTYPETAG == TYDOUBLE)          b_convert(TYFLOAT, TYDOUBLE);
+      if(rhsTYPETAG == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT);}
+      if(rhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT);}
 
-  }
+    }
 
     if(myDebug){ msgn("%d handleRELOP_NODE: lhsTYPETAG: ",genBackend); ty_print_typetag(lhsTYPETAG); msg("");}
     switch(startNode->u.relop.relTag){
