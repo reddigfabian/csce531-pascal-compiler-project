@@ -3,7 +3,7 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 1;
+int myDebug = 0;
 int errorCalled = 0;
 int inAssignment = 0;
 char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
