@@ -428,6 +428,47 @@ Simple statements
         | var_or_fnc_access_no_std_fnc '(' actual_param_list ')'  {function call} expr
         | p_NEW '(' var_access_or_typename ')'        {like a malloc in pascel}
 
+===============================April Something======================================================================================================================================
+
+In pascal there is no distinction between string and character
+	we can build our own character to string (and vice versa) convert node for the tree
+
+His code will automatically convert floats to doubles, even if the float is about to be assigned to another float. It handles the right hand side first. This sounds stupid,
+but we're not optimizing anything so it works for our purposes.
+
+He reviews how to run the program from the terminal and how to pass in/out files (because some dumb grill asked about it *le sigh*)
+
+______________________________________________________________________________________________________________________________________________________________________________
+
+Project III
+
+Two parts:
+
+	1.control flow
+	2.array accesses
+		-a[2]  <== l-value
+
+
+		var
+			a: array[3..10] of Real;  (Real is the element type. 3..10 is the index type(always subrange of integers for us)).
+			c: char;
+			.
+			.
+			.
+			a[6] := 3.14; (Pascal allows free conversion between subrange and base type, meaning that even though the index type of the array is expecting subrange of integers, we can pass a single integer)
+			a[2] := 2.71; Not a compiler error(runtime error(because 2 is outside of range), but we don't check for it)
+			a[c] <= type error in Pascal, although it is allowed in C
+						**Digression
+							In C, a[c] is fine
+								  a[G] is fine
+
+							int a[10];
+							a[6] = 3;
+							  ^-l-val of type int
+
+							a[6] interchangeable with *(a+6)    /* MIND BLOWN */
+							and supposedly also interchangeable also with 6[a]  /* MIND ULTRABLOWN */
+
 ============================Assumptions=================================================================================================================================
 
 A subrange will only ever exist with integer bounds.

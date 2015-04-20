@@ -3,8 +3,9 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 0;
+int myDebug = 1;
 int errorCalled = 0;
+int inAssignment = 0;
 char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
 char* unopTypeStrings[] = {"CHR", "ORD", "SUCC", "PRED", "NEG"};
 char* binopTypeStrings[] = {"ADD", "SUB", "REAL_DIV", "INT_DIV", "MOD", "MULT"};
@@ -159,6 +160,7 @@ TN makeVarNode(ST_ID id){
     }else{
       bug("Bad DR tag in makeVarNode()");
     }
+
   }else{ //tempDR == NULL
     tempTN->u.var_node.isInstalled = 0;
     //tempTN->u.var_node.DR = NULL;
@@ -257,11 +259,10 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
   switch(startNode->tag){
 
     case FUNC_NODE:{
-      errorCalled = 0;
       TYPETAG tempTYPETAG = startNode->u.func_node.typeTag;
       char *tempName = st_get_id_str(startNode->u.func_node.funcName);
-      b_alloc_arglist(0);  //for exterens and forwards (no args)
-      b_funcall_by_name(tempName, tempTYPETAG);
+      if(genBackend | inAssignment == 0) b_alloc_arglist(0);  //for exterens and forwards (no args)
+      if(genBackend | inAssignment == 0) b_funcall_by_name(tempName, tempTYPETAG);
       return tempTYPETAG;
 
     }case CHARCONSTANT:{
@@ -320,6 +321,10 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
           if(genBackend) b_push_ext_addr(tempIdString);
           TYPETAG tempTypeTag = getTYPETAG(startNode);
           if(genBackend) b_deref(tempTypeTag);
+          if(tempTypeTag == TYFLOAT){
+            if(genBackend) b_convert(TYFLOAT, TYDOUBLE);
+            return TYDOUBLE;
+          }
           return tempTypeTag;
         }else{ //var_node not installed in symbol table
           error("variable in expression has not been initilized");
@@ -342,6 +347,7 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
       return handleRELOP_NODE(startNode, genBackend);
 
     }case ASSIGN_NODE:{
+      inAssignment = 1;
       //just get what the return TYPETAGS would be, before generating any backend
       TYPETAG varTypeTag = genBackendAssignment(startNode->u.assign_node.varNode, 0, 0);
       TYPETAG expTypeTag = genBackendAssignment(startNode->u.assign_node.expression, 1, 0);
@@ -371,7 +377,7 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
 
         genBackendAssignment(startNode->u.assign_node.expression, 1, 1);
 
-
+        inAssignment = 0;
         if(varTypeTag == TYDOUBLE && expTypeTag == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT,TYDOUBLE);
         if(varTypeTag == TYFLOAT && expTypeTag == TYSIGNEDLONGINT) b_convert(TYSIGNEDLONGINT,TYFLOAT);
         if(varTypeTag == TYFLOAT && expTypeTag == TYDOUBLE) b_convert(TYDOUBLE,TYFLOAT);
@@ -487,7 +493,9 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
 
         if(inValid == 0){
 
-          genBackendAssignment(node->u.relop.left, 0, genBackend);
+          if(genBackend){
+
+          genBackendAssignment(node->u.relop.left, 1, genBackend);
           //Left cast up to Right
           if(Ltag == TYSIGNEDLONGINT && Rtag == TYFLOAT){  b_convert(TYSIGNEDLONGINT, TYFLOAT); Ltag = TYFLOAT;}
           if(Ltag == TYSIGNEDLONGINT && Rtag == TYDOUBLE){ b_convert(TYSIGNEDLONGINT, TYDOUBLE); Ltag = TYDOUBLE;}
@@ -495,7 +503,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
           //if(Ltag == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT); Ltag = TYSIGNEDLONGINT;}
           //if(Ltag == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); Ltag = TYSIGNEDLONGINT;}
 
-          genBackendAssignment(node->u.relop.right, 0, genBackend);
+          genBackendAssignment(node->u.relop.right, 1, genBackend);
           //Right cast up to Left
           if(Rtag == TYSIGNEDLONGINT && Ltag == TYFLOAT)   b_convert(TYSIGNEDLONGINT, TYFLOAT);
           if(Rtag == TYSIGNEDLONGINT && Ltag == TYDOUBLE)  b_convert(TYSIGNEDLONGINT, TYDOUBLE);
@@ -503,8 +511,10 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
           //if(Rtag == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT);}
           //if(Rtag == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT);}
 
+        }//ENd genBackend
 
 
+        if(myDebug){ msgn("handleBINOP_NODE: Ltag: "); ty_print_typetag(Ltag); msg("");}
         switch(node->u.binop.binTag){
           case ADD:{
               if(genBackend) b_arith_rel_op(B_ADD, Ltag);
@@ -613,7 +623,7 @@ TN handleConstantFoldingUNOP(unopType op, TN node){
 TYPETAG handleUNOP_NODE(TN node, int genBackend){
     switch(node->u.unop.unTag){
       case CHR:{
-        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 0, genBackend);
+        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 1, genBackend);
         if(tempTYPETAG != TYSIGNEDLONGINT){
            error("Wrong type for chr(int)");
            return TYERROR;
@@ -623,7 +633,7 @@ TYPETAG handleUNOP_NODE(TN node, int genBackend){
         }
 
       }case ORD:{  //no decimals
-        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 0, genBackend);
+        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 1, genBackend);
         if(tempTYPETAG == TYUNSIGNEDCHAR | tempTYPETAG == TYSIGNEDLONGINT | tempTYPETAG == TYSIGNEDCHAR){
           if(genBackend) b_convert(tempTYPETAG, TYSIGNEDLONGINT);
           return TYSIGNEDLONGINT;
@@ -633,7 +643,7 @@ TYPETAG handleUNOP_NODE(TN node, int genBackend){
           }
 
       }case SUCC:{ //no decimals
-        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 0, genBackend);
+        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 1, genBackend);
         if(tempTYPETAG == TYUNSIGNEDCHAR | tempTYPETAG == TYSIGNEDLONGINT | tempTYPETAG == TYSIGNEDCHAR){
           if(genBackend){
             if(tempTYPETAG == TYUNSIGNEDCHAR | tempTYPETAG == TYSIGNEDCHAR) b_convert(tempTYPETAG, TYSIGNEDLONGINT);
@@ -648,7 +658,7 @@ TYPETAG handleUNOP_NODE(TN node, int genBackend){
         }
 
       }case PRED:{ //no decimals
-        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 0, genBackend);
+        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 1, genBackend);
         if(tempTYPETAG == TYUNSIGNEDCHAR | tempTYPETAG == TYSIGNEDLONGINT  | tempTYPETAG == TYSIGNEDCHAR){
           if(genBackend){
             if(tempTYPETAG == TYUNSIGNEDCHAR | tempTYPETAG == TYSIGNEDCHAR) b_convert(tempTYPETAG, TYSIGNEDLONGINT);
@@ -664,7 +674,7 @@ TYPETAG handleUNOP_NODE(TN node, int genBackend){
 
       }case NEG:{
         if(myDebug){msg("SHOULD NEVER BE CALLED");}
-        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 0, genBackend);
+        TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 1, genBackend);
         if(tempTYPETAG == TYVOID) error("Wrong type for -()"); //maybe more type not allowed
         if(genBackend) b_negate(tempTYPETAG);
         return tempTYPETAG;
@@ -679,8 +689,8 @@ TYPETAG handleUNOP_NODE(TN node, int genBackend){
 
 TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
 
-  TYPETAG lhsTYPETAG = genBackendAssignment(startNode->u.relop.left, 0, 0);
-  TYPETAG rhsTYPETAG = genBackendAssignment(startNode->u.relop.right, 0, 0);
+  TYPETAG lhsTYPETAG = genBackendAssignment(startNode->u.relop.left, 1, 0);
+  TYPETAG rhsTYPETAG = genBackendAssignment(startNode->u.relop.right, 1, 0);
 
   if(myDebug){ msgn("handleRELOP_NODE: lhsTYPETAG: "); ty_print_typetag(lhsTYPETAG);
    msgn("  rhsTYPETAG: ");  ty_print_typetag(rhsTYPETAG); msg("");}
@@ -706,7 +716,9 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
 
   if(inValid == 0){
 
-    genBackendAssignment(startNode->u.relop.left, 0, genBackend);
+    if(genBackend){
+
+    genBackendAssignment(startNode->u.relop.left, 1, genBackend);
     //Left cast up to Right
     if(lhsTYPETAG == TYSIGNEDLONGINT && rhsTYPETAG == TYFLOAT){  b_convert(TYSIGNEDLONGINT, TYFLOAT); lhsTYPETAG = TYFLOAT;}
     if(lhsTYPETAG == TYSIGNEDLONGINT && rhsTYPETAG == TYDOUBLE){ b_convert(TYSIGNEDLONGINT, TYDOUBLE); lhsTYPETAG = TYDOUBLE;}
@@ -715,7 +727,7 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
     if(lhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
     if(lhsTYPETAG == rhsTYPETAG && lhsTYPETAG == TYFLOAT){       b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYDOUBLE;}
 
-    genBackendAssignment(startNode->u.relop.right, 0, genBackend);
+    genBackendAssignment(startNode->u.relop.right, 1, genBackend);
     //Right cast up to Left
     if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYFLOAT)   b_convert(TYSIGNEDLONGINT, TYFLOAT);
     if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYDOUBLE)  b_convert(TYSIGNEDLONGINT, TYDOUBLE);
@@ -723,24 +735,33 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
     if(rhsTYPETAG == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT);}
     if(rhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT);}
 
+  }
+
+    if(myDebug){ msgn("%d handleRELOP_NODE: lhsTYPETAG: ",genBackend); ty_print_typetag(lhsTYPETAG); msg("");}
     switch(startNode->u.relop.relTag){
       case NE:{
         if(genBackend) b_arith_rel_op(B_NE,lhsTYPETAG);
+        if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
         return TYSIGNEDCHAR;
       }case LE:{
         if(genBackend) b_arith_rel_op(B_LE,lhsTYPETAG);
+        if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
         return TYSIGNEDCHAR;
       }case GE:{
         if(genBackend) b_arith_rel_op(B_GE,lhsTYPETAG);
+        if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
         return TYSIGNEDCHAR;
       }case EQ:{
         if(genBackend) b_arith_rel_op(B_EQ,lhsTYPETAG);
+        if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
         return TYSIGNEDCHAR;
       }case LT:{
         if(genBackend) b_arith_rel_op(B_LT,lhsTYPETAG);
+        if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
         return TYSIGNEDCHAR;
       }case GT:{
         if(genBackend) b_arith_rel_op(B_GT,lhsTYPETAG);
+        if(genBackend) b_convert(TYSIGNEDLONGINT, TYSIGNEDCHAR);
         return TYSIGNEDCHAR;
       }default:{
         bug("Unhandled case in handleRELOP_NODE() with relTag: %d a.k.a. %s", startNode->u.relop.relTag, startNode->u.relop.relTag[relationalTypeStrings]);

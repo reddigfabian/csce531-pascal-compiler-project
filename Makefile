@@ -111,7 +111,7 @@ backup:
 	-gzip ../$(PROJECTNAME).tar
 	-mv ../$(PROJECTNAME).tar.gz $(BACKUPFOLDER)/$(PROJECTNAME).tar.gz
 
-test:
+testOur:
 	-make -B
 	-./ppc3 < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
 	-cat $(FILEOUT) | grep '#' > aaaSOLout.txt
