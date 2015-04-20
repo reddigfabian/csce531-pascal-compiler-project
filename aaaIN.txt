@@ -1,10 +1,8 @@
-(*
- *  test file for EXTRA CREDIT for the 80% level of project part 2, CSCE 531
- *)
+(* test file for 80% level of project part 2, CSCE 531 *)
 
-(* there are no errors in this file! *)
+(* there are errors in this file! *)
 
-Program T2L80extra_ok;
+Program T2L80_err;
 
 var
    i,j,k : Integer;
@@ -19,39 +17,25 @@ Function get_real : Real; External;
 
 Function get_integer : Integer; External;
 
+{ Some errors }
+
+Function w : Real; External;
+
+Function w : Char; External;
+
+Function x : Single; External;
+
+
 begin
 
    i := 5;
    j := i;
-   k := 14;
-   x := 3.14;
-   y := 2.71;
-   z := 0.0;
    d := 19.1999;
-   b := False;
-
-   { Converting a length-one string constant to a character constant,
-     if needed }
-   c := 'A';
-   k := ord('B');
 
    print_globals;		{ link in print_globals later }
 
    k := i + j;
    j := i - k * k div (i + k);
-   i := k mod 7;
-   b := k > j;
-   c := succ(c);
-
-   print_globals;
-
-   y := k;
-   x := y;
-   d := k;
-   c := pred(chr(k));
-   z := ord(c) * i + (-d) - x;
-   b := c < chr(34);
-   b := b <= (i = 19);
 
    print_globals;
 
@@ -60,12 +44,27 @@ begin
 
    print_globals;
 
-   { constant folding }
-   i := 99 + 17 + 1;
-   x := -19.99;
-   d := 99 * 17.76;
-   c := succ(chr(ord(chr(65))+10));
+   { some errors }
+   q;
+   c;
+   (17);
+   (17) := 18;
+   get_integer := 19;
+   i := print_globals;
 
-   print_globals
+   { more errors }
+   q := 19;
+   b := 19;
+   i := 3.14;
+   y := 1.1;
+   z := 2.2;
+   i := c;
+   c := x;
+   c := k;
+   d := c;
+   i := k > j;
+   x := y = k;
+   z := c * i + (-d) - x;
+   b := (x < (i = 19));
 
 end.

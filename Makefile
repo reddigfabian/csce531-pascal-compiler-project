@@ -77,7 +77,7 @@ main.o: main.c defs.h types.h symtab.h
 
 types.o: types.c types.h symtab.h message.h
 
-$(shell gcc -c lib80.c lib100.c)
+#$(shell gcc -c ./Part2/test/lib80.c ./Part2/test/lib100.c)
 
 symtab.o: symtab.c types.h symtab.h message.h
 

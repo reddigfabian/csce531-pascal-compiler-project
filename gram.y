@@ -57,7 +57,7 @@ void set_yydebug(int);
 void yyerror(const char *);
 
 int myDebugPart1 = 0;
-int myDebugPart2 = 1;
+int myDebugPart2 = 0;
 int myDump = 0;
 int insideFunc = 0;
 int block;
@@ -384,7 +384,7 @@ predefined_literal:     /*TREE NODE*/
 
 string:                  /*TREE NODE*/
     LEX_STRCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:1---",block);}
-                                      $$ = makeStringConstNode($1);
+                                      $$ = makeCharConstNode($1[0]);
                                     }
   | string LEX_STRCONST             {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:2---",block);}}
   ;
@@ -1028,7 +1028,6 @@ assignment_or_call_statement:     /*tree node*/
                                                                           if($2->tag == FUNC_NODE && $2->u.func_node.typeTag == TYVOID){
                                                                             error("Cannot convert between nondata types");
                                                                             $$ = makeErrorNode();
-
                                                                           }else if($2->tag != ERROR_NODE){
                                                                           tempTreeNode = makeAssignNode($1, $2);
                                                                           $$ = tempTreeNode;
@@ -1036,7 +1035,6 @@ assignment_or_call_statement:     /*tree node*/
                                                                             error("Expected procedure name, saw data");
                                                                             $$ = $2;
                                                                         }
-
                                                                       }else if($1->tag == FUNC_NODE){
                                                                         if($2->tag == ERROR_NODE){
                                                                           //rest of statement is empty for function calls
@@ -1054,8 +1052,6 @@ assignment_or_call_statement:     /*tree node*/
                                                                       }else if($1->tag != VAR_NODE && $2->tag != ERROR_NODE){
                                                                         error("Assignment requires l-value on the left");
                                                                         $$ = makeErrorNode();
-
-
                                                                       }else{
                                                                         error("Procedure call expected");
                                                                         $$ = makeErrorNode();
@@ -1066,7 +1062,6 @@ assignment_or_call_statement:     /*tree node*/
 
 variable_or_function_access_maybe_assignment:    /*tree node*/
     identifier                                            {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:1--- %s",block, st_get_id_str($1));}
-
                                                             ST_DR tempDR = st_lookup($1,&block);
                                                             STDR_TAG tempSTDR_TAG;
                                                             TYPE tempTYPE;

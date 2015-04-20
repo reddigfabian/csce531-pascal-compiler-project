@@ -3,9 +3,9 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 1;
+int myDebug = 0;
 int errorCalled = 0;
-char* tagtypeStrings[] = {"STRINGCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
+char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
 char* unopTypeStrings[] = {"CHR", "ORD", "SUCC", "PRED", "NEG"};
 char* binopTypeStrings[] = {"ADD", "SUB", "REAL_DIV", "INT_DIV", "MOD", "MULT"};
 char* relationalTypeStrings[] = {"NE","LE","GE","EQ","LT","GT"};
@@ -105,20 +105,34 @@ TN makeRealConstNode(double realconstant){
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = REALCONSTANT;
   tempTN->u.realconstant = realconstant;
+
   return tempTN;
 }
 
-TN makeStringConstNode(char *stringconstant){
+TN makeCharConstNode(char charconstant){
   TN tempTN = (TN)malloc(sizeof(treeNode));
-  tempTN->tag = STRINGCONSTANT;
-  tempTN->u.string = stringconstant;
+  tempTN->tag = CHARCONSTANT;
+  tempTN->u.character = charconstant;
   return tempTN;
 }
 
 TN makeNegNumNode(TN numNode){
+  tagtype tempTag = numNode->tag;
+  if(tempTag == REALCONSTANT){
+    double tempReal = numNode->u.realconstant * -1;
+    numNode->u.realconstant = tempReal;
+    return numNode;
+  }
+  else if(tempTag == INTCONSTANT){
+    long tempInt = numNode->u.intconstant * -1;
+    numNode->u.intconstant = tempInt;
+    return numNode;
+  }
+
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = NEGNUM;
   tempTN->u.negNode = numNode;
+
   return tempTN;
 }
 
@@ -171,13 +185,21 @@ TN makeBoolNode(int tempBool){
   return tempTN;
 }
 
+
 TN makeUnopNode(TN operand, unopType op){
+  //{"CHR", "ORD", "SUCC", "PRED", "NEG"};
+  tagtype tempTypeTag = operand->tag;
+  if(tempTypeTag == INTCONSTANT | tempTypeTag == BOOL_NODE | tempTypeTag == CHARCONSTANT){
+    if(myDebug){msg("CONSTANT FOLDING - UNOP");}
+    return handleConstantFoldingUNOP(op, operand);
+  }
+
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = UNOP_NODE;
   tempTN->u.unop.unTag = op;
   tempTN->u.unop.operand = operand;
   return tempTN;
-}
+} //END makeUnopNode
 
 TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
   TN tempTN = (TN)malloc(sizeof(treeNode));
@@ -185,6 +207,23 @@ TN makeBinopNode(TN leftSide, TN rightSide, binopType binTagType){
   tempTN->u.binop.binTag = binTagType;
   tempTN->u.binop.left = leftSide;
   tempTN->u.binop.right = rightSide;
+
+  tagtype LnodeType = leftSide->tag;
+  tagtype RnodeType = rightSide->tag;
+  TYPETAG Ltag;
+  TYPETAG Rtag;
+
+  if((LnodeType == INTCONSTANT | LnodeType == REALCONSTANT) &&
+     (RnodeType == INTCONSTANT | RnodeType == REALCONSTANT)){
+       if(LnodeType == INTCONSTANT) Ltag = TYSIGNEDLONGINT;
+       if(LnodeType == REALCONSTANT) Ltag = TYDOUBLE;
+       if(RnodeType == INTCONSTANT) Rtag = TYSIGNEDLONGINT;
+       if(RnodeType == REALCONSTANT) Rtag = TYDOUBLE;
+
+       if(myDebug){msg("CONSTANT FOLDING - BINOP");}
+       return handleConstantFolding(binTagType, leftSide, rightSide, Ltag, Rtag);
+  }//END CONSTANT FOLDING of const ints/doubles
+
   return tempTN;
 }
 
@@ -225,10 +264,10 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
       b_funcall_by_name(tempName, tempTYPETAG);
       return tempTYPETAG;
 
-    }case STRINGCONSTANT:{
-      char *tempStr;
-      tempStr = startNode->u.string;
-      int tempInt = (int)tempStr[0];
+    }case CHARCONSTANT:{
+      char tempChar;
+      tempChar = startNode->u.character;
+      int tempInt = (int)tempChar;
       if(genBackend) b_push_const_int(tempInt);
       if(genBackend) b_convert(TYSIGNEDLONGINT, TYUNSIGNEDCHAR);
       return TYUNSIGNEDCHAR;
@@ -351,39 +390,43 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
   }//END genBackendAssignment()
 
 
-
-TYPETAG handleConstantFolding(binopType op, TN node, TYPETAG Ltag, TYPETAG Rtag, int genBackend){
+//Just for binops
+TN handleConstantFolding(binopType op, TN Lnode, TN Rnode, TYPETAG Ltag, TYPETAG Rtag){
   double leftD;
   double rightD;
+  long tempInt;
+  double tempReal;
 
   if(Ltag == Rtag){ //they are the same type
     if(Ltag == TYSIGNEDLONGINT){ //both ints
-      long left = node->u.binop.left->u.intconstant;
-      long right = node->u.binop.right->u.intconstant;
-      long tempInt;
+      long left = Lnode->u.intconstant;
+      long right = Rnode->u.intconstant;
+
       if(op == ADD) tempInt = left + right;
       if(op == SUB) tempInt = left - right;
       if(op == REAL_DIV) tempInt = left / right;
       if(op == INT_DIV) tempInt = left / right;
       if(op == MULT) tempInt = left * right;
       if(op == MOD) tempInt = left % right;
-      if(genBackend) b_push_const_int(tempInt);
-      return TYSIGNEDLONGINT;
+      //if(genBackend) b_push_const_int(tempInt);
+      //return TYSIGNEDLONGINT;
+      Lnode->u.intconstant = tempInt;
+      return Lnode;
     }else{ //both doubles
-      double leftD = node->u.binop.left->u.realconstant;
-      double rightD = node->u.binop.right->u.realconstant;
+      leftD = Lnode->u.realconstant;
+      rightD = Rnode->u.realconstant;
     }
   }else{ //one of them is a double, other is an INT
       if(Ltag == TYDOUBLE){
-        double leftD = node->u.binop.left->u.realconstant;
-        double rightD = (double)node->u.binop.right->u.intconstant;
+        leftD = Lnode->u.realconstant;
+        rightD = (double)Rnode->u.intconstant;
       }else{ //Ltag == TYSIGNEDLONGINT
-        double leftD = (double)node->u.binop.left->u.intconstant;
-        double rightD = node->u.binop.right->u.realconstant;
+        leftD = (double)Lnode->u.intconstant;
+        rightD = Rnode->u.realconstant;
       }
   }
 
-  double tempReal;
+
 
   if(op == ADD) tempReal = leftD + rightD;
   if(op == SUB) tempReal = leftD - rightD;
@@ -392,11 +435,16 @@ TYPETAG handleConstantFolding(binopType op, TN node, TYPETAG Ltag, TYPETAG Rtag,
   if(op == MULT) tempReal = leftD * rightD;
   if(op == MOD){
     error("wrong type for mod function");
-    return TYERROR;
+    return makeErrorNode();
   }
 
-  if(genBackend) b_push_const_double(tempReal);
-  return TYDOUBLE;
+  if(Ltag == TYDOUBLE){
+    Lnode->u.realconstant = tempReal;
+    return Lnode;
+  }else{
+    Rnode->u.realconstant = tempReal;
+    return Rnode;
+  }
 
 }//END handleConstantFolding
 
@@ -404,7 +452,6 @@ TYPETAG handleConstantFolding(binopType op, TN node, TYPETAG Ltag, TYPETAG Rtag,
 
 TYPETAG handleBINOP_NODE(TN node, int genBackend){
   if(node->tag == BINOP_NODE){
-
     TYPETAG Ltag = genBackendAssignment(node->u.binop.left, 1, 0); //just get return type
     TYPETAG Rtag;
     if(Ltag != TYERROR){
@@ -412,21 +459,11 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
     }else{
        if(myDebug){msg("Ltag was tyerror in handleBINOP_NODE");}
        Rtag = TYERROR;
+       return TYERROR;
      }
     tagtype LnodeType = node->u.binop.left->tag;
     tagtype RnodeType = node->u.binop.right->tag;
     int inValid = 1;
-
-    //DOESNT HANDLE NEGNUMS YET
-    TN tempNode = node;
-
-    //CONSTANT FOLDING of const ints/doubles
-    if((LnodeType == INTCONSTANT | LnodeType == REALCONSTANT) &&
-       (RnodeType == INTCONSTANT | RnodeType == REALCONSTANT)){
-         if(myDebug && genBackend == 0){msg("CONSTANT FOLDING");}
-         return handleConstantFolding(node->u.binop.binTag, tempNode, Ltag, Rtag, genBackend);
-    }//END CONSTANT FOLDING of const ints/doubles
-    else{ //NOT CONSTANT FOLDING
 
         if(Ltag == Rtag) inValid = 0;
         //if(Ltag == TYSIGNEDCHAR | Rtag == TYSIGNEDCHAR) inValid = 0;
@@ -440,7 +477,7 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         //Right cast up to Left
         if(Rtag == TYSIGNEDLONGINT && Ltag == TYFLOAT)  inValid = 0;
         if(Rtag == TYSIGNEDLONGINT && Ltag == TYDOUBLE)  inValid = 0;
-        if(Rtag == TYFLOAT && Ltag == TYDOUBLE)  inValid = 0;
+        if(Rtag == TYFLOAT && Ltag == TYDOUBLE) inValid = 0;
 
         //WRONG TYPES for MOD
         if(node->u.binop.binTag == MOD){
@@ -498,7 +535,6 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
         errorCalled = 1;
         return TYERROR;
       }
-    }//END NOT CONST fOLDING
   }//end if BINOP_NODE
 
   else{ //not a BINOP_NODE, left or right side of a BINOP_NODE
@@ -508,11 +544,74 @@ TYPETAG handleBINOP_NODE(TN node, int genBackend){
 }//end handleBINOP_NODE
 
 
+TN handleConstantFoldingUNOP(unopType op, TN node){
+  tagtype tempTagType = node->tag;
+  int succOrpred = 1;
+  switch(op){
+    case CHR:{
+      if(tempTagType == INTCONSTANT){
+        int intValue = node->u.intconstant;
+        char newChar = (char)intValue;
+        TN tempNode = makeCharConstNode(newChar);
+        return tempNode;
+      }else{
+        error("Illegal type argument to Chr");
+      }
+    }case ORD:{
+      long newOrdinalRep;
+      if(tempTagType == INTCONSTANT){
+        long tempOrdinal = node->u.intconstant;
+        newOrdinalRep = (long)tempOrdinal;
+      }else if(tempTagType == CHARCONSTANT){
+        char tempOrdinal = node->u.character;
+        //msg("ohmightygods %s",tempOrdinal);
+        newOrdinalRep = (int)tempOrdinal;
+        //msg("ohmightygods 2 %ld",newOrdinalRep);
+      }else if(tempTagType == BOOL_NODE){
+        int tempOrdinal = node->u.boolean;
+        newOrdinalRep = (long)tempOrdinal;
+      }
+      return makeIntConstNode(newOrdinalRep);
+    }case SUCC:{
+      succOrpred = 0;
+    }case PRED:{
+      long newOrdinalRep;
+      if(tempTagType == INTCONSTANT){
+        long tempOrdinal = node->u.intconstant;
+        newOrdinalRep = (long)tempOrdinal;
+      }else if(tempTagType == CHARCONSTANT){
+        char tempOrdinal = node->u.character;
+        newOrdinalRep = (int)tempOrdinal;
+      }else if(tempTagType == BOOL_NODE){
+        int tempOrdinal = node->u.boolean;
+        newOrdinalRep = (long)tempOrdinal;
+      }
+      //------------------------------
+      if(succOrpred == 0){//do SUCC
+        newOrdinalRep = newOrdinalRep + 1;
+      }else if(succOrpred == 1){//do PRED
+        newOrdinalRep = newOrdinalRep - 1;
+      }else{
+        bug("SOMETHING BORKED IN THE handleConstantFoldingUNOP");
+      }
+      //-------------------------------
+      if(tempTagType == INTCONSTANT){
+        node->u.intconstant = newOrdinalRep;
+      }else if(tempTagType == CHARCONSTANT){
+        char tempChar = (char)newOrdinalRep;
+        node->u.character = tempChar;
+      }else if(tempTagType == BOOL_NODE){
+        int temp = (int)newOrdinalRep;
+        node->u.boolean = temp;
+      }
+      return node;
+    }
+  }//end switch
+}
+
 
 TYPETAG handleUNOP_NODE(TN node, int genBackend){
-
     switch(node->u.unop.unTag){
-
       case CHR:{
         TYPETAG tempTYPETAG = genBackendAssignment(node->u.unop.operand, 0, genBackend);
         if(tempTYPETAG != TYSIGNEDLONGINT){
@@ -583,6 +682,9 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
   TYPETAG lhsTYPETAG = genBackendAssignment(startNode->u.relop.left, 0, 0);
   TYPETAG rhsTYPETAG = genBackendAssignment(startNode->u.relop.right, 0, 0);
 
+  if(myDebug){ msgn("handleRELOP_NODE: lhsTYPETAG: "); ty_print_typetag(lhsTYPETAG);
+   msgn("  rhsTYPETAG: ");  ty_print_typetag(rhsTYPETAG); msg("");}
+
   int inValid = 1;
   if(lhsTYPETAG == rhsTYPETAG) inValid = 0;
   if(lhsTYPETAG == TYSIGNEDCHAR | rhsTYPETAG == TYSIGNEDCHAR) inValid = 0;
@@ -598,6 +700,10 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
   if(rhsTYPETAG == TYSIGNEDLONGINT && lhsTYPETAG == TYDOUBLE)  inValid = 0;
   if(rhsTYPETAG == TYFLOAT && lhsTYPETAG == TYDOUBLE)  inValid = 0;
 
+  //NOT OK
+  if(lhsTYPETAG == TYFLOAT && rhsTYPETAG == TYSIGNEDCHAR)  inValid = 1;
+  if(rhsTYPETAG == TYFLOAT && lhsTYPETAG == TYSIGNEDCHAR)  inValid = 1;
+
   if(inValid == 0){
 
     genBackendAssignment(startNode->u.relop.left, 0, genBackend);
@@ -607,6 +713,7 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
     if(lhsTYPETAG == TYFLOAT && rhsTYPETAG == TYDOUBLE){         b_convert(TYFLOAT, TYDOUBLE); lhsTYPETAG = TYDOUBLE;}
     if(lhsTYPETAG == TYSIGNEDCHAR){                              b_convert(TYSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
     if(lhsTYPETAG == TYUNSIGNEDCHAR){                            b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYSIGNEDLONGINT;}
+    if(lhsTYPETAG == rhsTYPETAG && lhsTYPETAG == TYFLOAT){       b_convert(TYUNSIGNEDCHAR, TYSIGNEDLONGINT); lhsTYPETAG = TYDOUBLE;}
 
     genBackendAssignment(startNode->u.relop.right, 0, genBackend);
     //Right cast up to Left
@@ -671,9 +778,9 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
     if(isTop) msgn("TREE NODE    ");
     switch(node->tag){
 
-      case STRINGCONSTANT:
-      if(isTop) msg("STRINGCONSTANT node: %s ", node->u.string);
-      else msgn("STRINGCONSTANT node: %s ", node->u.string);
+      case CHARCONSTANT:
+      if(isTop) msg("CHARCONSTANT node: %c ", node->u.character);
+      else msgn("CHARCONSTANT node: %c ", node->u.character);
       break;
 
       case INTCONSTANT:

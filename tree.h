@@ -1,7 +1,7 @@
 #include "symtab.h"
 #include "backend-x86.h"
 
-typedef enum{STRINGCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE, ERROR_NODE}tagtype;
+typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE, ERROR_NODE}tagtype;
 
 typedef enum{CHR, ORD, SUCC, PRED, NEG}unopType;
 
@@ -28,7 +28,7 @@ typedef struct tn{
     double realconstant;
     struct tn *negNode;
     int boolean;
-    char *string;
+    char character;
 
     struct{
       ST_ID varName;
@@ -86,7 +86,7 @@ typedef struct LoIDs{
 TN makeErrorNode();
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
-TN makeStringConstNode(char *stringconstant);
+TN makeCharConstNode(char charconstant);
 TN makeNegNumNode(TN numNode);
 TN makeVarNode(ST_ID id);
 TN makeAssignNode(TN var, TN exp);
@@ -101,7 +101,8 @@ void treeNodeToString(TN node, int isTop);
 TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend);
 TYPETAG handleUNOP_NODE(TN node, int genBackend);
 TYPETAG handleBINOP_NODE(TN node, int genBackend);
-TYPETAG handleConstantFolding(binopType op, TN node, TYPETAG Ltag, TYPETAG Rtag, int genBackend);
+TN handleConstantFolding(binopType op, TN Lnode, TN Rnode, TYPETAG Ltag, TYPETAG Rtag);
+TN handleConstantFoldingUNOP(unopType op, TN node);
 TYPETAG handleRELOP_NODE(TN startNode, int genBackend);
 TYPETAG getTYPETAG(TN node);
 //void getBinopInfo(TN node, TYPETAG *tag, tagtype *nodeType);

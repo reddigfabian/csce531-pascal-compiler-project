@@ -438,6 +438,10 @@ It doesn't matter that the symtab dump command outputs the type of pascal variab
 
 lex_POW?
 
+For pure curiosity:
+
+How do unions work?
+Why does b_arith_rel_op not support floats?
 
 
 ============================TO DO========================================================================================================================================
