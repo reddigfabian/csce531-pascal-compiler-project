@@ -22,13 +22,6 @@ Print_z()
 	printf("z = %e\n",Z);
 }
 
-extern double W;
-
-Print_w()
-{
-	printf("w = %lf\n",W);
-}
-
 extern unsigned char Ca[8];
 
 Print_ca()
@@ -59,40 +52,6 @@ Print_ra()
 	printf("ra = [ ");
 	for (i=0; i<3; i++)
 		printf("%.6lf ", Ra[i]);
-	printf("]\n");
-}
-
-extern long Iaa[11][11];
-
-Print_iaa()
-{
-	int i, j;
-	printf("iaa =\n[\n");
-	for (i=0; i<11; i++) {
-		printf("  [ ");
-		for (j=0; j<11; j++)
-			printf("%4ld ", Iaa[i][j]);
-		printf("]\n");
-	}
-	printf("]\n");
-}
-
-extern long Iaaa[3][4][5];
-
-Print_iaaa()
-{
-	int i, j, k;
-	printf("iaaa =\n[\n");
-	for (i=0; i<3; i++) {
-		printf("  [\n");
-		for (j=0; j<4; j++) {
-			printf("    [ ");
-			for (k=0; k<5; k++)
-				printf("%4ld ", Iaaa[i][j][k]);
-			printf("]\n");
-		}
-		printf("  ]\n");
-	}
 	printf("]\n");
 }
 

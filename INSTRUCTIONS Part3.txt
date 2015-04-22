@@ -1,0 +1,127 @@
+CSCE 531
+Spring 2015
+Project Part III
+Due Monday, April 27, 2015
+NO LATE SUBMISSIONS ACCEPTED
+
+Process Pascal control statements and array indexing. For part of the extra credit, implement local procedures/functions.
+
+To receive 80% of the credit:
+You must process if statements and while statements.
+You must also handle expressions of the form a[n],
+where a is some expression of 1-dimensional (linear) array type and n is an expression of the appropriate index type
+(in our case, Integer or a subrange thereof). The expression a[n], which we call an array access, is always an l-value,
+and its type is the element type of the array. You must perform the appropriate semantic checks for this level:
+a must be of array type, and n is of the appropriate type (always Integer or a subrange of Integer in our case), etc.
+You do not need to detect---or emit code to detect---if an index value is out of range.
+An optional warning message may be helpful, however, if the out-of-range index value is known at compile time.
+You also do not need to support assignments of values of array type (e.g., a := b, where a and b are both arrays).
+
+To receive 90% of the credit:
+You must also process case statements.
+You should enforce a rule that the type of the case expression must be some ordinal type.
+Be sure to do other appropriate semantic error checking: case constants must be unique within a case,
+and must match the case expression in type. Note that unlike C switch statements,
+Pascal case statements have no fall-through; no more than one component statement is executed.
+The "else" clause in a Pascal case statement is similar to the "default" label in a C switch statement.
+For this level, you do not need to support subranges as case constants;
+that is, you may assume that each case constant is a single value.
+
+To receive 100% of the graduate credit:
+You should also process for statements.
+Both the initial and final values of the for-loop are evaluated once at the beginning of the loop and never re-evaluated.
+(The order of these evaluations is arbitrary, but both must be evaluated before the loop counter variable is initialized.)
+The address of the loop counter variable may be re-evaluated with each iteration, however.
+
+For the 100% level, you should also process multidimensional array accesses.
+
+The appropriate semantic checks for the 100% level are as follows:
+the loop counter of a for-loop must be an l-value of ordinal type;
+the loop counter type must match the types of the initial and final expressions (both r-values);
+the number of indices in an array access matches the number of dimensions of the array; etc.
+
+At all levels, you may assume that no array index contains the subrange operator (..).
+That is, indices in array accesses are single expressions.
+
+There are three opportunities for extra credit in this assignment:
+
+(10%) Implement support for break statements at each level you implement.
+A Pascal break statement is similar to a C break statement with one exception:
+the latter exits the closest surrounding loop or switch statement,
+whereas the former exits the closest surrounding loop only (Pascal case statements are transparent to Pascal break statements).
+A Pascal break statement can only appear inside a loop.
+
+(10%) Implement support for subranges as case constants.
+A subrange matches a given value if the value is within the limits of the subrange.
+Subranges must be nonempty (the low value is less than or equal to the high value).
+
+(10%) Fully implement procedure/function definitions with local objects (formal parameters, local variables,
+and local procedures/functions). You may have implemented the first two already for Project II. Additionally,
+you must also be able to handle locally defined procedures and functions, which are called with reference links,
+as was described in class.
+
+
+There are five primary control-flow-related functions in the back end that are needed for this assignment:
+    b_jump,
+    b_cond_jump,
+    b_dispatch,
+    b_inc_dec, and
+    b_duplicate,
+and two additional supporting functions,
+    b_label and
+    new_symbol.
+To handle array accesses, you will use the function
+    b_ptr_arith_op (listed under "Project 4" -- please ignore that; there is no Project 4)
+    with second argument always TYSIGNEDLONGINT.
+
+The function new_symbol returns a fresh, unique, saved string that can be used as a label and jump destination;
+b_label emits a given string as a label.
+Each call to new_symbol returns a different string,
+which is guaranteed not to conflict with any legal Pascal identifier or global function name.
+The function b_jump generates an unconditional jump to a given label;
+b_cond_jump generates a conditional jump based on the value on top of the control stack
+(the value is also popped off the stack).
+
+The function b_dispatch can be used to handle a case statement.
+It takes a comparison operator and an integer n and generates code that compares n with the value on top of the stack
+(which must be an integer; you can coerce Chars and Booleans to integers here, so you can handle any ordinal types).
+If the two values satisfy the comparison, a jump is executed, otherwise no jump occurs. In one of these cases,
+the value is popped from the stack; a Boolean flag pop_on_jump can be used to control in which case a pop occurs.
+Thus, several calls to b_dispatch can be called in a row,
+each comparing the top of the stack with a series of different integer constants.
+
+Handling subranges in case constants efficiently requires
+repeated double comparisons of a single value rather than merely testing for equality.
+The function b_duplicate, which pushes a duplicate of the top of the control stack, can be useful here.
+
+The function b_duplicate is also useful in the for-loop for repeated comparisons with the final counter value.
+
+As in Project parts I and II:
+your compiler should be capable of detecting multiple semantic errors in one file;
+and you may allow the compiler to stop processing with the first syntax error.
+
+The file pas-proj3.zip contains test and library files.
+These may not be the only test files that will be used when grading, so do your own testing too.
+All test files will assume the 80% level of Project part I and the 80% level of Project II.
+The files EightQueens.pas and EightQueensLib.c will also be used to test those submissions that
+obtained the 100% level of Project II.
+
+You should test your compiler as described in Project II.
+
+Remember: you get credit for features successfully implemented. You do not get credit for attempting to do something;
+you get credit for the things that you can successfully demonstrate work.
+
+Also remember: as always you are expected, as a team, to do your own work on this assignment.
+
+Finally: you should adequately document and structure your program.
+Remember you may be asked to explain this program orally during a subsequent `quiz.'
+
+The official due time of this assignment is 11:59 pm on the due date above.
+
+This is a HARD DEADLINE for this particular installment;
+no late submissions can be accepted.
+
+You must turn in all source files (even the ones I gave you) and a Makefile for your compiler.
+Include a README file describing your code.
+
+Detailed submission instructions are the same as for Projects I and II, but with the obvious name-changes.

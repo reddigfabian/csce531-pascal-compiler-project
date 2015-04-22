@@ -1,0 +1,151 @@
+x = 9
+x = 8
+x = 7
+x = 6
+x = 5
+x = 4
+x = 3
+x = 2
+x = 1
+x = 0
+712
+ is grooviest
+OUTER: a = -1
+OUTER: a = 0
+INNER: b = 0
+INNER INNER: c = 0
+INNER INNER: c = 1
+INNER INNER: c = 2
+INNER INNER: c = 3
+INNER INNER: c = 4
+OUTER: a = 1
+INNER: b = 0
+INNER INNER: c = 0
+INNER INNER: c = 1
+INNER INNER: c = 2
+INNER INNER: c = 3
+INNER INNER: c = 4
+INNER: b = 1
+INNER INNER: c = 0
+INNER INNER: c = 1
+INNER INNER: c = 2
+INNER INNER: c = 3
+INNER INNER: c = 4
+OUTER: a = 2
+INNER: b = 0
+INNER INNER: c = 0
+INNER INNER: c = 1
+INNER INNER: c = 2
+INNER INNER: c = 3
+INNER INNER: c = 4
+INNER: b = 1
+INNER INNER: c = 0
+INNER INNER: c = 1
+INNER INNER: c = 2
+INNER INNER: c = 3
+INNER INNER: c = 4
+INNER: b = 2
+INNER INNER: c = 0
+INNER INNER: c = 1
+INNER INNER: c = 2
+INNER INNER: c = 3
+INNER INNER: c = 4
+LOOPING: x = 9
+LOOPING: x = 8
+LOOPING: x = 7
+LOOPING: x = 6
+LOOPING: x = 5
+LOOPING: x = 4
+LOOPING: x = 3
+LOOPING: x = 2
+LOOPING: x = 1
+LOOPING: x = 0
+LOOPING: x = 3
+LOOPING LOOPING: b = 0
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING LOOPING: b = 1
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING: x = 2
+LOOPING LOOPING: b = 0
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING LOOPING: b = 1
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING: x = 1
+LOOPING LOOPING: b = 0
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING LOOPING: b = 1
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING: x = 0
+LOOPING LOOPING: b = 0
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+LOOPING LOOPING: b = 1
+LOOPING LOOPING LOOPING: c = 8
+LOOPING LOOPING LOOPING: c = 9
+LOOPING LOOPING LOOPING: c = 10
+a = 2; b =  3; c = 1
+a = 4; b =  9; c = 2
+a = 8; b =  27; c = 3
+a = 16; b =  81; c = 4
+a = 17; b =  76; c = 5
+a = 18; b =  71; c = 6
+a = 19; b =  66; c = 7
+a = 20; b =  61; c = 8
+a = 23; b =  122; c = 9
+
+ca = "acegikmo"
+ca = "acigikmo"
+ca = "acigikmg"
+ia = [ 4 5 6 7 8 9 ]
+ia = [ 4 5 6 7 8 4 ]
+ra = [ 7.900000 8.900000 9.900000 ]
+w = 696.069000
+
+iaa =
+[
+  [    1    1    1    1    1    1    1    1    1    1    1 ]
+  [    1    2    3    4    5    6    7    8    9   10   11 ]
+  [    1    3    6   10   15   21   28   36   45   55   66 ]
+  [    1    4   10   20   35   56   84  120  165  220  286 ]
+  [    1    5   15   35   70  126  210  330  495  715 1001 ]
+  [    1    6   21   56  126  252  462  792 1287 2002 3003 ]
+  [    1    7   28   84  210  462  924 1716 3003 5005 8008 ]
+  [    1    8   36  120  330  792 1716 3432 6435 1440 9448 ]
+  [    1    9   45  165  495 1287 3003 6435 2870 4310 3758 ]
+  [    1   10   55  220  715 2002 5005 1440 4310 8620 2378 ]
+  [    1   11   66  286 1001 3003 8008 9448 3758 2378 4756 ]
+]
+iaaa =
+[
+  [
+    [   11   12   13   14   15 ]
+    [   14   15   16   17   18 ]
+    [   17   18   19   20   21 ]
+    [   20   21   22   23   24 ]
+  ]
+  [
+    [   17   18   19   20   21 ]
+    [   20   21   22   23   24 ]
+    [   23   24   25   26   27 ]
+    [   26   27   28   29   30 ]
+  ]
+  [
+    [   23   24   25   26   27 ]
+    [   26   27   28   29   30 ]
+    [   29   30   31   32   33 ]
+    [   32   33   34   35   36 ]
+  ]
+]

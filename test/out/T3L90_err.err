@@ -1,0 +1,9 @@
+line 104: ERROR -- Overlapping constants in case statement
+line 109: ERROR -- Overlapping constants in case statement
+line 116: ERROR -- Overlapping constants in case statement
+line 122: ERROR -- Case constant has non-ordinal type
+line 123: ERROR -- Case constant has non-ordinal type
+line 127: ERROR -- Case constant type does not match case expression type
+line 132: ERROR -- Case expression is not of ordinal type
+line 133: ERROR -- Case constant type does not match case expression type
+line 141: ERROR -- Break statement not inside loop

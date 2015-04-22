@@ -1,0 +1,11 @@
+line 115: ERROR -- Non-Boolean expression
+line 118: ERROR -- Non-Boolean expression
+line 121: ERROR -- Non-Boolean expression
+line 128: ERROR -- Incompatible index type in array access
+line 129: ERROR -- Illegal conversion
+line 130: ERROR -- Incompatible index type in array access
+line 131: ERROR -- Incompatible index type in array access
+line 132: ERROR -- Illegal conversion
+line 133: ERROR -- Illegal conversion
+line 134: ERROR -- Nonarray in array access expression
+line 135: ERROR -- Incompatible index type in array access

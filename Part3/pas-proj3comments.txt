@@ -1,0 +1,190 @@
+Comments for self-test -------- Fri Mar 13, 2015 at 9:49:42 EDT
+No illegal files found
+
+Testing compiliation with ppc3:
+  Attempting to build ppc3 ... ok
+
+
+LEVEL 80extra:
+
+Running ppc3 with input T3L80extra_ok.pas ... zero termination status
+  T3L80extra_ok.s exists ... will assemble and run later
+Running ppc3 with input T3L80extra_err.pas ... zero termination status
+  T3L80extra_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 80:
+
+Running ppc3 with input T3L80_ok.pas ... zero termination status
+  T3L80_ok.s exists ... will assemble and run later
+Running ppc3 with input T3L80_err.pas ... zero termination status
+  T3L80_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 90:
+
+Running ppc3 with input T3L90_ok.pas ... zero termination status
+  T3L90_ok.s exists ... will assemble and run later
+Running ppc3 with input T3L90_err.pas ... zero termination status
+  T3L90_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 90extra:
+
+Running ppc3 with input T3L90extra_ok.pas ... zero termination status
+  T3L90extra_ok.s exists ... will assemble and run later
+Running ppc3 with input T3L90extra_err.pas ... zero termination status
+  T3L90extra_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 100extra:
+
+Running ppc3 with input T3L100extra_ok.pas ... zero termination status
+  T3L100extra_ok.s exists ... will assemble and run later
+
+
+LEVEL 100:
+
+Running ppc3 with input T3L100_ok.pas ... zero termination status
+  T3L100_ok.s exists ... will assemble and run later
+Running ppc3 with input T3L100_err.pas ... zero termination status
+  T3L100_err.err exists
+  Comparing with solution file ... files match
+
+
+LEVEL 110:
+
+Running ppc3 with input T3L110_ok.pas ... zero termination status
+  T3L110_ok.s exists ... will assemble and run later
+Running ppc3 with input T3L110_err.pas ... zero termination status
+  T3L110_err.err exists
+  Comparing with solution file ... files match
+######################################################
+Compilation summary for self-test:
+  T3L100_err:  error message(s) (check appropriateness)
+  T3L100_ok:  ok
+  T3L100extra_ok:  ok
+  T3L110_err:  error message(s) (check appropriateness)
+  T3L110_ok:  ok
+  T3L80_err:  error message(s) (check appropriateness)
+  T3L80_ok:  ok
+  T3L80extra_err:  error message(s) (check appropriateness)
+  T3L80extra_ok:  ok
+  T3L90_err:  error message(s) (check appropriateness)
+  T3L90_ok:  ok
+  T3L90extra_err:  error message(s) (check appropriateness)
+  T3L90extra_ok:  ok
+  ppc3:  ok
+######################################################
+
+Testing execution with ppc3:
+
+
+LEVEL 80extra:
+
+Trying to assemble T3L80extra_ok.s with gcc and lib80extra ...  succeeded
+Executable a.out exists
+./a.out > T3L80extra_ok.out 2> T3L80extra_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L80extra_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 80:
+
+Trying to assemble T3L80_ok.s with gcc and lib80 ...  succeeded
+Executable a.out exists
+./a.out > T3L80_ok.out 2> T3L80_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L80_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 90:
+
+Trying to assemble T3L90_ok.s with gcc and lib90 ...  succeeded
+Executable a.out exists
+./a.out > T3L90_ok.out 2> T3L90_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L90_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 90extra:
+
+Trying to assemble T3L90extra_ok.s with gcc and lib90 ...  succeeded
+Executable a.out exists
+./a.out > T3L90extra_ok.out 2> T3L90extra_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L90extra_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 100extra:
+
+Trying to assemble T3L100extra_ok.s with gcc and lib100 ...  succeeded
+Executable a.out exists
+./a.out > T3L100extra_ok.out 2> T3L100extra_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L100extra_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 100:
+
+Trying to assemble T3L100_ok.s with gcc and lib100 ...  succeeded
+Executable a.out exists
+./a.out > T3L100_ok.out 2> T3L100_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L100_ok.out exists -- comparing with solution output file
+ files match
+
+
+LEVEL 110:
+
+Trying to assemble T3L110_ok.s with gcc and lib110 ...  succeeded
+Executable a.out exists
+./a.out > T3L110_ok.out 2> T3L110_ok_exec.err terminated abnormally
+  Standard error output:
+vvvvv
+
+^^^^^
+  T3L110_ok.out exists -- comparing with solution output file
+ files match
+######################################################
+Assembly/execution summary for self-test:
+  T3L100:  ok
+  T3L100extra:  ok
+  T3L110:  ok
+  T3L80:  ok
+  T3L80extra:  ok
+  T3L90:  ok
+  T3L90extra:  ok
+  ppc3:  ok
+######################################################
+ 80% level: 
+ 90% level: 
+100% level: 
+110% level: 

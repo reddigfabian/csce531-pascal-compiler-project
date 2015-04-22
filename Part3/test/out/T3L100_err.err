@@ -1,0 +1,7 @@
+line 26: ERROR -- For-loop control variable not of ordinal type
+line 28: ERROR -- Type mismatch in for-loop control
+line 30: ERROR -- Type mismatch in for-loop control
+line 33: ERROR -- Wrong number of indices in array access
+line 34: ERROR -- Wrong number of indices in array access
+line 35: ERROR -- Incompatible index type in array access
+line 36: ERROR -- Illegal conversion

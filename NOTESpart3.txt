@@ -1,0 +1,102 @@
+===============================April Something======================================================================================================================================
+
+In pascal there is no distinction between string and character
+	we can build our own character to string (and vice versa) convert node for the tree
+
+His code will automatically convert floats to doubles, even if the float is about to be assigned to another float. It handles the right hand side first. This sounds stupid,
+but we're not optimizing anything so it works for our purposes.
+
+He reviews how to run the program from the terminal and how to pass in/out files (because some dumb grill asked about it *le sigh*)
+
+______________________________________________________________________________________________________________________________________________________________________________
+
+Project III
+
+Two parts:
+
+	1.control flow
+	2.array accesses
+		-a[2]  <== l-value
+
+
+		var
+			a: array[3..10] of Real;  (Real is the element type. 3..10 is the index type(always subrange of integers for us)).
+			c: char;
+			.
+			.
+			.
+			a[6] := 3.14; (Pascal allows free conversion between subrange and base type, meaning that even though the index type of the array is expecting subrange of integers, we can pass a single integer)
+			a[2] := 2.71; Not a compiler error(runtime error(because 2 is outside of range), but we don't check for it)
+			a[c] <= type error in Pascal, although it is allowed in C
+						**Digression
+							In C, a[c] is fine
+								  a[G] is fine
+
+							int a[10];
+							a[6] = 3;
+							  ^-l-val of type int
+
+							a[6] interchangeable with *(a+6)    /* MIND BLOWN */
+							and supposedly also interchangeable also with 6[a]  /* MIND ULTRABLOWN */
+
+===============================April 22nd======================================================================================================================================
+
+FINAL EXAM:
+    theoretical questions
+      parsing, syntax, yacc or bison related question.
+      not specific project related
+      action table of parser
+      LL parser, ect
+      similar to midterm
+      cumulative, but emphasize stuff since midterm
+      HE WILL POST SOLUTIONS TO THE OLD FINAL
+
+Code generation and optimization (backend stuff)
+      Project 3: break statements (EC)
+      In Pascal, a break statement breaks out of the closest surrounding loop
+        (while or for loop)
+      while test do
+          stmt   <---- break statement implemented as a unconditional jump to the exit label of the loop
+                    easiest way is to have a stack apart from the semantic stack, of exit labels, maintained ourselves
+                    --before parsing the body of a loop, push your newly generated exit label on this stack,
+                      afterwards pop it off
+
+			3 low level languages in the book:
+					triples, quadruples (not human readable), and three address code (more readable)
+
+					three address code: sequence of instuctions from an instruction set:
+						assignment:
+							x := y op z    |   x is a var (l-value)     y,z vars or conts (r-values)    op, binary operator
+							x := op y      |   op uniary
+							x := y         |   simple copy
+
+						Branches:
+							goto L         |  L is a label  (uncondistional)
+							if x comp y then goto L   |  x,y r-values, comp comparison op
+									conditional branch
+
+						Indirect Addressing:
+							x := &y									address-of operator (y is l-value)
+							x := *y	      -|
+							*x := y       -|        indirection operator
+
+							a[x] := y              a is an array x,y are l-values
+							x := a[y]							 or r-values as needed
+
+						I/O
+							read x									x l-value
+							write y									y r-value
+
+					Ignoring procedure calls and returns
+					Notice: no nested structures
+								x,y, ect  are var(or constants)
+								--no subexpressions
+								--no statements nested inside of other statements
+
+					-----------------
+
+					In Pascal:
+						z := x * (y+5) - z
+
+
+					STOPPED @  0:30:00/1:14:50
