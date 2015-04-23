@@ -145,47 +145,19 @@ TN makeStatementNode(TN root, TN expr){
 TN makeArrayNode(TN varNode, TN access){
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = ARRAY_NODE;
-  tempTN->u.array_node.arrayName = varNode->u.var_node.varName;
   tempTN->u.array_node.isInstalled = varNode->u.var_node.isInstalled;
 
   int block;
   if(tempTN->u.array_node.isInstalled == 1){
+    tempTN->u.array_node.arrayName = varNode->u.var_node.varName;
     tempTN->u.array_node.type = varNode->u.var_node.type;
     tempTN->u.array_node.DR = varNode->u.var_node.DR;
     tempTN->u.array_node.DRtag = varNode->u.var_node.DRtag;
     tempTN->u.array_node.typeTag = varNode->u.var_node.typeTag;
+    tempTN->u.array_node.access_node = access;
   }else{
 
   }
-
-  /*
-  if(tempDR != NULL){
-    tempTN->u.var_node.isInstalled = 1;
-    tempTN->u.var_node.DR = tempDR;
-    tempTN->u.var_node.DRtag = tempDR->tag;
-    if(tempDR->tag == GDECL | tempDR->tag == LDECL | tempDR->tag == PDECL | tempDR->tag == FDECL){
-      tempTN->u.var_node.type = tempDR->u.decl.type;
-      tempTN->u.var_node.typeTag = ty_query(tempDR->u.decl.type);
-    }else if(tempDR->tag == ECONST){
-      tempTN->u.var_node.type = tempDR->u.econst.type;
-      tempTN->u.var_node.typeTag = ty_query(tempDR->u.econst.type);
-    }else if(tempDR->tag == TYPENAME){
-      tempTN->u.var_node.type = tempDR->u.typename.type;
-      tempTN->u.var_node.typeTag = ty_query(tempDR->u.typename.type);
-    }else{
-      bug("Bad DR tag in makeVarNode()");
-    }
-
-  }else{ //tempDR == NULL
-    tempTN->u.var_node.isInstalled = 0;
-    //tempTN->u.var_node.DR = NULL;
-    //tempTN->u.var_node.DRtag = NULL;
-    //tempTN->u.var_node.type = NULL;
-    //tempTN->u.var_node.typeTag = NULL;
-  }
-
-  */
-
   return tempTN;
 }
 
