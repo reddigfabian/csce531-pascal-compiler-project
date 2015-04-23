@@ -894,13 +894,13 @@ static const yytype_uint16 yyrline[] =
     1253,  1261,  1265,  1268,  1274,  1277,  1285,  1286,  1287,  1291,
     1294,  1309,  1313,  1316,  1328,  1331,  1334,  1337,  1343,  1346,
     1356,  1359,  1362,  1365,  1366,  1367,  1371,  1375,  1378,  1384,
-    1422,  1426,  1427,  1428,  1429,  1432,  1435,  1436,  1439,  1445,
-    1446,  1450,  1451,  1455,  1456,  1460,  1471,  1472,  1486,  1488,
-    1492,  1493,  1497,  1498,  1499,  1500,  1501,  1502,  1503,  1504,
-    1505,  1506,  1507,  1508,  1509,  1510,  1511,  1512,  1513,  1514,
-    1515,  1516,  1517,  1518,  1519,  1523,  1524,  1528,  1529,  1530,
-    1531,  1532,  1533,  1537,  1538,  1539,  1540,  1544,  1545,  1549,
-    1552,  1554
+    1422,  1426,  1427,  1428,  1429,  1433,  1437,  1441,  1445,  1451,
+    1452,  1456,  1457,  1461,  1462,  1466,  1477,  1478,  1492,  1494,
+    1498,  1499,  1503,  1504,  1505,  1506,  1507,  1508,  1509,  1510,
+    1511,  1512,  1513,  1514,  1515,  1516,  1517,  1518,  1519,  1520,
+    1521,  1522,  1523,  1524,  1525,  1529,  1530,  1534,  1535,  1536,
+    1537,  1538,  1539,  1543,  1544,  1545,  1546,  1550,  1551,  1555,
+    1558,  1560
 };
 #endif
 
@@ -3520,7 +3520,7 @@ yyreduce:
   case 186:
 #line 946 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}
-                                                            //treeNodeToString($1, 1);
+                                                            if(myDebugPart3) treeNodeToString((yyvsp[0].y_TN), 1);
                                                             //do backend for if/else statement
                                                             //unless in a loop or other "local causing" thing (check block number) then pass up, NO BACKEND
                                                             (yyval.y_TN) = (yyvsp[0].y_TN);
@@ -3601,7 +3601,7 @@ yyreduce:
   case 200:
 #line 993 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart3){msg("%d repetitive_statement:while_statement---line %d", block, sc_line());}
-                                                              treeNodeToString((yyvsp[0].y_TN), 1);
+                                                              if(myDebugPart3) treeNodeToString((yyvsp[0].y_TN), 1);
                                                               (yyval.y_TN) = (yyvsp[0].y_TN);
                                                             }
 #line 3608 "y.tab.c" /* yacc.c:1646  */
@@ -3637,7 +3637,7 @@ yyreduce:
   case 208:
 #line 1022 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d simple_statement:2---line %d", block, sc_line());}
-                                          if(myDebugPart2){msg("Calling genBackendAssignment() on");treeNodeToString((yyvsp[0].y_TN), 1);}
+                                          if(myDebugPart2 | myDebugPart3){msg("Calling genBackendAssignment() on");treeNodeToString((yyvsp[0].y_TN), 1);}
                                           //always call an assigment with (node, 0, 0) from gramar
                                           if((yyvsp[0].y_TN)->tag != ERROR_NODE) genBackendAssignment((yyvsp[0].y_TN), 0, 0);
 
@@ -4105,7 +4105,7 @@ yyreduce:
     break;
 
   case 315:
-#line 1432 "gram.y" /* yacc.c:1646  */
+#line 1433 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---line %d", block, sc_line());}
                                                                                         /*something ex:  p^ := 6*/
                                                                                       }
@@ -4113,41 +4113,43 @@ yyreduce:
     break;
 
   case 316:
-#line 1435 "gram.y" /* yacc.c:1646  */
-    {/*for project 3, not used in part 2. for array accesses*/}
-#line 4119 "y.tab.c" /* yacc.c:1646  */
+#line 1437 "gram.y" /* yacc.c:1646  */
+    {
+                                                                                        //makeArrayNode(TN varNode, TN access);
+                                                                                      }
+#line 4121 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 317:
-#line 1436 "gram.y" /* yacc.c:1646  */
+#line 1441 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---line %d", block, sc_line());}
                                                                                         /*function call, expr*/
                                                                                       }
-#line 4127 "y.tab.c" /* yacc.c:1646  */
+#line 4129 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 318:
-#line 1439 "gram.y" /* yacc.c:1646  */
+#line 1445 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---line %d", block, sc_line());}
                                                                                         /*like a malloc but in pascal, continue on April 13th, monday*/
                                                                                       }
-#line 4135 "y.tab.c" /* yacc.c:1646  */
+#line 4137 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 323:
-#line 1455 "gram.y" /* yacc.c:1646  */
+#line 1461 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart3){msg("%d member_designator:expression---line %d", block, sc_line());}}
-#line 4141 "y.tab.c" /* yacc.c:1646  */
+#line 4143 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 324:
-#line 1456 "gram.y" /* yacc.c:1646  */
+#line 1462 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart3){msg("%d member_designator:LEX_RANGE---line %d", block, sc_line());}}
-#line 4147 "y.tab.c" /* yacc.c:1646  */
+#line 4149 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 325:
-#line 1460 "gram.y" /* yacc.c:1646  */
+#line 1466 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d standard_functions:rts_fun_onepar(actual_parameter)---line %d",block, sc_line());}
                                                   unopType tempUnopType;
                                                   if((yyvsp[-3].y_int) == pas_ORD){
@@ -4159,17 +4161,17 @@ yyreduce:
                                                   }
                                                   (yyval.y_TN) = makeUnopNode((yyvsp[-1].y_TN),tempUnopType);
                                                 }
-#line 4163 "y.tab.c" /* yacc.c:1646  */
+#line 4165 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 326:
-#line 1471 "gram.y" /* yacc.c:1646  */
+#line 1477 "gram.y" /* yacc.c:1646  */
     {}
-#line 4169 "y.tab.c" /* yacc.c:1646  */
+#line 4171 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 327:
-#line 1472 "gram.y" /* yacc.c:1646  */
+#line 1478 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d standard_functions:rts_fun_parlist(actual_parameter_list)---line %d",block, sc_line());}
                                                     unopType tempUnopType;
                                                     if((yyvsp[-3].y_int) == pas_SUCC){
@@ -4181,233 +4183,233 @@ yyreduce:
                                                     }
                                                     (yyval.y_TN) = makeUnopNode((yyvsp[-1].y_TN),tempUnopType);
                                                   }
-#line 4185 "y.tab.c" /* yacc.c:1646  */
+#line 4187 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 332:
-#line 1497 "gram.y" /* yacc.c:1646  */
+#line 1503 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_ABS---line %d",block, sc_line());};}
-#line 4191 "y.tab.c" /* yacc.c:1646  */
+#line 4193 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 333:
-#line 1498 "gram.y" /* yacc.c:1646  */
+#line 1504 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQR---line %d",block, sc_line());};}
-#line 4197 "y.tab.c" /* yacc.c:1646  */
+#line 4199 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 334:
-#line 1499 "gram.y" /* yacc.c:1646  */
+#line 1505 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_SIN---line %d",block, sc_line());};}
-#line 4203 "y.tab.c" /* yacc.c:1646  */
+#line 4205 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 335:
-#line 1500 "gram.y" /* yacc.c:1646  */
+#line 1506 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_COS---line %d",block, sc_line());};}
-#line 4209 "y.tab.c" /* yacc.c:1646  */
+#line 4211 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 336:
-#line 1501 "gram.y" /* yacc.c:1646  */
+#line 1507 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_EXP---line %d",block, sc_line());};}
-#line 4215 "y.tab.c" /* yacc.c:1646  */
+#line 4217 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 337:
-#line 1502 "gram.y" /* yacc.c:1646  */
+#line 1508 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_LN---line %d",block, sc_line());};}
-#line 4221 "y.tab.c" /* yacc.c:1646  */
+#line 4223 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 338:
-#line 1503 "gram.y" /* yacc.c:1646  */
+#line 1509 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQRT---line %d",block, sc_line());};}
-#line 4227 "y.tab.c" /* yacc.c:1646  */
+#line 4229 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 339:
-#line 1504 "gram.y" /* yacc.c:1646  */
+#line 1510 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARCTAN---line %d",block, sc_line());};}
-#line 4233 "y.tab.c" /* yacc.c:1646  */
+#line 4235 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 340:
-#line 1505 "gram.y" /* yacc.c:1646  */
+#line 1511 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARG---line %d",block, sc_line());};}
-#line 4239 "y.tab.c" /* yacc.c:1646  */
+#line 4241 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 341:
-#line 1506 "gram.y" /* yacc.c:1646  */
+#line 1512 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRUNC---line %d",block, sc_line());};}
-#line 4245 "y.tab.c" /* yacc.c:1646  */
+#line 4247 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 342:
-#line 1507 "gram.y" /* yacc.c:1646  */
+#line 1513 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_ROUND---line %d",block, sc_line());};}
-#line 4251 "y.tab.c" /* yacc.c:1646  */
+#line 4253 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 343:
-#line 1508 "gram.y" /* yacc.c:1646  */
+#line 1514 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_CARD---line %d",block, sc_line());};}
-#line 4257 "y.tab.c" /* yacc.c:1646  */
+#line 4259 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 344:
-#line 1509 "gram.y" /* yacc.c:1646  */
+#line 1515 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_ORD---line %d",block, sc_line());}; (yyval.y_int) = pas_ORD;}
-#line 4263 "y.tab.c" /* yacc.c:1646  */
+#line 4265 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 345:
-#line 1510 "gram.y" /* yacc.c:1646  */
+#line 1516 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_CHR---line %d",block, sc_line());}; (yyval.y_int) = pas_CHR;}
-#line 4269 "y.tab.c" /* yacc.c:1646  */
+#line 4271 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 346:
-#line 1511 "gram.y" /* yacc.c:1646  */
+#line 1517 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_ODD---line %d",block, sc_line());};}
-#line 4275 "y.tab.c" /* yacc.c:1646  */
+#line 4277 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 347:
-#line 1512 "gram.y" /* yacc.c:1646  */
+#line 1518 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_EMPTY---line %d",block, sc_line());};}
-#line 4281 "y.tab.c" /* yacc.c:1646  */
+#line 4283 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 348:
-#line 1513 "gram.y" /* yacc.c:1646  */
+#line 1519 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_POSITION---line %d",block, sc_line());};}
-#line 4287 "y.tab.c" /* yacc.c:1646  */
+#line 4289 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 349:
-#line 1514 "gram.y" /* yacc.c:1646  */
+#line 1520 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_LASTPOSITION---line %d",block, sc_line());};}
-#line 4293 "y.tab.c" /* yacc.c:1646  */
+#line 4295 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 350:
-#line 1515 "gram.y" /* yacc.c:1646  */
+#line 1521 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_LENGTH---line %d",block, sc_line());};}
-#line 4299 "y.tab.c" /* yacc.c:1646  */
+#line 4301 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 351:
-#line 1516 "gram.y" /* yacc.c:1646  */
+#line 1522 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRIM---line %d",block, sc_line());};}
-#line 4305 "y.tab.c" /* yacc.c:1646  */
+#line 4307 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 352:
-#line 1517 "gram.y" /* yacc.c:1646  */
+#line 1523 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_BINDING---line %d",block, sc_line());};}
-#line 4311 "y.tab.c" /* yacc.c:1646  */
+#line 4313 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 353:
-#line 1518 "gram.y" /* yacc.c:1646  */
+#line 1524 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_DATE---line %d",block, sc_line());};}
-#line 4317 "y.tab.c" /* yacc.c:1646  */
+#line 4319 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 354:
-#line 1519 "gram.y" /* yacc.c:1646  */
+#line 1525 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_onepar:p_TIME---line %d",block, sc_line());};}
-#line 4323 "y.tab.c" /* yacc.c:1646  */
+#line 4325 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 355:
-#line 1523 "gram.y" /* yacc.c:1646  */
+#line 1529 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_parlist:p_SUCC---line %d",block, sc_line());}; (yyval.y_int) = pas_SUCC;}
-#line 4329 "y.tab.c" /* yacc.c:1646  */
+#line 4331 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 356:
-#line 1524 "gram.y" /* yacc.c:1646  */
+#line 1530 "gram.y" /* yacc.c:1646  */
     {if(myDebugPart2){msg("%d rts_fun_parlist:p_PRED---line %d",block, sc_line());}; (yyval.y_int) = pas_PRED;}
-#line 4335 "y.tab.c" /* yacc.c:1646  */
+#line 4337 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 357:
-#line 1528 "gram.y" /* yacc.c:1646  */
+#line 1534 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = NE;}
-#line 4341 "y.tab.c" /* yacc.c:1646  */
+#line 4343 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 358:
-#line 1529 "gram.y" /* yacc.c:1646  */
+#line 1535 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = LE;}
-#line 4347 "y.tab.c" /* yacc.c:1646  */
+#line 4349 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 359:
-#line 1530 "gram.y" /* yacc.c:1646  */
+#line 1536 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = GE;}
-#line 4353 "y.tab.c" /* yacc.c:1646  */
+#line 4355 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 360:
-#line 1531 "gram.y" /* yacc.c:1646  */
+#line 1537 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = EQ;}
-#line 4359 "y.tab.c" /* yacc.c:1646  */
+#line 4361 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 361:
-#line 1532 "gram.y" /* yacc.c:1646  */
+#line 1538 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = LT;}
-#line 4365 "y.tab.c" /* yacc.c:1646  */
+#line 4367 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 362:
-#line 1533 "gram.y" /* yacc.c:1646  */
+#line 1539 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = GT;}
-#line 4371 "y.tab.c" /* yacc.c:1646  */
+#line 4373 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 363:
-#line 1537 "gram.y" /* yacc.c:1646  */
+#line 1543 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = 0;}
-#line 4377 "y.tab.c" /* yacc.c:1646  */
+#line 4379 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 364:
-#line 1538 "gram.y" /* yacc.c:1646  */
+#line 1544 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = 1;}
-#line 4383 "y.tab.c" /* yacc.c:1646  */
+#line 4385 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 365:
-#line 1539 "gram.y" /* yacc.c:1646  */
+#line 1545 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = 2;}
-#line 4389 "y.tab.c" /* yacc.c:1646  */
+#line 4391 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 366:
-#line 1540 "gram.y" /* yacc.c:1646  */
+#line 1546 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = 3;}
-#line 4395 "y.tab.c" /* yacc.c:1646  */
+#line 4397 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 367:
-#line 1544 "gram.y" /* yacc.c:1646  */
+#line 1550 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = 0;}
-#line 4401 "y.tab.c" /* yacc.c:1646  */
+#line 4403 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 368:
-#line 1545 "gram.y" /* yacc.c:1646  */
+#line 1551 "gram.y" /* yacc.c:1646  */
     {(yyval.y_int) = 1;}
-#line 4407 "y.tab.c" /* yacc.c:1646  */
+#line 4409 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 4411 "y.tab.c" /* yacc.c:1646  */
+#line 4413 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -4635,7 +4637,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1557 "gram.y" /* yacc.c:1906  */
+#line 1563 "gram.y" /* yacc.c:1906  */
 
 
 void yyerror(const char *msg)

@@ -944,7 +944,7 @@ structured_variable:
 
 conditional_statement:
     if_statement                                          {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}
-                                                            //treeNodeToString($1, 1);
+                                                            if(myDebugPart3) treeNodeToString($1, 1);
                                                             //do backend for if/else statement
                                                             //unless in a loop or other "local causing" thing (check block number) then pass up, NO BACKEND
                                                             $$ = $1;
@@ -991,7 +991,7 @@ case_default:
 repetitive_statement:
     repeat_statement                                        {if(myDebugPart3){msg("%d repetitive_statement:repeat_statement---line %d", block, sc_line());}}
   | while_statement                                         {if(myDebugPart3){msg("%d repetitive_statement:while_statement---line %d", block, sc_line());}
-                                                              treeNodeToString($1, 1);
+                                                              if(myDebugPart3) treeNodeToString($1, 1);
                                                               $$ = $1;
                                                             }
   | for_statement                                           {if(myDebugPart3){msg("%d repetitive_statement:for_statement---line %d", block, sc_line());}}
@@ -1020,7 +1020,7 @@ simple_statement:
     empty_statement                     {if(myDebugPart2){msg("%d simple_statement:1---EMPTY STATEMENT", block);}
                                           /*no return, if last stement has a semi, this is the filler to allow it*/}
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---line %d", block, sc_line());}
-                                          if(myDebugPart2){msg("Calling genBackendAssignment() on");treeNodeToString($1, 1);}
+                                          if(myDebugPart2 | myDebugPart3){msg("Calling genBackendAssignment() on");treeNodeToString($1, 1);}
                                           //always call an assigment with (node, 0, 0) from gramar
                                           if($1->tag != ERROR_NODE) genBackendAssignment($1, 0, 0);
 
@@ -1429,13 +1429,19 @@ variable_or_function_access_no_id:
   | '(' expression ')'                                                                {if(myDebugPart2){msg("%d variable_or_function_access_no_id:4---line %d", block, sc_line());}
                                                                                         $$ = $2;
                                                                                       }
+
   | variable_or_function_access pointer_char                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---line %d", block, sc_line());}
                                                                                         /*something ex:  p^ := 6*/
                                                                                       }
-  | variable_or_function_access '[' index_expression_list ']'                         {/*for project 3, not used in part 2. for array accesses*/}
+
+  | variable_or_function_access '[' index_expression_list ']'                         {
+                                                                                        //makeArrayNode(TN varNode, TN access);
+                                                                                      }
+
   | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---line %d", block, sc_line());}
                                                                                         /*function call, expr*/
                                                                                       }
+
   | p_NEW '(' variable_access_or_typename ')'                                         {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---line %d", block, sc_line());}
                                                                                         /*like a malloc but in pascal, continue on April 13th, monday*/
                                                                                       }

@@ -2,7 +2,7 @@
 #include "backend-x86.h"
 
 typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE,
-                  FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE, WHILE_NODE, STATEMENT_NODE}tagtype;
+                  FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE, WHILE_NODE, STATEMENT_NODE, ARRAY_NODE}tagtype;
 
 typedef enum{CHR, ORD, SUCC, PRED, NEG}unopType;
 
@@ -51,6 +51,17 @@ typedef struct tn{
       struct tn *nextStatement;
       struct tn *expression;
     }statement_node;
+
+    struct{
+      ST_ID arrayName;
+      int isInstalled;
+      ST_DR DR;
+      STDR_TAG DRtag;
+      TYPE type;
+      TYPETAG typeTag;
+      int length;
+      struct tn *access_node;
+    }array_node;
 
 
     /*PART 2*/
@@ -113,6 +124,7 @@ TN makeIfNode(TN relop,TN expr);
 TN makeElseNode(TN ifNode, TN expr);
 TN makeWhileNode(TN relop,TN expr);
 TN makeStatementNode(TN root, TN expr);
+TN makeArrayNode(TN varNode, TN access);
 
 
 //PART 2

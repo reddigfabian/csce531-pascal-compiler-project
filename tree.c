@@ -5,11 +5,10 @@
 
 int myDebug = 1;
 
-
 int errorCalled = 0;
 int inAssignment = 0;
 char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE",
-    "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE", "IF_NODE", "ELSE_NODE", "WHILE_NODE", "STATEMENT_NODE"};
+    "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE", "IF_NODE", "ELSE_NODE", "WHILE_NODE", "STATEMENT_NODE", "ARRAY_NODE"};
 char* unopTypeStrings[] = {"CHR", "ORD", "SUCC", "PRED", "NEG"};
 char* binopTypeStrings[] = {"ADD", "SUB", "REAL_DIV", "INT_DIV", "MOD", "MULT"};
 char* relationalTypeStrings[] = {"NE","LE","GE","EQ","LT","GT"};
@@ -126,7 +125,7 @@ TN makeStatementNode(TN root, TN expr){
 
   if(root != NULL){
     TN lastNode = root;
-    if(root->u.statement_node.nextStatement != NULL){
+    if(root->u.statement_node.nextStatement == NULL){
       root->u.statement_node.nextStatement = tempTN; //second time
       return root;
     }
@@ -142,6 +141,53 @@ TN makeStatementNode(TN root, TN expr){
   }
 
 }//END makeStatementNode()
+
+TN makeArrayNode(TN varNode, TN access){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = ARRAY_NODE;
+  tempTN->u.array_node.arrayName = varNode->u.var_node.varName;
+  tempTN->u.array_node.isInstalled = varNode->u.var_node.isInstalled;
+
+  int block;
+  if(tempTN->u.array_node.isInstalled == 1){
+    tempTN->u.array_node.type = varNode->u.var_node.type;
+    tempTN->u.array_node.DR = varNode->u.var_node.DR;
+    tempTN->u.array_node.DRtag = varNode->u.var_node.DRtag;
+    tempTN->u.array_node.typeTag = varNode->u.var_node.typeTag;
+  }else{
+
+  }
+
+  /*
+  if(tempDR != NULL){
+    tempTN->u.var_node.isInstalled = 1;
+    tempTN->u.var_node.DR = tempDR;
+    tempTN->u.var_node.DRtag = tempDR->tag;
+    if(tempDR->tag == GDECL | tempDR->tag == LDECL | tempDR->tag == PDECL | tempDR->tag == FDECL){
+      tempTN->u.var_node.type = tempDR->u.decl.type;
+      tempTN->u.var_node.typeTag = ty_query(tempDR->u.decl.type);
+    }else if(tempDR->tag == ECONST){
+      tempTN->u.var_node.type = tempDR->u.econst.type;
+      tempTN->u.var_node.typeTag = ty_query(tempDR->u.econst.type);
+    }else if(tempDR->tag == TYPENAME){
+      tempTN->u.var_node.type = tempDR->u.typename.type;
+      tempTN->u.var_node.typeTag = ty_query(tempDR->u.typename.type);
+    }else{
+      bug("Bad DR tag in makeVarNode()");
+    }
+
+  }else{ //tempDR == NULL
+    tempTN->u.var_node.isInstalled = 0;
+    //tempTN->u.var_node.DR = NULL;
+    //tempTN->u.var_node.DRtag = NULL;
+    //tempTN->u.var_node.type = NULL;
+    //tempTN->u.var_node.typeTag = NULL;
+  }
+
+  */
+
+  return tempTN;
+}
 
 
 
@@ -860,31 +906,33 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
 
       //PART 3
       case IF_NODE:
-        msg("IF_NODE:");
-        msg("\nBoolean:");
+        msg("IF_NODE:{");
+        msg("\nBoolean: ");
         treeNodeToString(node->u.if_node.relop, 0);
-        msg("\nExpression:");
-        if(node->u.if_node.expression != NULL) msgn("        "); treeNodeToString(node->u.if_node.expression, 0);
-        if(node->u.if_node.elseNode != NULL) treeNodeToString(node->u.if_node.elseNode, 0);
+        msg("\nExpression: ");
+        if(node->u.if_node.expression != NULL){ msgn("        "); treeNodeToString(node->u.if_node.expression, 0); msg("}");}
+
+        if(node->u.if_node.elseNode != NULL){ treeNodeToString(node->u.if_node.elseNode, 0);}
         break;
 
       case ELSE_NODE:
-        msg("\nELSE_NODE:");
-        msgn("        "); treeNodeToString(node->u.else_node.expression, 0);
+        msg("\nELSE_NODE: {");
+        if(node->u.else_node.expression->tag == IF_NODE){ treeNodeToString(node->u.else_node.expression, 0); msg("}");}
+        else{ msgn("        "); treeNodeToString(node->u.else_node.expression, 0); msg("}");}
         break;
 
         case WHILE_NODE:
-          msg("WHILE_NODE:");
+          msg("WHILE_NODE:{");
           msg("\nBoolean:");
           treeNodeToString(node->u.while_node.relop, 0);
-          msg("\nExpression:");
-          if(node->u.while_node.expression != NULL) msgn("        "); treeNodeToString(node->u.while_node.expression, 0);
+          msg("\nExpression: ");
+          if(node->u.while_node.expression != NULL){ msgn("        "); treeNodeToString(node->u.while_node.expression, 0); msg("}");}
           break;
 
         case STATEMENT_NODE:
           msg("STATEMENT_NODE:");
           msgn("        "); treeNodeToString(node->u.statement_node.expression, 0);
-          if(node->u.statement_node.nextStatement != NULL) msgn("        "); treeNodeToString(node->u.statement_node.nextStatement, 0);
+          if(node->u.statement_node.nextStatement != NULL){ msgn("        "); treeNodeToString(node->u.statement_node.nextStatement, 0);}
           break;
 
 

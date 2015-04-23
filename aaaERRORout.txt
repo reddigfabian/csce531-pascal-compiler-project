@@ -1,3 +1,4 @@
+line 26: ERROR -- Illegal conversion
 0 new_identifier_1:LEX_ID---T3l80_ok
 0 new_identifier:new_identifier_1---T3l80_ok
 0 program_heading:1---T3l80_ok
@@ -74,222 +75,38 @@
 0 simple_decl:variable_declaration_part---line 23
 0 any_decl:simple_decl---line 23
 0 any_global_declaration_part:1---line 23
-0 new_identifier_1:LEX_ID---Print_x
-0 new_identifier:new_identifier_1---Print_x
-0 function_heading:LEX_PROCEDURE---line 23
-0 directive:LEX_EXTERNAL---line 23
-0 directive_list:directive---line 23
-0 function_declaration:directive_list---line 24
-0 any_decl:function_declaration---line 24
-0 any_global_declaration_part:1---line 24
-0 new_identifier_1:LEX_ID---Print_oops
-0 new_identifier:new_identifier_1---Print_oops
-0 function_heading:LEX_PROCEDURE---line 24
-0 directive:LEX_EXTERNAL---line 24
-0 directive_list:directive---line 24
-0 function_declaration:directive_list---line 25
-0 any_decl:function_declaration---line 25
-0 any_global_declaration_part:1---line 25
-0 new_identifier_1:LEX_ID---Print_7
-0 new_identifier:new_identifier_1---Print_7
-0 function_heading:LEX_PROCEDURE---line 25
-0 directive:LEX_EXTERNAL---line 25
-0 directive_list:directive---line 25
-0 function_declaration:directive_list---line 26
-0 any_decl:function_declaration---line 26
-0 any_global_declaration_part:1---line 26
-0 new_identifier_1:LEX_ID---Print_1
-0 new_identifier:new_identifier_1---Print_1
-0 function_heading:LEX_PROCEDURE---line 26
-0 directive:LEX_EXTERNAL---line 26
-0 directive_list:directive---line 26
-0 function_declaration:directive_list---line 27
-0 any_decl:function_declaration---line 27
-0 any_global_declaration_part:1---line 27
-0 new_identifier_1:LEX_ID---Print_2
-0 new_identifier:new_identifier_1---Print_2
-0 function_heading:LEX_PROCEDURE---line 27
-0 directive:LEX_EXTERNAL---line 27
-0 directive_list:directive---line 27
-0 function_declaration:directive_list---line 28
-0 any_decl:function_declaration---line 28
-0 any_global_declaration_part:1---line 28
-0 new_identifier_1:LEX_ID---Print_newline
-0 new_identifier:new_identifier_1---Print_newline
-0 function_heading:LEX_PROCEDURE---line 28
-0 directive:LEX_EXTERNAL---line 28
-0 directive_list:directive---line 28
-0 function_declaration:directive_list---line 29
-0 any_decl:function_declaration---line 29
-0 any_global_declaration_part:1---line 29
-0 new_identifier_1:LEX_ID---Print_is
-0 new_identifier:new_identifier_1---Print_is
-0 function_heading:LEX_PROCEDURE---line 29
-0 directive:LEX_EXTERNAL---line 29
-0 directive_list:directive---line 29
-0 function_declaration:directive_list---line 30
-0 any_decl:function_declaration---line 30
-0 any_global_declaration_part:1---line 30
-0 new_identifier_1:LEX_ID---Print_grooviest
-0 new_identifier:new_identifier_1---Print_grooviest
-0 function_heading:LEX_PROCEDURE---line 30
-0 directive:LEX_EXTERNAL---line 30
-0 directive_list:directive---line 30
-0 function_declaration:directive_list---line 33
-0 any_decl:function_declaration---line 33
-0 any_global_declaration_part:1---line 33
 
- 0 identifier:LEX_ID---X
-0 variable_or_function_access_maybe_assignment:1--- X
-1 Found in unsigned_number:INT CONST:1---line 35
-1 factor:3---line 35
-1 primary:1---line 35
-1 signed_primary:1---line 35
-1 term:1---line 35
-1 simple_expression:1---line 35
-1 expression:3---line 35
-1 rest_of_statement:1---line 35
-1 assignment_or_call_statement:1---line 35
-1 simple_statement:2---line 35
+ 0 identifier:LEX_ID---Ia
+0 variable_or_function_access_no_standard_function:1---line 26
+1 variable_or_function_access:1---line 26
+1 Found in unsigned_number:INT CONST:5---line 26
+1 factor:3---line 26
+1 primary:1---line 26
+1 signed_primary:1---line 26
+1 term:1---line 26
+1 simple_expression:1---line 26
+1 expression:3---line 26
+1 variable_or_function_access_maybe_assignment:3---line 26
+1 Found in unsigned_number:INT CONST:3---line 26
+1 factor:3---line 26
+1 primary:1---line 26
+1 signed_primary:1---line 26
+1 term:1---line 26
+1 simple_expression:1---line 26
+1 expression:3---line 26
+1 rest_of_statement:1---line 26
+1 assignment_or_call_statement:1---line 26
+1 simple_statement:2---line 26
 Calling genBackendAssignment() on
-TREE NODE    ASSIGN_NODE var --> VAR_NODE node: X of type: signed long int
-             Expression nodes --> INTCONSTANT node: 1 
-ASSIGNMENT: signed long int := signed long int;
-1 statement:simple_statement---line 35
-1 statement_sequence:statement---line 35
-
- 1 identifier:LEX_ID---A
-1 variable_or_function_access_maybe_assignment:1--- A
-1 Found in sign:2---NEGATIVE
-1 Found in unsigned_number:INT CONST:1---line 37
-1 factor:3---line 37
-1 primary:1---line 37
-1 signed_primary:1---line 37
-1 signed_primary: NEGATIVE---
-1 term:1---line 37
-1 simple_expression:1---line 37
-1 expression:3---line 37
-1 rest_of_statement:1---line 37
-1 assignment_or_call_statement:1---line 37
-1 simple_statement:2---line 37
-Calling genBackendAssignment() on
-TREE NODE    ASSIGN_NODE var --> VAR_NODE node: A of type: signed long int
-             Expression nodes --> INTCONSTANT node: -1 
-ASSIGNMENT: signed long int := signed long int;
-1 statement:simple_statement---line 37
-1 statement_sequence:statement_sequence---line 37
-
- 1 identifier:LEX_ID---B
-1 variable_or_function_access_maybe_assignment:1--- B
-1 Found in unsigned_number:INT CONST:0---line 38
-1 factor:3---line 38
-1 primary:1---line 38
-1 signed_primary:1---line 38
-1 term:1---line 38
-1 simple_expression:1---line 38
-1 expression:3---line 38
-1 rest_of_statement:1---line 38
-1 assignment_or_call_statement:1---line 38
-1 simple_statement:2---line 38
-Calling genBackendAssignment() on
-TREE NODE    ASSIGN_NODE var --> VAR_NODE node: B of type: signed long int
-             Expression nodes --> INTCONSTANT node: 0 
-ASSIGNMENT: signed long int := signed long int;
-1 statement:simple_statement---line 38
-1 statement_sequence:statement_sequence---line 38
-
- 1 identifier:LEX_ID---C
-1 variable_or_function_access_maybe_assignment:1--- C
-1 Found in unsigned_number:INT CONST:1---line 39
-1 factor:3---line 39
-1 primary:1---line 39
-1 signed_primary:1---line 39
-1 term:1---line 39
-1 simple_expression:1---line 39
-1 expression:3---line 39
-1 rest_of_statement:1---line 39
-1 assignment_or_call_statement:1---line 39
-1 simple_statement:2---line 39
-Calling genBackendAssignment() on
-TREE NODE    ASSIGN_NODE var --> VAR_NODE node: C of type: signed long int
-             Expression nodes --> INTCONSTANT node: 1 
-ASSIGNMENT: signed long int := signed long int;
-1 statement:simple_statement---line 39
-1 statement_sequence:statement_sequence---line 39
-
- 1 identifier:LEX_ID---X
-1 variable_or_function_access_no_standard_function:1---line 41
-1 variable_or_function_access:1---line 41
-1 factor:1---line 41
-1 primary:1---line 41
-1 signed_primary:1---line 41
-1 term:1---line 41
-1 simple_expression:1---line 41
-1 expression:3---line 41
-1 Found in unsigned_number:INT CONST:0---line 41
-1 factor:3---line 41
-1 primary:1---line 41
-1 signed_primary:1---line 41
-1 term:1---line 41
-1 simple_expression:1---line 41
-1 expression:1---line 41
-1 boolean_expression:expression---line 41
-
- 1 identifier:LEX_ID---Print_x
-1 variable_or_function_access_maybe_assignment:1--- Print_x
-1 rest_of_statement:0---EMPTY
-1 assignment_or_call_statement:1---line 42
-1 simple_statement:2---line 42
-Calling genBackendAssignment() on
-TREE NODE    FUNC_NODE node: Print_x of type: void
-1 statement:simple_statement---line 42
-1 statement_sequence:statement---line 42
-
- 1 identifier:LEX_ID---X
-1 variable_or_function_access_maybe_assignment:1--- X
-
- 1 identifier:LEX_ID---X
-1 variable_or_function_access_no_standard_function:1---line 43
-1 variable_or_function_access:1---line 43
-1 factor:1---line 43
-1 primary:1---line 43
-1 signed_primary:1---line 43
-1 term:1---line 43
-1 simple_expression:1---line 43
-1 Found in unsigned_number:INT CONST:1---line 43
-1 factor:3---line 43
-1 primary:1---line 43
-1 signed_primary:1---line 44
-1 term:1---line 44
-1 simple_expression:2---line 44
-1 expression:3---line 44
-1 rest_of_statement:1---line 44
-1 assignment_or_call_statement:1---line 44
-1 simple_statement:2---line 44
-Calling genBackendAssignment() on
-TREE NODE    ASSIGN_NODE var --> VAR_NODE node: X of type: signed long int
-             Expression nodes -->      LEFT: VAR_NODE node: X of type: signed long int
-     BINOP_NODE SUB      RIGHT: INTCONSTANT node: 1 
-handleBINOP_NODE: Ltag: signed long int
-ASSIGNMENT: signed long int := signed long int;
-handleBINOP_NODE: Ltag: signed long int
-1 statement:simple_statement---line 44
-1 statement_sequence:statement_sequence---line 44
-1 compound_statement:BEGIN and END---line 44
-1 structured_statement:compound_statement---line 44
-1 statement:structured_statement---line 44
-1 while_statement:LEX_WHILE---line 44
-1 repetitive_statement:while_statement---line 44
-TREE NODE    WHILE_NODE:
-
-Boolean:
-   LEFT: VAR_NODE node: X of type: signed long int
-   RELOP_NODE GE    RIGHT: INTCONSTANT node: 0 
-Expression:
-        STATEMENT_NODE:
-        FUNC_NODE node: Print_x of type: void
-        STATEMENT_NODE:
-        ASSIGN_NODE var --> VAR_NODE node: X of type: signed long int
-             Expression nodes -->      LEFT: VAR_NODE node: X of type: signed long int
-     BINOP_NODE SUB      RIGHT: INTCONSTANT node: 1 
-Segmentation fault (core dumped)
+TREE NODE    ASSIGN_NODE var --> VAR_NODE node: Ia of type: array
+             Expression nodes --> INTCONSTANT node: 3 
+ASSIGNMENT: array := signed long int;
+line 26: ERROR -- Illegal conversion
+1 statement:simple_statement---line 26
+1 statement_sequence:statement---line 26
+1 simple_statement:1---EMPTY STATEMENT
+1 statement:simple_statement---line 30
+1 statement_sequence:statement_sequence---line 30
+1 compound_statement:BEGIN and END---line 30
+1 statement_part:compound_statement---line 30
+1 main_program_declaration:1---line 30
