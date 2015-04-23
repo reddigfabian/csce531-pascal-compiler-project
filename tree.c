@@ -156,7 +156,7 @@ TN makeArrayNode(TN varNode, TN access){
     tempTN->u.array_node.typeTag = varNode->u.var_node.typeTag;
     tempTN->u.array_node.access_node = access;
   }else{
-
+    bug("Variable node for array node was not installed.");
   }
   return tempTN;
 }
