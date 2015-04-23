@@ -20,46 +20,44 @@ var
    iaaa  : array[0..2] of array[2..5] of array[5..9] of Integer;
 
 
+procedure print_x; External;
 procedure print_oops; External;
+procedure print_7; External;
+procedure print_1; External;
+procedure print_2; External;
+procedure print_newline; External;
+procedure print_is; External;
+procedure print_grooviest; External;
 
 
 begin
+
+   x := 1;
 
    a := -1;
    b := 0;
    c := 1;
 
-   if a > b then
-      print_oops
-   else
-      b := c+a;
+    while x >= 0 do begin
+       print_x;
+       x := x - 1
+    end;
 
 
-{
-#   32
-       # b_push_ext_addr (A)
-       # b_deref (signed long int)
-       # b_push_ext_addr (B)
-       # b_deref (signed long int)
-       # b_arith_rel_op ( > , signed long int)
-       # b_convert (signed long int -> signed char)
-       # b_cond_jump (signed char, ZERO,
-       #              .LC0)
-#   33
-#   34
-       # b_alloc_arglist (0 bytes)
-       # b_funcall_by_name (Print_oops, void)
-       # b_jump ( destination = .LC1 )
-#   35
-       # b_push_ext_addr (B)
-       # b_push_ext_addr (C)
-       # b_deref (signed long int)
-       # b_push_ext_addr (A)
-       # b_deref (signed long int)
-       # b_arith_rel_op ( + , signed long int)
-       # b_assign (signed long int)
-       # b_pop ()
-#   36
+    {if a > b then
+       print_oops
+    else begin
+       if b = c+a then begin
+    print_7;
+    print_1;
+    if true then print_2;
+    print_newline
+       end else
+    print_oops;
+       print_is
+    end;
 }
+    print_grooviest;
+
 
 end.

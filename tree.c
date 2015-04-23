@@ -9,7 +9,7 @@ int myDebug = 1;
 int errorCalled = 0;
 int inAssignment = 0;
 char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE",
-    "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE", "IF_NODE", "ELSE_NODE"};
+    "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE", "IF_NODE", "ELSE_NODE", "WHILE_NODE", "STATEMENT_NODE"};
 char* unopTypeStrings[] = {"CHR", "ORD", "SUCC", "PRED", "NEG"};
 char* binopTypeStrings[] = {"ADD", "SUB", "REAL_DIV", "INT_DIV", "MOD", "MULT"};
 char* relationalTypeStrings[] = {"NE","LE","GE","EQ","LT","GT"};
@@ -92,6 +92,60 @@ typedef struct tn{
 ********************MAKE FUNCTIONS*********************
 */
 
+//PART 3
+TN makeIfNode(TN relop,TN expr){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = IF_NODE;
+  tempTN->u.if_node.relop = relop;
+  tempTN->u.if_node.expression = expr;
+  return tempTN;
+}
+
+//passes up IF_NODE
+TN makeElseNode(TN ifNode, TN expr){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = ELSE_NODE;
+  tempTN->u.else_node.expression = expr;
+  ifNode->u.if_node.elseNode = tempTN;
+  return ifNode;
+}
+
+TN makeWhileNode(TN relop,TN expr){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = WHILE_NODE;
+  tempTN->u.while_node.relop = relop;
+  tempTN->u.while_node.expression = expr;
+  return tempTN;
+}
+
+TN makeStatementNode(TN root, TN expr){
+  TN tempTN = (TN)malloc(sizeof(treeNode));
+  tempTN->tag = STATEMENT_NODE;
+  tempTN->u.statement_node.expression = expr;
+  tempTN->u.statement_node.nextStatement = NULL;
+
+  if(root != NULL){
+    TN lastNode = root;
+    if(root->u.statement_node.nextStatement != NULL){
+      root->u.statement_node.nextStatement = tempTN; //second time
+      return root;
+    }
+    while(lastNode->u.statement_node.nextStatement != NULL){  //rest times
+      lastNode = lastNode->u.statement_node.nextStatement;
+    }
+
+    lastNode->u.statement_node.nextStatement = tempTN;
+    return root;
+
+  }else{
+    return tempTN; //first time
+  }
+
+}//END makeStatementNode()
+
+
+
+//PART 2
 TN makeErrorNode(){
   TN tempTN = (TN)malloc(sizeof(treeNode));
   tempTN->tag = ERROR_NODE;
@@ -802,77 +856,111 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
     if(isTop) msgn("TREE NODE    ");
     switch(node->tag){
 
+
+
+      //PART 3
+      case IF_NODE:
+        msg("IF_NODE:");
+        msg("\nBoolean:");
+        treeNodeToString(node->u.if_node.relop, 0);
+        msg("\nExpression:");
+        if(node->u.if_node.expression != NULL) msgn("        "); treeNodeToString(node->u.if_node.expression, 0);
+        if(node->u.if_node.elseNode != NULL) treeNodeToString(node->u.if_node.elseNode, 0);
+        break;
+
+      case ELSE_NODE:
+        msg("\nELSE_NODE:");
+        msgn("        "); treeNodeToString(node->u.else_node.expression, 0);
+        break;
+
+        case WHILE_NODE:
+          msg("WHILE_NODE:");
+          msg("\nBoolean:");
+          treeNodeToString(node->u.while_node.relop, 0);
+          msg("\nExpression:");
+          if(node->u.while_node.expression != NULL) msgn("        "); treeNodeToString(node->u.while_node.expression, 0);
+          break;
+
+        case STATEMENT_NODE:
+          msg("STATEMENT_NODE:");
+          msgn("        "); treeNodeToString(node->u.statement_node.expression, 0);
+          if(node->u.statement_node.nextStatement != NULL) msgn("        "); treeNodeToString(node->u.statement_node.nextStatement, 0);
+          break;
+
+
+
+      //PART 2
       case CHARCONSTANT:
-      if(isTop) msg("CHARCONSTANT node: %c ", node->u.character);
-      else msgn("CHARCONSTANT node: %c ", node->u.character);
-      break;
+        if(isTop) msg("CHARCONSTANT node: %c ", node->u.character);
+        else msgn("CHARCONSTANT node: %c ", node->u.character);
+        break;
 
       case INTCONSTANT:
-      if(isTop) msg("INTCONSTANT node: %ld ", node->u.intconstant);
-      else msgn("INTCONSTANT node: %ld ", node->u.intconstant);
-      break;
+        if(isTop) msg("INTCONSTANT node: %ld ", node->u.intconstant);
+        else msgn("INTCONSTANT node: %ld ", node->u.intconstant);
+        break;
 
       case REALCONSTANT:
-      if(isTop) msg("REALCONSTANT node: %f ",node->u.realconstant);
-      else msgn("REALCONSTANT node: %f ",node->u.realconstant);
-      break;
+        if(isTop) msg("REALCONSTANT node: %f ",node->u.realconstant);
+        else msgn("REALCONSTANT node: %f ",node->u.realconstant);
+        break;
 
       case BOOL_NODE:
-      if(isTop) msg("BOOL_NODE node: %d ",node->u.boolean);
-      else msgn("BOOL_NODE node: %d ",node->u.boolean);
-      break;
+        if(isTop) msg("BOOL_NODE node: %d ",node->u.boolean);
+        else msgn("BOOL_NODE node: %d ",node->u.boolean);
+        break;
 
       case NEGNUM:
-      msgn("NEGNUM node --> ");
-      treeNodeToString(node->u.negNode, 0);
-      break;
+        msgn("NEGNUM node --> ");
+        treeNodeToString(node->u.negNode, 0);
+        break;
 
       case VAR_NODE:
-      msgn("VAR_NODE node: %s of type: ",st_get_id_str(node->u.var_node.varName));
-      ty_print_typetag(getTYPETAG(node));
-      msg("");
-      break;
+        msgn("VAR_NODE node: %s of type: ",st_get_id_str(node->u.var_node.varName));
+        ty_print_typetag(getTYPETAG(node));
+        msg("");
+        break;
 
       case UNOP_NODE:
-      msgn("UNOP_NODE %s ", unopTypeStrings[node->u.unop.unTag]);
-      msgn("operand: ");
-      treeNodeToString(node->u.unop.operand, 0);
-      break;
+        msgn("UNOP_NODE %s ", unopTypeStrings[node->u.unop.unTag]);
+        msgn("operand: ");
+        treeNodeToString(node->u.unop.operand, 0);
+        break;
 
       case BINOP_NODE:
-      msgn(" LEFT: ");
-      treeNodeToString(node->u.binop.left, 0);
-      msgn("BINOP_NODE %s ", binopTypeStrings[node->u.binop.binTag]);
-      msgn("RIGHT: ");
-      treeNodeToString(node->u.binop.right, 0);
-      break;
+        msgn("     LEFT: ");
+        treeNodeToString(node->u.binop.left, 0);
+        msgn("     BINOP_NODE %s ", binopTypeStrings[node->u.binop.binTag]);
+        msgn("     RIGHT: ");
+        treeNodeToString(node->u.binop.right, 0);
+        break;
 
       case RELOP_NODE:
-      msgn(" LEFT: ");
-      treeNodeToString(node->u.relop.left, 0);
-      msgn("RELOP_NODE %s ", relationalTypeStrings[node->u.relop.relTag]);
-      msgn("RIGHT: ");
-      treeNodeToString(node->u.relop.right, 0);
-      break;
+        msgn("   LEFT: ");
+        treeNodeToString(node->u.relop.left, 0);
+        msgn("   RELOP_NODE %s ", relationalTypeStrings[node->u.relop.relTag]);
+        msgn("   RIGHT: ");
+        treeNodeToString(node->u.relop.right, 0);
+        break;
 
       case ASSIGN_NODE:
-      msgn("ASSIGN_NODE var --> ");
-      treeNodeToString(node->u.assign_node.varNode, 0);
-      msgn("             Expression nodes --> ");
-      treeNodeToString(node->u.assign_node.expression, 0);
-      msg("");
-      break;
+        msgn("ASSIGN_NODE var --> ");
+        treeNodeToString(node->u.assign_node.varNode, 0);
+        msgn("             Expression nodes --> ");
+        treeNodeToString(node->u.assign_node.expression, 0);
+        msg("");
+        break;
 
       case FUNC_NODE:{
-        msgn("FUNC_NODE node: %s of type: ",st_get_id_str(node->u.func_node.funcName));
-        ty_print_typetag(node->u.func_node.typeTag);
-        if(isTop) msg("");
-        break;
+          msgn("FUNC_NODE node: %s of type: ",st_get_id_str(node->u.func_node.funcName));
+          ty_print_typetag(node->u.func_node.typeTag);
+          msg("");
+          break;
       }
 
       default:
-      if(isTop) msg("NULL -- THIS IS AN error");
-      else msgn("NULL -- THIS IS AN error");
+        if(isTop) msg("NULL -- THIS IS AN error");
+        else msgn("NULL -- THIS IS AN error");
     }
   }
 

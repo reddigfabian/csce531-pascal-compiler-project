@@ -115,6 +115,8 @@ void initRootOfUnRP(TYPE type); //prototype
     simple_expression rest_of_statement unsigned_number factor signed_factor primary standard_functions
     signed_primary term assignment_or_call_statement constant_literal predefined_literal actual_parameter
     variable_or_function_access variable_or_function_access_no_standard_function function_heading actual_parameter_list
+    statement_sequence statement structured_statement conditional_statement boolean_expression simple_statement
+    if_statement simple_if repetitive_statement while_statement compound_statement
 
 
 
@@ -890,27 +892,40 @@ statement_part:
 compound_statement:
     LEX_BEGIN {if(!insideFunc)b_func_prologue("main");}
     statement_sequence
-    LEX_END              {/*everything withing begin and end, could be func/procedure def, or main*/
+    LEX_END                                           {/*everything withing begin and end, could be func/procedure def, or main*/
                                                         if(myDebugPart2){msg("%d compound_statement:BEGIN and END---line %d", block, sc_line());}
                                                         if(!insideFunc)b_func_epilogue("main");
                                                         insideFunc = 0;
+                                                        $$ = $3;
                                                       }
   ;
 
 statement_sequence:
-    statement                                         {if(myDebugPart3){msg("%d statement_sequence:statement---line %d", block, sc_line());}}
-  | statement_sequence semi statement                 {if(myDebugPart3){msg("%d statement_sequence:statement_sequence---line %d", block, sc_line());}}
+    statement                                         {if(myDebugPart3){msg("%d statement_sequence:statement---line %d", block, sc_line());}
+                                                        $$ = makeStatementNode(NULL, $1);
+                                                      }
+  | statement_sequence semi statement                 {if(myDebugPart3){msg("%d statement_sequence:statement_sequence---line %d", block, sc_line());}
+                                                        $$ = makeStatementNode($1, $3);
+                                                      }
   ;
 
 statement:
-    structured_statement                                {if(myDebugPart3){msg("%d statement:structured_statement---line %d", block, sc_line());}}
-  | simple_statement                                    {if(myDebugPart3){msg("%d statement:simple_statement---line %d", block, sc_line());}}
+    structured_statement                                {if(myDebugPart3){msg("%d statement:structured_statement---line %d", block, sc_line());}
+                                                          $$ = $1; //can have the BEGIN and END
+                                                        }
+  | simple_statement                                    {if(myDebugPart3){msg("%d statement:simple_statement---line %d", block, sc_line());}
+                                                          $$ = $1;
+                                                        }
   ;
 
 structured_statement:
-    compound_statement                                  {if(myDebugPart3){msg("%d structured_statement:compound_statement---line %d", block, sc_line());}}
+    compound_statement                                  {if(myDebugPart3){msg("%d structured_statement:compound_statement---line %d", block, sc_line());}
+                                                          $$ = $1; //has BEGIN and END
+                                                        }
   | with_statement                                      {if(myDebugPart3){msg("%d structured_statement:with_statement---line %d", block, sc_line());}}
-  | conditional_statement                               {if(myDebugPart3){msg("%d structured_statement:conditional_statement---line %d", block, sc_line());}}
+  | conditional_statement                               {if(myDebugPart3){msg("%d structured_statement:conditional_statement---line %d", block, sc_line());}
+                                                          $$ = $1;
+                                                        }
   | repetitive_statement                                {if(myDebugPart3){msg("%d structured_statement:repetitive_statement---line %d", block, sc_line());}}
   ;
 
@@ -928,19 +943,24 @@ structured_variable:
   ;
 
 conditional_statement:
-    if_statement                                          {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}}
+    if_statement                                          {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}
+                                                            //treeNodeToString($1, 1);
+                                                            //do backend for if/else statement
+                                                            //unless in a loop or other "local causing" thing (check block number) then pass up, NO BACKEND
+                                                            $$ = $1;
+                                                          }
   | case_statement                                        {if(myDebugPart3){msg("%d conditional_statement:case_statement---line %d", block, sc_line());}}
   ;
 
 simple_if:
     LEX_IF boolean_expression LEX_THEN statement           {if(myDebugPart3){msg("%d simple_if:LEX_IF and LEX_THEN---line %d", block, sc_line());}
-                                                            /*possibly build IF_NODE here*/
+                                                              $$ = makeIfNode($2,$4);
                                                            }
   ;
 
 if_statement:
     simple_if LEX_ELSE statement                           {if(myDebugPart3){msg("%d if_statement:LEX_ELSE---line %d", block, sc_line());}
-                                                              /*possibly function to link a IF_NODE to a ELSE_NODE (and create the ELSE_NODE)*/
+                                                              $$ = makeElseNode($1, $3); //passes up IF_NODE
                                                            }
   | simple_if %prec prec_if                                {if(myDebugPart3){msg("%d if_statement:2---line %d", block, sc_line());}}
   ;
@@ -970,7 +990,10 @@ case_default:
 
 repetitive_statement:
     repeat_statement                                        {if(myDebugPart3){msg("%d repetitive_statement:repeat_statement---line %d", block, sc_line());}}
-  | while_statement                                         {if(myDebugPart3){msg("%d repetitive_statement:while_statement---line %d", block, sc_line());}}
+  | while_statement                                         {if(myDebugPart3){msg("%d repetitive_statement:while_statement---line %d", block, sc_line());}
+                                                              treeNodeToString($1, 1);
+                                                              $$ = $1;
+                                                            }
   | for_statement                                           {if(myDebugPart3){msg("%d repetitive_statement:for_statement---line %d", block, sc_line());}}
   ;
 
@@ -979,7 +1002,9 @@ repeat_statement:
   ;
 
 while_statement:
-    LEX_WHILE boolean_expression LEX_DO statement               {if(myDebugPart3){msg("%d while_statement:LEX_WHILE---line %d", block, sc_line());}}
+    LEX_WHILE boolean_expression LEX_DO statement               {if(myDebugPart3){msg("%d while_statement:LEX_WHILE---line %d", block, sc_line());}
+                                                                  $$ = makeWhileNode($2,$4);
+                                                                }
   ;
 
 for_statement:
@@ -1225,7 +1250,11 @@ static_expression:
   ;
 
 boolean_expression:
-    expression                                            {if(myDebugPart3){msg("%d boolean_expression:expression---line %d", block, sc_line());}}
+    expression                                            {if(myDebugPart3){msg("%d boolean_expression:expression---line %d", block, sc_line());}
+                                                            $$ = $1;
+                                                            //check and make sure its a relop node
+                                                            //else ERROR
+                                                          }
   ;
 
 expression:     /*tree node*/      /*net result of evaluating an expression, one return value push on the stack*/

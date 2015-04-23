@@ -125,7 +125,7 @@ testOur:
 
 
 testSol:
-	-./Part2/ppc3-sol < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
+	-./Part3/ppc3-sol < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
 	-cat $(FILEOUT) | grep '#' > aaaSOLout.txt
 	-cat aaaSOLout.txt > $(FILEOUT)
 	-rm aaaSOLout.txt

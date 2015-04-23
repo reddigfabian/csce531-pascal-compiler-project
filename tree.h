@@ -1,7 +1,8 @@
 #include "symtab.h"
 #include "backend-x86.h"
 
-typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE}tagtype;
+typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE,
+                  FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE, WHILE_NODE, STATEMENT_NODE}tagtype;
 
 typedef enum{CHR, ORD, SUCC, PRED, NEG}unopType;
 
@@ -33,13 +34,23 @@ typedef struct tn{
     /*PART 3*/
     struct{
       struct tn *relop;
-      struct tn *expresion;
+      struct tn *expression;
       struct tn *elseNode;
-    }if_node
+    }if_node;
 
     struct{
       struct tn *expression;
-    }else_node
+    }else_node;
+
+    struct{
+      struct tn *relop;
+      struct tn *expression;
+    }while_node;
+
+    struct{
+      struct tn *nextStatement;
+      struct tn *expression;
+    }statement_node;
 
 
     /*PART 2*/
@@ -97,6 +108,14 @@ typedef struct LoIDs{
   struct LoIDs *next;
 }listOfIds, *LD;
 
+//PART 3
+TN makeIfNode(TN relop,TN expr);
+TN makeElseNode(TN ifNode, TN expr);
+TN makeWhileNode(TN relop,TN expr);
+TN makeStatementNode(TN root, TN expr);
+
+
+//PART 2
 TN makeErrorNode();
 TN makeIntConstNode(long intconstant);
 TN makeRealConstNode(double realconstant);
