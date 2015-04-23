@@ -56,13 +56,19 @@
 void set_yydebug(int);
 void yyerror(const char *);
 
+//Debugers
 int myDebugPart1 = 0;
-int myDebugPart2 = 0;
+int myDebugPart2 = 1;
+int myDebugPart3 = 1;
+
+
+/*Globals*/
 int myDump = 0;
 int insideFunc = 0;
 int block;
 ST_ID funcST_ID;
 INDEX_LIST rootOfUnRP;
+/*END Globals*/
 
 /* Like YYERROR but do call yyerror */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -201,7 +207,7 @@ pascal_program:
   ;
 
 main_program_declaration:
-    program_heading semi any_global_declaration_part statement_part  {if(myDebugPart2){msg("%d main_program_declaration:1---",block);}}
+    program_heading semi any_global_declaration_part statement_part  {if(myDebugPart2){msg("%d main_program_declaration:1---line %d",block, sc_line());}}
   ;
 
 program_heading:
@@ -268,11 +274,11 @@ new_identifier_1:
   | p_PACK  {}
   | p_UNPACK  {}
 /* Standard Pascal ordinal functions */
-  | p_ORD   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_ORD---",block);};}
-  | p_CHR   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_CHR---",block);};}
-  | p_SUCC  {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_SUCC---",block);};}
-  | p_PRED  {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_PRED---",block);};}
-  | p_ODD   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_ODD---",block);};}
+  | p_ORD   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_ORD---line %d",block, sc_line());};}
+  | p_CHR   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_CHR---line %d",block, sc_line());};}
+  | p_SUCC  {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_SUCC---line %d",block, sc_line());};}
+  | p_PRED  {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_PRED---line %d",block, sc_line());};}
+  | p_ODD   {if(myDebugPart1 | myDebugPart2){msg("%d new_identifier_1:p_ODD---line %d",block, sc_line());};}
 /* Other extensions */
   | BREAK  {}
   | CONTINUE  {}
@@ -286,45 +292,45 @@ new_identifier_1:
 
 any_global_declaration_part:
     /* empty */                               {if(myDebugPart2){msg("%d any_global_declaration_part:0---EMPTY",block);}}
-  | any_global_declaration_part any_decl      {if(myDebugPart2){msg("%d any_global_declaration_part:1---",block);}
+  | any_global_declaration_part any_decl      {if(myDebugPart2){msg("%d any_global_declaration_part:1---line %d",block, sc_line());}
   }
   ;
 
 
 any_declaration_part:   /* var decls for local vars*/
     /* empty */                     {if(myDebugPart2){msg("%d any_declaration_part:0---EMPTY",block);}}
-  | any_declaration_part any_decl   {if(myDebugPart2){msg("%d any_declaration_part:1---",block);}
+  | any_declaration_part any_decl   {if(myDebugPart2){msg("%d any_declaration_part:1---line %d",block, sc_line());}
 
                                     }
   ;
 
 any_decl:
-    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---",block);}
+    simple_decl                        {if(myDebugPart2){msg("%d any_decl:simple_decl---line %d",block, sc_line());}
                                           //b_func_prologue("main");  //was our test
                                           /*this is called at the end of var section (main)*/
                                        }
-  | function_declaration               {if(myDebugPart2){msg("%d any_decl:function_declaration---",block);}}
+  | function_declaration               {if(myDebugPart2){msg("%d any_decl:function_declaration---line %d",block, sc_line());}}
   ;
 
 simple_decl:
-    constant_definition_part           {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:constant_definition_part---",block);}}
-  | type_definition_part               {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:type_definition_part---",block);}}
-  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:variable_declaration_part---",block);}}
+    constant_definition_part           {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:constant_definition_part---line %d",block, sc_line());}}
+  | type_definition_part               {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:type_definition_part---line %d",block, sc_line());}}
+  | variable_declaration_part          {if(myDebugPart1 | myDebugPart2){msg("%d simple_decl:variable_declaration_part---line %d",block, sc_line());}}
   ;
 
 /* constant definition part */
 
 constant_definition_part:
-    LEX_CONST constant_definition_list            {if(myDebugPart2){msg("%d constant_definition_part:LEX_CONST---",block);}}
+    LEX_CONST constant_definition_list            {if(myDebugPart2){msg("%d constant_definition_part:LEX_CONST---line %d",block, sc_line());}}
   ;
 
 constant_definition_list:
-    constant_definition                           {if(myDebugPart2){msg("%d constant_definition_list:constant_definition---",block);}}
-  | constant_definition_list constant_definition  {if(myDebugPart2){msg("%d constant_definition_list:constant_definition_list---",block);}}
+    constant_definition                           {if(myDebugPart2){msg("%d constant_definition_list:constant_definition---line %d",block, sc_line());}}
+  | constant_definition_list constant_definition  {if(myDebugPart2){msg("%d constant_definition_list:constant_definition_list---line %d",block, sc_line());}}
   ;
 
 constant_definition:
-    new_identifier '=' static_expression semi     {if(myDebugPart2){msg("%d constant_definition:new_identifier = ---",block);}}
+    new_identifier '=' static_expression semi     {if(myDebugPart2){msg("%d constant_definition:new_identifier = ---line %d",block, sc_line());}}
   ;
 
 constant:
@@ -358,10 +364,10 @@ number:     /*stripped to all ints, could be a problem. currently only effects s
   ;
 
 unsigned_number:  /*TREE NODE*/
-    LEX_INTCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in unsigned_number:INT CONST:%ld---",block, $1);}
+    LEX_INTCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in unsigned_number:INT CONST:%ld---line %d",block, $1, sc_line());}
                                       $$ = makeIntConstNode($1);
                                     }
-  | LEX_REALCONST                   {if(myDebugPart1 | myDebugPart2){msg("%d Found in unsigned_number:REAL CONST:%f---",block, $1);}
+  | LEX_REALCONST                   {if(myDebugPart1 | myDebugPart2){msg("%d Found in unsigned_number:REAL CONST:%f---line %d",block, $1, sc_line());}
                                       $$ = makeRealConstNode($1);
                                     }
   ;
@@ -383,10 +389,10 @@ predefined_literal:     /*TREE NODE*/
   ;
 
 string:                  /*TREE NODE*/
-    LEX_STRCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:1---",block);}
+    LEX_STRCONST                    {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:1---line %d",block, sc_line());}
                                       $$ = makeCharConstNode($1[0]);
                                     }
-  | string LEX_STRCONST             {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:2---",block);}}
+  | string LEX_STRCONST             {if(myDebugPart1 | myDebugPart2){msg("%d Found in string:2---line %d",block, sc_line());}}
   ;
 
 type_definition_part:
@@ -661,8 +667,8 @@ variant:
   ;
 
 case_constant_list:
-    one_case_constant
-  | case_constant_list ',' one_case_constant
+    one_case_constant                                  {if(myDebugPart3){msg("%d case_constant_list:one_case_constant---line %d", block, sc_line());}}
+  | case_constant_list ',' one_case_constant           {if(myDebugPart3){msg("%d case_constant_list:case_constant_list---line %d", block, sc_line());}}
   ;
 
 one_case_constant:
@@ -675,13 +681,13 @@ one_case_constant:
    using a simple inherited attribute of type int */
 
 variable_declaration_part:
-    LEX_VAR variable_declaration_list           {if(myDebugPart2){msg("%d variable_declaration_part---",block);}}
+    LEX_VAR variable_declaration_list           {if(myDebugPart2){msg("%d variable_declaration_part---line %d",block, sc_line());}}
 
   ;
 
 variable_declaration_list:
-    variable_declaration                            {if(myDebugPart2){msg("%d variable_declaration_list:1---",block);}}
-  | variable_declaration_list variable_declaration  {if(myDebugPart2){msg("%d variable_declaration_list:2---",block);}}
+    variable_declaration                            {if(myDebugPart2){msg("%d variable_declaration_list:1---line %d",block, sc_line());}}
+  | variable_declaration_list variable_declaration  {if(myDebugPart2){msg("%d variable_declaration_list:2---line %d",block, sc_line());}}
   ;
 
 variable_declaration:
@@ -760,7 +766,7 @@ function_declaration:
                 }
                 */
 
-    function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---",block);}
+    function_heading semi directive_list semi                         {if(myDebugPart2){msg("%d function_declaration:directive_list---line %d",block, sc_line());}
                                                                         //EXTERNAL DECLARED FUNCTIONS/PARAMETERS
                                                                         //cant have params (inputs)
                                                                         int directive = $3;
@@ -812,12 +818,12 @@ function_declaration:
   ;
 
 function_heading:
-    LEX_PROCEDURE new_identifier optional_par_formal_parameter_list                {if(myDebugPart2){msg("%d function_heading:LEX_PROCEDURE---",block);}
+    LEX_PROCEDURE new_identifier optional_par_formal_parameter_list                {if(myDebugPart2){msg("%d function_heading:LEX_PROCEDURE---line %d",block, sc_line());}
                                                                                       TYPETAG tempTYPETAG = TYVOID;
                                                                                       ST_ID tempSTID = $2;
                                                                                       $$ = makeFuncNode(tempSTID, tempTYPETAG, ty_build_basic(tempTYPETAG));
                                                                                    }
-  | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype    {if(myDebugPart2){msg("%d function_heading:LEX_FUNCTION---",block);}
+  | LEX_FUNCTION new_identifier optional_par_formal_parameter_list functiontype    {if(myDebugPart2){msg("%d function_heading:LEX_FUNCTION---line %d",block, sc_line());}
                                                                                       TYPETAG tempTYPETAG;
                                                                                       if(ty_query($4) == TYERROR){
                                                                                         error("No return type for function");
@@ -835,13 +841,13 @@ function_heading:
   ;
 
 directive_list:
-    directive                       {if(myDebugPart2){msg("%d directive_list:directive---",block);} $$ = $1;}
-  | directive_list semi directive   {if(myDebugPart2){msg("%d directive_list:directive_list---",block);}/*assume not used for now*/}
+    directive                       {if(myDebugPart2){msg("%d directive_list:directive---line %d",block, sc_line());} $$ = $1;}
+  | directive_list semi directive   {if(myDebugPart2){msg("%d directive_list:directive_list---line %d",block, sc_line());}/*assume not used for now*/}
   ;
 
 directive:
-    LEX_FORWARD                     {if(myDebugPart2){msg("%d directive:LEX_FORWARD---",block);} $$ = 1;}
-  | LEX_EXTERNAL                    {if(myDebugPart2){msg("%d directive:LEX_EXTERNAL---",block);} $$ = 0;}
+    LEX_FORWARD                     {if(myDebugPart2){msg("%d directive:LEX_FORWARD---line %d",block, sc_line());} $$ = 1;}
+  | LEX_EXTERNAL                    {if(myDebugPart2){msg("%d directive:LEX_EXTERNAL---line %d",block, sc_line());} $$ = 0;}
   ;
 
 functiontype:
@@ -878,7 +884,7 @@ formal_parameter:
 /* Pascal statements */
 
 statement_part:
-    compound_statement
+    compound_statement                                 {if(myDebugPart3){msg("%d statement_part:compound_statement---line %d", block, sc_line());}}
   ;
 
 compound_statement:
@@ -892,26 +898,24 @@ compound_statement:
   ;
 
 statement_sequence:
-    statement                                         {/*last stement in Pascal doesnt need a semi (optional, works either way)*/
-
-                                                      }
-  | statement_sequence semi statement
+    statement                                         {if(myDebugPart3){msg("%d statement_sequence:statement---line %d", block, sc_line());}}
+  | statement_sequence semi statement                 {if(myDebugPart3){msg("%d statement_sequence:statement_sequence---line %d", block, sc_line());}}
   ;
 
 statement:
-    structured_statement
-  | simple_statement
+    structured_statement                                {if(myDebugPart3){msg("%d statement:structured_statement---line %d", block, sc_line());}}
+  | simple_statement                                    {if(myDebugPart3){msg("%d statement:simple_statement---line %d", block, sc_line());}}
   ;
 
 structured_statement:
-    compound_statement
-  | with_statement
-  | conditional_statement
-  | repetitive_statement
+    compound_statement                                  {if(myDebugPart3){msg("%d structured_statement:compound_statement---line %d", block, sc_line());}}
+  | with_statement                                      {if(myDebugPart3){msg("%d structured_statement:with_statement---line %d", block, sc_line());}}
+  | conditional_statement                               {if(myDebugPart3){msg("%d structured_statement:conditional_statement---line %d", block, sc_line());}}
+  | repetitive_statement                                {if(myDebugPart3){msg("%d structured_statement:repetitive_statement---line %d", block, sc_line());}}
   ;
 
 with_statement:
-    LEX_WITH structured_variable_list LEX_DO statement
+    LEX_WITH structured_variable_list LEX_DO statement  {if(myDebugPart3){msg("%d structured_statement:compound_statement---line %d", block, sc_line());}}
   ;
 
 structured_variable_list:
@@ -920,21 +924,25 @@ structured_variable_list:
   ;
 
 structured_variable:
-    variable_or_function_access
+    variable_or_function_access                           {if(myDebugPart3){msg("%d structured_variable:variable_or_function_access---line %d", block, sc_line());}}
   ;
 
 conditional_statement:
-    if_statement
-  | case_statement
+    if_statement                                          {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}}
+  | case_statement                                        {if(myDebugPart3){msg("%d conditional_statement:case_statement---line %d", block, sc_line());}}
   ;
 
 simple_if:
-    LEX_IF boolean_expression LEX_THEN statement
+    LEX_IF boolean_expression LEX_THEN statement           {if(myDebugPart3){msg("%d simple_if:LEX_IF and LEX_THEN---line %d", block, sc_line());}
+                                                            /*possibly build IF_NODE here*/
+                                                           }
   ;
 
 if_statement:
-    simple_if LEX_ELSE statement
-  | simple_if %prec prec_if
+    simple_if LEX_ELSE statement                           {if(myDebugPart3){msg("%d if_statement:LEX_ELSE---line %d", block, sc_line());}
+                                                              /*possibly function to link a IF_NODE to a ELSE_NODE (and create the ELSE_NODE)*/
+                                                           }
+  | simple_if %prec prec_if                                {if(myDebugPart3){msg("%d if_statement:2---line %d", block, sc_line());}}
   ;
 
 case_statement:
@@ -942,13 +950,13 @@ case_statement:
   ;
 
 optional_semicolon_or_else_branch:
-    optional_semicolon
-  | case_default statement_sequence
+    optional_semicolon                                     {if(myDebugPart3){msg("%d optional_semicolon_or_else_branch:optional_semicolon---line %d", block, sc_line());}}
+  | case_default statement_sequence                        {if(myDebugPart3){msg("%d optional_semicolon_or_else_branch:case_default---line %d", block, sc_line());}}
   ;
 
 case_element_list:
-    case_element
-  | case_element_list semi case_element
+    case_element                                           {if(myDebugPart3){msg("%d case_element_list:case_element---line %d", block, sc_line());}}
+  | case_element_list semi case_element                    {if(myDebugPart3){msg("%d case_element_list:case_element_list---line %d", block, sc_line());}}
   ;
 
 case_element:
@@ -956,22 +964,22 @@ case_element:
   ;
 
 case_default:
-    LEX_ELSE
-  | semi LEX_ELSE
+    LEX_ELSE                                                {if(myDebugPart3){msg("%d case_default:LEX_ELSE---line %d", block, sc_line());}}
+  | semi LEX_ELSE                                           {if(myDebugPart3){msg("%d case_default:semi LEX_ELSE---line %d", block, sc_line());}}
   ;
 
 repetitive_statement:
-    repeat_statement
-  | while_statement
-  | for_statement
+    repeat_statement                                        {if(myDebugPart3){msg("%d repetitive_statement:repeat_statement---line %d", block, sc_line());}}
+  | while_statement                                         {if(myDebugPart3){msg("%d repetitive_statement:while_statement---line %d", block, sc_line());}}
+  | for_statement                                           {if(myDebugPart3){msg("%d repetitive_statement:for_statement---line %d", block, sc_line());}}
   ;
 
 repeat_statement:
-    LEX_REPEAT statement_sequence LEX_UNTIL boolean_expression
+    LEX_REPEAT statement_sequence LEX_UNTIL boolean_expression  {if(myDebugPart3){msg("%d repeat_statement:LEX_REPEAT---line %d", block, sc_line());}}
   ;
 
 while_statement:
-    LEX_WHILE boolean_expression LEX_DO statement
+    LEX_WHILE boolean_expression LEX_DO statement               {if(myDebugPart3){msg("%d while_statement:LEX_WHILE---line %d", block, sc_line());}}
   ;
 
 for_statement:
@@ -986,16 +994,16 @@ for_direction:
 simple_statement:
     empty_statement                     {if(myDebugPart2){msg("%d simple_statement:1---EMPTY STATEMENT", block);}
                                           /*no return, if last stement has a semi, this is the filler to allow it*/}
-  | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---", block);}
+  | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---line %d", block, sc_line());}
                                           if(myDebugPart2){msg("Calling genBackendAssignment() on");treeNodeToString($1, 1);}
                                           //always call an assigment with (node, 0, 0) from gramar
                                           if($1->tag != ERROR_NODE) genBackendAssignment($1, 0, 0);
 
                                         }
-  | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---", block);}
+  | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---line %d", block, sc_line());}
 
                                         }
-  | statement_extensions                {/*not used, not part of standar pascal*/}
+  | statement_extensions                {/*not used, not part of standard pascal*/}
   ;
 
 empty_statement:
@@ -1021,7 +1029,7 @@ actual_parameter:
 /* ASSIGNMENT and procedure calls */
 
 assignment_or_call_statement:     /*tree node*/
-    variable_or_function_access_maybe_assignment rest_of_statement   {if(myDebugPart2){msg("%d assignment_or_call_statement:1---", block);}
+    variable_or_function_access_maybe_assignment rest_of_statement   {if(myDebugPart2){msg("%d assignment_or_call_statement:1---line %d", block, sc_line());}
                                                                         /*rest_of_statement can be empty, or :=*/
                                                                         TN tempTreeNode;
                                                                         if($1->tag == VAR_NODE){
@@ -1098,7 +1106,7 @@ variable_or_function_access_maybe_assignment:    /*tree node*/
 
   | address_operator variable_or_function_access          {/*not used*/if(myDebugPart2){msg("variable_or_function_access_maybe_assignment:2---OUT OF SCOPE?!?! ");}}
 
-  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---", block);}
+  | variable_or_function_access_no_id                     {if(myDebugPart2){msg("%d variable_or_function_access_maybe_assignment:3---line %d", block, sc_line());}
                                                             /*example:    foo(x)^ := 6  */
                                                               $$ = $1;
                                                           }
@@ -1109,7 +1117,7 @@ rest_of_statement:  /*tree node*/
                                                             //Procedure or function call
                                                             $$ = makeErrorNode();
                                                           }
-  | LEX_ASSIGN expression                                 {if(myDebugPart2){msg("%d rest_of_statement:1---", block);}
+  | LEX_ASSIGN expression                                 {if(myDebugPart2){msg("%d rest_of_statement:1---line %d", block, sc_line());}
                                                              $$ = $2;
                                                           }
   ;
@@ -1196,8 +1204,8 @@ continue_statement:
   ;
 
 variable_access_or_typename:
-    variable_or_function_access_no_id
-  | LEX_ID
+    variable_or_function_access_no_id             {if(myDebugPart3){msg("%d variable_access_or_typename:variable_or_function_access_no_id---line %d", block, sc_line());}}
+  | LEX_ID                                        {if(myDebugPart3){msg("%d variable_access_or_typename:LEX_ID---line %d", block, sc_line());}}
   ;
 
 index_expression_list:
@@ -1217,27 +1225,27 @@ static_expression:
   ;
 
 boolean_expression:
-    expression
+    expression                                            {if(myDebugPart3){msg("%d boolean_expression:expression---line %d", block, sc_line());}}
   ;
 
 expression:     /*tree node*/      /*net result of evaluating an expression, one return value push on the stack*/
-    expression relational_operator simple_expression     {if(myDebugPart2){msg("%d expression:1---", block);}
+    expression relational_operator simple_expression     {if(myDebugPart2){msg("%d expression:1---line %d", block, sc_line());}
                                                             relationalType relType = $2;
                                                             $$ = makeRelopNode($1, relType, $3);
                                                          }
-  | expression LEX_IN simple_expression                  {if(myDebugPart2){msg("%d expression:2---", block);}
+  | expression LEX_IN simple_expression                  {if(myDebugPart2){msg("%d expression:2---line %d", block, sc_line());}
                                                           /* probably unused for part 2*/
                                                          }
-  | simple_expression                                    {if(myDebugPart2){msg("%d expression:3---", block);}
+  | simple_expression                                    {if(myDebugPart2){msg("%d expression:3---line %d", block, sc_line());}
                                                           $$ = $1;
                                                          }
   ;
 
 simple_expression:   /*tree node*/ /*simple statements leave the stack unchanged*/
-    term                                                {if(myDebugPart2){msg("%d simple_expression:1---", block);}
+    term                                                {if(myDebugPart2){msg("%d simple_expression:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | simple_expression adding_operator term              {if(myDebugPart2){msg("%d simple_expression:2---", block);}
+  | simple_expression adding_operator term              {if(myDebugPart2){msg("%d simple_expression:2---line %d", block, sc_line());}
                                                           binopType tempBinopType;
 
                                                           if($2 == 1) tempBinopType = ADD;
@@ -1245,16 +1253,16 @@ simple_expression:   /*tree node*/ /*simple statements leave the stack unchanged
 
                                                           $$ = makeBinopNode($1, $3, tempBinopType);
                                                         }
-  | simple_expression LEX_SYMDIFF term                  {if(myDebugPart2){msg("%d simple_expression:3---", block);}} //NO CLUE WHAT THIS IS >.<
-  | simple_expression LEX_OR term                       {if(myDebugPart2){msg("%d simple_expression:4---", block);}}
-  | simple_expression LEX_XOR term                      {if(myDebugPart2){msg("%d simple_expression:5---", block);}}
+  | simple_expression LEX_SYMDIFF term                  {if(myDebugPart2){msg("%d simple_expression:3---line %d", block, sc_line());}} //NO CLUE WHAT THIS IS >.<
+  | simple_expression LEX_OR term                       {if(myDebugPart2){msg("%d simple_expression:4---line %d", block, sc_line());}}
+  | simple_expression LEX_XOR term                      {if(myDebugPart2){msg("%d simple_expression:5---line %d", block, sc_line());}}
   ;
 
 term:              /*TREE NODE*/
-    signed_primary                                      {if(myDebugPart2){msg("%d term:1---", block);}
+    signed_primary                                      {if(myDebugPart2){msg("%d term:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | term multiplying_operator signed_primary            {if(myDebugPart2){msg("%d term:2---", block);}
+  | term multiplying_operator signed_primary            {if(myDebugPart2){msg("%d term:2---line %d", block, sc_line());}
                                                           binopType tempBinopType;
                                                           if($2 == 0){//integer division
                                                             tempBinopType = INT_DIV;
@@ -1269,11 +1277,11 @@ term:              /*TREE NODE*/
                                                           $$ = makeBinopNode($1, $3, tempBinopType);
 
                                                         }
-  | term LEX_AND signed_primary                         {if(myDebugPart2){msg("%d term:3---", block);}}
+  | term LEX_AND signed_primary                         {if(myDebugPart2){msg("%d term:3---line %d", block, sc_line());}}
   ;
 
 signed_primary:   /*TREE NODE*/
-    primary                                             {if(myDebugPart2){msg("%d signed_primary:1---", block);}
+    primary                                             {if(myDebugPart2){msg("%d signed_primary:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
   | sign signed_primary                                 {if(myDebugPart2){msgn("%d signed_primary:", block);}
@@ -1288,25 +1296,25 @@ signed_primary:   /*TREE NODE*/
   ;
 
 primary:     /*TREE NODE*/
-    factor                                              {if(myDebugPart2){msg("%d primary:1---", block);}
+    factor                                              {if(myDebugPart2){msg("%d primary:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | primary LEX_POW factor                              {if(myDebugPart2){msg("%d primary:2---", block);}
+  | primary LEX_POW factor                              {if(myDebugPart2){msg("%d primary:2---line %d", block, sc_line());}
                                                           /*idk what a LEX_POW is*/
                                                         }
-  | primary LEX_POWER factor                            {if(myDebugPart2){msg("%d primary:3---", block);}
+  | primary LEX_POWER factor                            {if(myDebugPart2){msg("%d primary:3---line %d", block, sc_line());}
                                                           /*LEX_POWER  **   */
                                                         }
-  | primary LEX_IS typename                             {if(myDebugPart2){msg("%d primary:4---", block);}
+  | primary LEX_IS typename                             {if(myDebugPart2){msg("%d primary:4---line %d", block, sc_line());}
                                                           /*NOT SURE IF leX_IS NEEDS TO BE HANDLED*/
                                                         }
   ;
 
 signed_factor:  /*TREE NODE*/
-    factor                                              {if(myDebugPart2){msg("%d signed_factor:1---", block);}
+    factor                                              {if(myDebugPart2){msg("%d signed_factor:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | sign signed_factor                                  {if(myDebugPart2){msg("%d signed_factor:2---", block);}
+  | sign signed_factor                                  {if(myDebugPart2){msg("%d signed_factor:2---line %d", block, sc_line());}
                                                           if($1 == '-'){
                                                             $$ = makeNegNumNode($2);
                                                           }else{
@@ -1316,18 +1324,18 @@ signed_factor:  /*TREE NODE*/
   ;
 
 factor:     /*TREE NODE*/
-    variable_or_function_access                         {if(myDebugPart2){msg("%d factor:1---", block);}
+    variable_or_function_access                         {if(myDebugPart2){msg("%d factor:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | constant_literal                                    {if(myDebugPart2){msg("%d factor:2---", block);}
+  | constant_literal                                    {if(myDebugPart2){msg("%d factor:2---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | unsigned_number                                     {if(myDebugPart2){msg("%d factor:3---", block);}
+  | unsigned_number                                     {if(myDebugPart2){msg("%d factor:3---line %d", block, sc_line());}
                                                           $$ = $1;  //int or real node
                                                         }
-  | set_constructor                                     {if(myDebugPart2){msg("%d factor:4---", block);}}
-  | LEX_NOT signed_factor                               {if(myDebugPart2){msg("%d factor:5---", block);}}
-  | address_operator factor                             {if(myDebugPart2){msg("%d factor:6---", block);}}
+  | set_constructor                                     {if(myDebugPart2){msg("%d factor:4---line %d", block, sc_line());}}
+  | LEX_NOT signed_factor                               {if(myDebugPart2){msg("%d factor:5---line %d", block, sc_line());}}
+  | address_operator factor                             {if(myDebugPart2){msg("%d factor:6---line %d", block, sc_line());}}
   ;
 
 address_operator:
@@ -1335,16 +1343,16 @@ address_operator:
   ;
 
 variable_or_function_access:
-    variable_or_function_access_no_standard_function    {if(myDebugPart2){msg("%d variable_or_function_access:1---", block);}
+    variable_or_function_access_no_standard_function    {if(myDebugPart2){msg("%d variable_or_function_access:1---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
-  | standard_functions                                  {if(myDebugPart2){msg("%d variable_or_function_access:2---", block);}
+  | standard_functions                                  {if(myDebugPart2){msg("%d variable_or_function_access:2---line %d", block, sc_line());}
                                                           $$ = $1;
                                                         }
   ;
 
 variable_or_function_access_no_standard_function:
-    identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---", block);}
+    identifier                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:1---line %d", block, sc_line());}
 
 
                                                           ST_DR tempDR = st_lookup($1,&block);
@@ -1382,24 +1390,24 @@ variable_or_function_access_no_standard_function:
 
                                                       }//END identifier
 
-  | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---", block);}}
+  | variable_or_function_access_no_id                   {if(myDebugPart2){msg("%d variable_or_function_access_no_standard_function:2---line %d", block, sc_line());}}
   ;
 
 variable_or_function_access_no_id:
     p_OUTPUT                                                                          {/*not used*/}
   | p_INPUT                                                                           {/*not used*/}
   | variable_or_function_access '.' new_identifier                                    {/*not used*/}
-  | '(' expression ')'                                                                {if(myDebugPart2){msg("%d variable_or_function_access_no_id:4---", block);}
+  | '(' expression ')'                                                                {if(myDebugPart2){msg("%d variable_or_function_access_no_id:4---line %d", block, sc_line());}
                                                                                         $$ = $2;
                                                                                       }
-  | variable_or_function_access pointer_char                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---", block);}
+  | variable_or_function_access pointer_char                                          {if(myDebugPart2){msg("%d variable_or_function_access_no_id:5---line %d", block, sc_line());}
                                                                                         /*something ex:  p^ := 6*/
                                                                                       }
   | variable_or_function_access '[' index_expression_list ']'                         {/*for project 3, not used in part 2. for array accesses*/}
-  | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---", block);}
+  | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---line %d", block, sc_line());}
                                                                                         /*function call, expr*/
                                                                                       }
-  | p_NEW '(' variable_access_or_typename ')'                                         {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---", block);}
+  | p_NEW '(' variable_access_or_typename ')'                                         {if(myDebugPart2){msg("%d variable_or_function_access_no_id:8---line %d", block, sc_line());}
                                                                                         /*like a malloc but in pascal, continue on April 13th, monday*/
                                                                                       }
   ;
@@ -1415,12 +1423,12 @@ set_constructor_element_list:
   ;
 
 member_designator:
-    expression
-  | expression LEX_RANGE expression
+    expression                                    {if(myDebugPart3){msg("%d member_designator:expression---line %d", block, sc_line());}}
+  | expression LEX_RANGE expression               {if(myDebugPart3){msg("%d member_designator:LEX_RANGE---line %d", block, sc_line());}}
   ;
 
 standard_functions:
-    rts_fun_onepar '(' actual_parameter ')'     {if(myDebugPart2){msg("%d standard_functions:rts_fun_onepar(actual_parameter)---",block);}
+    rts_fun_onepar '(' actual_parameter ')'     {if(myDebugPart2){msg("%d standard_functions:rts_fun_onepar(actual_parameter)---line %d",block, sc_line());}
                                                   unopType tempUnopType;
                                                   if($1 == pas_ORD){
                                                     tempUnopType = ORD;
@@ -1432,7 +1440,7 @@ standard_functions:
                                                   $$ = makeUnopNode($3,tempUnopType);
                                                 }
   | rts_fun_optpar optional_par_actual_parameter  {}
-  | rts_fun_parlist '(' actual_parameter_list ')' {if(myDebugPart2){msg("%d standard_functions:rts_fun_parlist(actual_parameter_list)---",block);}
+  | rts_fun_parlist '(' actual_parameter_list ')' {if(myDebugPart2){msg("%d standard_functions:rts_fun_parlist(actual_parameter_list)---line %d",block, sc_line());}
                                                     unopType tempUnopType;
                                                     if($1 == pas_SUCC){
                                                       tempUnopType = SUCC;
@@ -1457,34 +1465,34 @@ rts_fun_optpar:
   ;
 
 rts_fun_onepar:   /*type is enum rtsFunOnePar*/
-    p_ABS           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ABS---",block);};}
-  | p_SQR           {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQR---",block);};}
-  | p_SIN           {if(myDebugPart2){msg("%d rts_fun_onepar:p_SIN---",block);};}
-  | p_COS           {if(myDebugPart2){msg("%d rts_fun_onepar:p_COS---",block);};}
-  | p_EXP           {if(myDebugPart2){msg("%d rts_fun_onepar:p_EXP---",block);};}
-  | p_LN            {if(myDebugPart2){msg("%d rts_fun_onepar:p_LN---",block);};}
-  | p_SQRT          {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQRT---",block);};}
-  | p_ARCTAN        {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARCTAN---",block);};}
-  | p_ARG           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARG---",block);};}
-  | p_TRUNC         {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRUNC---",block);};}
-  | p_ROUND         {if(myDebugPart2){msg("%d rts_fun_onepar:p_ROUND---",block);};}
-  | p_CARD          {if(myDebugPart2){msg("%d rts_fun_onepar:p_CARD---",block);};}
-  | p_ORD           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ORD---",block);}; $$ = pas_ORD;}
-  | p_CHR           {if(myDebugPart2){msg("%d rts_fun_onepar:p_CHR---",block);}; $$ = pas_CHR;}
-  | p_ODD           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ODD---",block);};}
-  | p_EMPTY         {if(myDebugPart2){msg("%d rts_fun_onepar:p_EMPTY---",block);};}
-  | p_POSITION      {if(myDebugPart2){msg("%d rts_fun_onepar:p_POSITION---",block);};}
-  | p_LASTPOSITION  {if(myDebugPart2){msg("%d rts_fun_onepar:p_LASTPOSITION---",block);};}
-  | p_LENGTH        {if(myDebugPart2){msg("%d rts_fun_onepar:p_LENGTH---",block);};}
-  | p_TRIM          {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRIM---",block);};}
-  | p_BINDING       {if(myDebugPart2){msg("%d rts_fun_onepar:p_BINDING---",block);};}
-  | p_DATE          {if(myDebugPart2){msg("%d rts_fun_onepar:p_DATE---",block);};}
-  | p_TIME          {if(myDebugPart2){msg("%d rts_fun_onepar:p_TIME---",block);};}
+    p_ABS           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ABS---line %d",block, sc_line());};}
+  | p_SQR           {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQR---line %d",block, sc_line());};}
+  | p_SIN           {if(myDebugPart2){msg("%d rts_fun_onepar:p_SIN---line %d",block, sc_line());};}
+  | p_COS           {if(myDebugPart2){msg("%d rts_fun_onepar:p_COS---line %d",block, sc_line());};}
+  | p_EXP           {if(myDebugPart2){msg("%d rts_fun_onepar:p_EXP---line %d",block, sc_line());};}
+  | p_LN            {if(myDebugPart2){msg("%d rts_fun_onepar:p_LN---line %d",block, sc_line());};}
+  | p_SQRT          {if(myDebugPart2){msg("%d rts_fun_onepar:p_SQRT---line %d",block, sc_line());};}
+  | p_ARCTAN        {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARCTAN---line %d",block, sc_line());};}
+  | p_ARG           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ARG---line %d",block, sc_line());};}
+  | p_TRUNC         {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRUNC---line %d",block, sc_line());};}
+  | p_ROUND         {if(myDebugPart2){msg("%d rts_fun_onepar:p_ROUND---line %d",block, sc_line());};}
+  | p_CARD          {if(myDebugPart2){msg("%d rts_fun_onepar:p_CARD---line %d",block, sc_line());};}
+  | p_ORD           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ORD---line %d",block, sc_line());}; $$ = pas_ORD;}
+  | p_CHR           {if(myDebugPart2){msg("%d rts_fun_onepar:p_CHR---line %d",block, sc_line());}; $$ = pas_CHR;}
+  | p_ODD           {if(myDebugPart2){msg("%d rts_fun_onepar:p_ODD---line %d",block, sc_line());};}
+  | p_EMPTY         {if(myDebugPart2){msg("%d rts_fun_onepar:p_EMPTY---line %d",block, sc_line());};}
+  | p_POSITION      {if(myDebugPart2){msg("%d rts_fun_onepar:p_POSITION---line %d",block, sc_line());};}
+  | p_LASTPOSITION  {if(myDebugPart2){msg("%d rts_fun_onepar:p_LASTPOSITION---line %d",block, sc_line());};}
+  | p_LENGTH        {if(myDebugPart2){msg("%d rts_fun_onepar:p_LENGTH---line %d",block, sc_line());};}
+  | p_TRIM          {if(myDebugPart2){msg("%d rts_fun_onepar:p_TRIM---line %d",block, sc_line());};}
+  | p_BINDING       {if(myDebugPart2){msg("%d rts_fun_onepar:p_BINDING---line %d",block, sc_line());};}
+  | p_DATE          {if(myDebugPart2){msg("%d rts_fun_onepar:p_DATE---line %d",block, sc_line());};}
+  | p_TIME          {if(myDebugPart2){msg("%d rts_fun_onepar:p_TIME---line %d",block, sc_line());};}
   ;
 
 rts_fun_parlist:
-    p_SUCC          {if(myDebugPart2){msg("%d rts_fun_parlist:p_SUCC---",block);}; $$ = pas_SUCC;}/* One or two args */
-  | p_PRED          {if(myDebugPart2){msg("%d rts_fun_parlist:p_PRED---",block);}; $$ = pas_PRED;}/* One or two args */
+    p_SUCC          {if(myDebugPart2){msg("%d rts_fun_parlist:p_SUCC---line %d",block, sc_line());}; $$ = pas_SUCC;}/* One or two args */
+  | p_PRED          {if(myDebugPart2){msg("%d rts_fun_parlist:p_PRED---line %d",block, sc_line());}; $$ = pas_PRED;}/* One or two args */
   ;
 
 relational_operator:   //typedef enum{NE,LE,GE,EQ,LT,GT}relationalType;

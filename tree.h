@@ -1,7 +1,7 @@
 #include "symtab.h"
 #include "backend-x86.h"
 
-typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE, ERROR_NODE}tagtype;
+typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE, FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE}tagtype;
 
 typedef enum{CHR, ORD, SUCC, PRED, NEG}unopType;
 
@@ -30,6 +30,19 @@ typedef struct tn{
     int boolean;
     char character;
 
+    /*PART 3*/
+    struct{
+      struct tn *relop;
+      struct tn *expresion;
+      struct tn *elseNode;
+    }if_node
+
+    struct{
+      struct tn *expression;
+    }else_node
+
+
+    /*PART 2*/
     struct{
       ST_ID varName;
       int isInstalled;
@@ -47,7 +60,7 @@ typedef struct tn{
       STDR_TAG DRtag;
       TYPE type;
       TYPETAG typeTag;
-    }func_node; //PLAY THAT FUNC-Y MUSIC...WHIIIIIIIITE BOI
+    }func_node; //PLAY THAT FUNC-Y MUSIC...WHIIIIIIIITE NODE
 
     struct{
       struct tn *varNode;
@@ -70,6 +83,7 @@ typedef struct tn{
       struct tn *left;
       struct tn *right;
     }relop;
+    /*END PART 2*/
 
 
   }u;

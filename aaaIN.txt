@@ -1,28 +1,65 @@
-(* test file for 80% level of project part 2, CSCE 531 *)
+(* Test file for level 80 of CSCE 531 Pascal compiler Project III *)
 
-(* there are no errors in this file! *)
+(* There are no errors in this file. *)
 
-Program T2L80_ok;
+
+program T3L80_ok;
 
 var
+   a,b,c : Integer;
+   x	 : Integer;
+   y	 : Char;
+   z	 : Single;
+   w	 : Real;
    i,j,k : Integer;
-   x,y,z : Single;
-   c	 : Char;
-   d	 : Real;
-   b	 : Boolean;
+   ca	 : array[1..8] of Char;
+   ia	 : array[5..10] of Integer;
+   ra	 : array[7..9] of Real;
+   (* Arrays of arrays *)
+   iaa   : array[0..10] of array[0..10] of Integer;
+   iaaa  : array[0..2] of array[2..5] of array[5..9] of Integer;
 
-Procedure print_globals; External;
 
-Function get_real : Real; External;
+procedure print_oops; External;
 
-Function get_integer : Integer; External;
 
 begin
 
-   i := 5;
-   x := 3.14;
-   d := 19.1999;
-   c := 'A';
-   z := ord(c) * i + (-d) - x;
+   a := -1;
+   b := 0;
+   c := 1;
+
+   if a > b then
+      print_oops
+   else
+      b := c+a;
+
+
+{
+#   32
+       # b_push_ext_addr (A)
+       # b_deref (signed long int)
+       # b_push_ext_addr (B)
+       # b_deref (signed long int)
+       # b_arith_rel_op ( > , signed long int)
+       # b_convert (signed long int -> signed char)
+       # b_cond_jump (signed char, ZERO,
+       #              .LC0)
+#   33
+#   34
+       # b_alloc_arglist (0 bytes)
+       # b_funcall_by_name (Print_oops, void)
+       # b_jump ( destination = .LC1 )
+#   35
+       # b_push_ext_addr (B)
+       # b_push_ext_addr (C)
+       # b_deref (signed long int)
+       # b_push_ext_addr (A)
+       # b_deref (signed long int)
+       # b_arith_rel_op ( + , signed long int)
+       # b_assign (signed long int)
+       # b_pop ()
+#   36
+}
 
 end.

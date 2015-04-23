@@ -3,10 +3,13 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 0;
+int myDebug = 1;
+
+
 int errorCalled = 0;
 int inAssignment = 0;
-char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE", "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE"};
+char* tagtypeStrings[] = {"CHARACTERCONSTANT", "INTCONSTANT", "REALCONSTANT", "VAR_NODE", "NEGNUM", "ASSIGN_NODE",
+    "BOOL_NODE", "BINOP_NODE", "FUNC_NODE", "RELOP_NODE", "IF_NODE", "ELSE_NODE"};
 char* unopTypeStrings[] = {"CHR", "ORD", "SUCC", "PRED", "NEG"};
 char* binopTypeStrings[] = {"ADD", "SUB", "REAL_DIV", "INT_DIV", "MOD", "MULT"};
 char* relationalTypeStrings[] = {"NE","LE","GE","EQ","LT","GT"};
@@ -863,6 +866,7 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
       case FUNC_NODE:{
         msgn("FUNC_NODE node: %s of type: ",st_get_id_str(node->u.func_node.funcName));
         ty_print_typetag(node->u.func_node.typeTag);
+        if(isTop) msg("");
         break;
       }
 
