@@ -36,6 +36,8 @@ typedef struct tn{
       struct tn *relop;
       struct tn *expression;
       struct tn *elseNode;
+      char *falseJump;
+      char *exitIf;
     }if_node;
 
     struct{
@@ -45,6 +47,8 @@ typedef struct tn{
     struct{
       struct tn *relop;
       struct tn *expression;
+      char *beginLoop;
+      char *exitLoop;
     }while_node;
 
     struct{
@@ -59,6 +63,8 @@ typedef struct tn{
       STDR_TAG DRtag;
       TYPE type;
       TYPETAG typeTag;
+      long low;
+      long high;
       int length;
       struct tn *access_node;
     }array_node;
@@ -126,7 +132,6 @@ TN makeWhileNode(TN relop,TN expr);
 TN makeStatementNode(TN root, TN expr);
 TN makeArrayNode(TN varNode, TN access);
 
-
 //PART 2
 TN makeErrorNode();
 TN makeIntConstNode(long intconstant);
@@ -155,3 +160,5 @@ TYPETAG getTYPETAG(TN node);
 LD addToList(ST_ID id, LD oldList);
 INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);
 INDEX_LIST addToUnresolvedPtrs(TYPE object, INDEX_LIST root);
+
+int getAlignmentSize(TYPE type);

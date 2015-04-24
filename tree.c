@@ -97,6 +97,9 @@ TN makeIfNode(TN relop,TN expr){
   tempTN->tag = IF_NODE;
   tempTN->u.if_node.relop = relop;
   tempTN->u.if_node.expression = expr;
+  tempTN->u.if_node.falseJump = new_symbol();
+  if(expr == NULL) tempTN->u.if_node.exitIf = tempTN->u.if_node.falseJump;
+  else tempTN->u.if_node.exitIf = new_symbol();
   return tempTN;
 }
 
@@ -114,6 +117,8 @@ TN makeWhileNode(TN relop,TN expr){
   tempTN->tag = WHILE_NODE;
   tempTN->u.while_node.relop = relop;
   tempTN->u.while_node.expression = expr;
+  tempTN->u.while_node.beginLoop = new_symbol();
+  tempTN->u.while_node.exitLoop = new_symbol();
   return tempTN;
 }
 
@@ -150,11 +155,19 @@ TN makeArrayNode(TN varNode, TN access){
   int block;
   if(tempTN->u.array_node.isInstalled == 1){
     tempTN->u.array_node.arrayName = varNode->u.var_node.varName;
-    tempTN->u.array_node.type = varNode->u.var_node.type;
     tempTN->u.array_node.DR = varNode->u.var_node.DR;
     tempTN->u.array_node.DRtag = varNode->u.var_node.DRtag;
-    tempTN->u.array_node.typeTag = varNode->u.var_node.typeTag;
     tempTN->u.array_node.access_node = access;
+    long low, high;
+    INDEX_LIST currList;
+    TYPE tempTYPE = ty_query_array(varNode->u.var_node.type, &currList);
+    tempTN->u.array_node.type = tempTYPE;
+    tempTN->u.array_node.typeTag = ty_query(tempTN->u.array_node.type);
+    TYPE subType = currList->type;
+    ty_query_subrange(subType, &low, &high);
+    tempTN->u.array_node.low = low;
+    tempTN->u.array_node.high = high;
+    tempTN->u.array_node.length = high - low;
   }else{
     bug("Variable node for array node was not installed.");
   }
@@ -327,13 +340,46 @@ TN makeFuncNode(ST_ID id, TYPETAG typeTag, TYPE type){
 */
 
 TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
-  /*
-  b_negates(TYPETAG type)
-  deal with unary negative
-  */
+
+  if(genBackend && myDebug && !fromExpr) msg("GENERATING BACKEND");
+
   switch(startNode->tag){
 
-    case FUNC_NODE:{
+    case IF_NODE:{
+      genBackendAssignment(startNode->u.if_node.relop, 1, genBackend);
+      if(genBackend) b_cond_jump(TYSIGNEDCHAR, 0, startNode->u.if_node.falseJump);
+      genBackendAssignment(startNode->u.if_node.expression, 1, genBackend);
+      if(genBackend) b_jump(startNode->u.if_node.exitIf);
+
+      if(startNode->u.if_node.elseNode != NULL){
+        if(genBackend) b_label(startNode->u.if_node.falseJump);
+        genBackendAssignment(startNode->u.if_node.elseNode, 1, genBackend);
+      }
+
+      if(genBackend) b_label(startNode->u.if_node.exitIf);
+      return TYVOID;
+
+    }case ELSE_NODE:{
+      genBackendAssignment(startNode->u.else_node.expression,1,genBackend);
+      return TYVOID;
+    }case WHILE_NODE:{
+      if(genBackend) b_label(startNode->u.while_node.beginLoop);
+      genBackendAssignment(startNode->u.while_node.relop,1,genBackend);
+      if(genBackend)b_cond_jump(TYSIGNEDCHAR,0,startNode->u.while_node.exitLoop);
+      genBackendAssignment(startNode->u.while_node.expression,1,genBackend);
+      if(genBackend)b_cond_jump(TYSIGNEDCHAR,0,startNode->u.while_node.beginLoop);
+      return TYVOID;
+
+    }case STATEMENT_NODE:{
+      TYPETAG tempTYPETAG = genBackendAssignment(startNode->u.statement_node.expression,1,genBackend);
+      if(startNode->u.statement_node.nextStatement != NULL){//check if null next
+          genBackendAssignment(startNode->u.statement_node.nextStatement,1,genBackend);
+      }else{
+        return TYVOID;
+      }
+      return tempTYPETAG;
+
+    }case FUNC_NODE:{
       TYPETAG tempTYPETAG = startNode->u.func_node.typeTag;
       char *tempName = st_get_id_str(startNode->u.func_node.funcName);
       if(genBackend | inAssignment == 0) b_alloc_arglist(0);  //for exterens and forwards (no args)
@@ -412,6 +458,33 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
         return tempTypeTag;
       }
 
+    }case ARRAY_NODE:{
+      TYPETAG tempTypeTag = startNode->u.array_node.typeTag;
+      if(fromExpr){
+        msg("RIGHT HAND ARRAY");
+        char *tempIdString = st_get_id_str(startNode->u.array_node.arrayName);
+        if(genBackend) b_push_ext_addr(tempIdString);
+        genBackendAssignment(startNode->u.array_node.access_node, 1, genBackend);
+        if(genBackend) b_push_const_int(startNode->u.array_node.low);
+        if(genBackend) b_arith_rel_op(B_SUB , TYSIGNEDLONGINT);
+        if(genBackend) b_ptr_arith_op(B_ADD, TYSIGNEDLONGINT, getAlignmentSize(startNode->u.array_node.type));
+        if(genBackend) b_deref(tempTypeTag);
+        if(tempTypeTag == TYFLOAT){
+          if(genBackend) b_convert(TYFLOAT, TYDOUBLE);
+          return TYDOUBLE;
+        }
+        return tempTypeTag;
+
+      }else{
+        char *tempIdString = st_get_id_str(startNode->u.array_node.arrayName);
+        if(genBackend) b_push_ext_addr(tempIdString);
+        genBackendAssignment(startNode->u.array_node.access_node, 1, genBackend);
+        if(genBackend) b_push_const_int(startNode->u.array_node.low);
+        if(genBackend) b_arith_rel_op(B_SUB , TYSIGNEDLONGINT);
+        if(genBackend) b_ptr_arith_op(B_ADD, TYSIGNEDLONGINT, getAlignmentSize(startNode->u.array_node.type));
+        return tempTypeTag;
+      }//END left hand side of assignment
+
     }case UNOP_NODE:{
       return handleUNOP_NODE(startNode,genBackend);
 
@@ -465,7 +538,7 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
       return expTypeTag;
 
     }default:{
-      bug("BACKEND ASSIGNMENT -- THIS IS AN error");
+      bug("BACKEND ASSIGNMENT -- startNode->tag: %s", tagtypeStrings[startNode->tag]);
       break;
     }}
   }//END genBackendAssignment()
@@ -860,7 +933,15 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
         if(myDebug) msg("\n ----- getTYPETAG, returned tyerror:");
          return TYERROR;
        }
-    } //end if VAR_NODE
+    }else if(node->tag == ARRAY_NODE){ //end if VAR_NODE
+        TYPETAG tempTypeTag = node->u.array_node.typeTag;
+        if(tempTypeTag != NULL){
+          return tempTypeTag;
+        }else{
+          if(myDebug) msg("\n ----- getTYPETAG, returned tyerror:");
+           return TYERROR;
+        }
+    }
     if(myDebug) msg("\n ----- VAR_NODE, getTYPETAG, returned tyerror:");
     return TYERROR;
   }//END getTYPETAG()
@@ -907,6 +988,14 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
           if(node->u.statement_node.nextStatement != NULL){ msgn("        "); treeNodeToString(node->u.statement_node.nextStatement, 0);}
           break;
 
+        case ARRAY_NODE:{
+          msgn("ARRAY_NODE: %s of type:", st_get_id_str(node->u.array_node.arrayName));
+          ty_print_typetag(node->u.array_node.typeTag);
+          msgn("   TYPE: "); msg("low: %d high: %d",node->u.array_node.low, node->u.array_node.high);
+          msgn("         with access parameter node: ");
+          treeNodeToString(node->u.array_node.access_node, 0);
+          break;
+        }
 
 
       //PART 2
@@ -1041,3 +1130,54 @@ TYPETAG handleRELOP_NODE(TN startNode, int genBackend){
 
     return tempEntry;
   }
+
+  int getAlignmentSize(TYPE type){
+    INDEX_LIST list;
+    long low;
+    long high;
+    TYPETAG typeTag = ty_query(type);
+    switch(typeTag){
+      case TYSIGNEDLONGINT:
+        return 4;
+
+      case TYSIGNEDSHORTINT:
+        return 4;
+
+      case TYSIGNEDINT:
+        return 4;
+
+      case TYUNSIGNEDLONGINT:
+        return 4;
+
+      case TYUNSIGNEDSHORTINT:
+        return 4;
+
+      case TYUNSIGNEDINT:
+        return 4;
+
+      case TYUNSIGNEDCHAR:
+        return 1;
+
+      case TYSIGNEDCHAR:
+        return 1;
+
+      case TYARRAY:
+        return getAlignmentSize(ty_query_array(type, &list));
+
+      case TYPTR:
+        return 4;
+
+      case TYSUBRANGE:
+        return getAlignmentSize(ty_query_subrange(type, &low, &high));
+
+      case TYDOUBLE:
+        return 8;
+
+     case TYFLOAT:
+        return 4;
+
+     case TYLONGDOUBLE:
+        return 8;
+
+    }
+  }//END getAlignmentSize()

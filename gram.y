@@ -116,7 +116,8 @@ void initRootOfUnRP(TYPE type); //prototype
     signed_primary term assignment_or_call_statement constant_literal predefined_literal actual_parameter
     variable_or_function_access variable_or_function_access_no_standard_function function_heading actual_parameter_list
     statement_sequence statement structured_statement conditional_statement boolean_expression simple_statement
-    if_statement simple_if repetitive_statement while_statement compound_statement
+    if_statement simple_if repetitive_statement while_statement compound_statement index_expression_list
+    index_expression_item
 
 
 
@@ -945,16 +946,24 @@ structured_variable:
 conditional_statement:
     if_statement                                          {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}
                                                             if(myDebugPart3) treeNodeToString($1, 1);
-                                                            //do backend for if/else statement
-                                                            //unless in a loop or other "local causing" thing (check block number) then pass up, NO BACKEND
+                                                            int  blockNum = st_get_cur_block();
+                                                            block = blockNum;
+                                                            if(blockNum == 1) genBackendAssignment($1,0,1);
                                                             $$ = $1;
                                                           }
   | case_statement                                        {if(myDebugPart3){msg("%d conditional_statement:case_statement---line %d", block, sc_line());}}
   ;
 
 simple_if:
-    LEX_IF boolean_expression LEX_THEN statement           {if(myDebugPart3){msg("%d simple_if:LEX_IF and LEX_THEN---line %d", block, sc_line());}
-                                                              $$ = makeIfNode($2,$4);
+    LEX_IF {st_enter_block();} boolean_expression LEX_THEN statement           {if(myDebugPart3){msg("%d simple_if:LEX_IF and LEX_THEN---line %d", block, sc_line());}
+
+                                                              st_exit_block();
+                                                              $$ = makeIfNode($3,$5);
+                                                              /*
+                                                              void  st_enter_block(void);
+                                                              void  st_exit_block(void);
+                                                              int  st_get_cur_block(void);
+                                                              */
                                                            }
   ;
 
@@ -1020,9 +1029,11 @@ simple_statement:
     empty_statement                     {if(myDebugPart2){msg("%d simple_statement:1---EMPTY STATEMENT", block);}
                                           /*no return, if last stement has a semi, this is the filler to allow it*/}
   | assignment_or_call_statement        {if(myDebugPart2){msg("%d simple_statement:2---line %d", block, sc_line());}
-                                          if(myDebugPart2 | myDebugPart3){msg("Calling genBackendAssignment() on");treeNodeToString($1, 1);}
+                                          if(myDebugPart2 | myDebugPart3){msg("");treeNodeToString($1, 1);}
                                           //always call an assigment with (node, 0, 0) from gramar
-                                          if($1->tag != ERROR_NODE) genBackendAssignment($1, 0, 0);
+                                          int blockNum = st_get_cur_block();
+                                          block = blockNum;
+                                          if($1->tag != ERROR_NODE && blockNum == 1) genBackendAssignment($1, 0, 0);
 
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---line %d", block, sc_line());}
@@ -1057,7 +1068,7 @@ assignment_or_call_statement:     /*tree node*/
     variable_or_function_access_maybe_assignment rest_of_statement   {if(myDebugPart2){msg("%d assignment_or_call_statement:1---line %d", block, sc_line());}
                                                                         /*rest_of_statement can be empty, or :=*/
                                                                         TN tempTreeNode;
-                                                                        if($1->tag == VAR_NODE){
+                                                                        if($1->tag == VAR_NODE | $1->tag == ARRAY_NODE){
                                                                           if($2->tag == FUNC_NODE && $2->u.func_node.typeTag == TYVOID){
                                                                             error("Cannot convert between nondata types");
                                                                             $$ = makeErrorNode();
@@ -1082,7 +1093,7 @@ assignment_or_call_statement:     /*tree node*/
                                                                         //undeclared id
                                                                         $$ = $1;
 
-                                                                      }else if($1->tag != VAR_NODE && $2->tag != ERROR_NODE){
+                                                                      }else if($1->tag != VAR_NODE && $2->tag != ERROR_NODE && $1->tag != ARRAY_NODE){
                                                                         error("Assignment requires l-value on the left");
                                                                         $$ = makeErrorNode();
                                                                       }else{
@@ -1234,13 +1245,13 @@ variable_access_or_typename:
   ;
 
 index_expression_list:
-      index_expression_item
-    | index_expression_list ',' index_expression_item
+      index_expression_item                             {if(myDebugPart3){msg("%d index_expression_list:index_expression_item---line %d", block, sc_line());} $$ = $1;}
+    | index_expression_list ',' index_expression_item   {if(myDebugPart3){msg("%d index_expression_list:index_expression_list ',' index_expression_item---line %d", block, sc_line());}}
     ;
 
 index_expression_item:
-      expression
-    | expression LEX_RANGE expression
+      expression                                  {if(myDebugPart3){msg("%d index_expression_item:expression---line %d", block, sc_line());} $$ =$1;}
+    | expression LEX_RANGE expression             {if(myDebugPart3){msg("%d index_expression_item:expression LEX_RANGE expression---line %d", block, sc_line());}}//As far as we know, not used
   ;
 
 /* expressions */
@@ -1435,7 +1446,7 @@ variable_or_function_access_no_id:
                                                                                       }
 
   | variable_or_function_access '[' index_expression_list ']'                         {
-                                                                                        //makeArrayNode(TN varNode, TN access);
+                                                                                        $$ = makeArrayNode($1, $3);
                                                                                       }
 
   | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---line %d", block, sc_line());}
@@ -1628,56 +1639,6 @@ Size of an array equals
     low..high = high - low + 1
 */
 
-int getAlignmentSize(TYPE type){
-  INDEX_LIST list;
-  long low;
-  long high;
-  TYPETAG typeTag = ty_query(type);
-  switch(typeTag){
-    case TYSIGNEDLONGINT:
-      return 4;
-
-    case TYSIGNEDSHORTINT:
-      return 4;
-
-    case TYSIGNEDINT:
-      return 4;
-
-    case TYUNSIGNEDLONGINT:
-      return 4;
-
-    case TYUNSIGNEDSHORTINT:
-      return 4;
-
-    case TYUNSIGNEDINT:
-      return 4;
-
-    case TYUNSIGNEDCHAR:
-      return 1;
-
-    case TYSIGNEDCHAR:
-      return 1;
-
-    case TYARRAY:
-      return getAlignmentSize(ty_query_array(type, &list));
-
-    case TYPTR:
-      return 4;
-
-    case TYSUBRANGE:
-      return getAlignmentSize(ty_query_subrange(type, &low, &high));
-
-    case TYDOUBLE:
-      return 8;
-
-   case TYFLOAT:
-      return 4;
-
-   case TYLONGDOUBLE:
-      return 8;
-
-  }
-}
 
 void initRootOfUnRP(TYPE type){
   rootOfUnRP = (INDEX_LIST)malloc(sizeof(INDEX));
