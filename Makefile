@@ -114,7 +114,7 @@ backup:
 testOur:
 	-make -B
 	-./ppc3 < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
-	-cat $(FILEOUT) | grep '#' > aaaSOLout.txt
+	-cat $(FILEOUT) | grep -E '#[ ]+[^0-9 ]|.LC[0-9]+:' > aaaSOLout.txt
 	-cat aaaSOLout.txt > $(FILEOUT)
 	-rm aaaSOLout.txt
 	-cat $(ERROROUT) | grep 'ERROR' > aaaSOLout.txt
@@ -126,7 +126,7 @@ testOur:
 
 testSol:
 	-./Part3/ppc3-sol < $(FILEIN) > $(FILEOUT) 2> $(ERROROUT)
-	-cat $(FILEOUT) | grep '#' > aaaSOLout.txt
+	-cat $(FILEOUT) | grep -E '#[ ]+[^0-9 ]|.LC[0-9]+:' > aaaSOLout.txt
 	-cat aaaSOLout.txt > $(FILEOUT)
 	-rm aaaSOLout.txt
 

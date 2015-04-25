@@ -2,7 +2,7 @@
 #include "backend-x86.h"
 
 typedef enum{CHARCONSTANT, INTCONSTANT, REALCONSTANT, VAR_NODE, NEGNUM, ASSIGN_NODE, BOOL_NODE, UNOP_NODE, BINOP_NODE,
-                  FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE, WHILE_NODE, STATEMENT_NODE, ARRAY_NODE}tagtype;
+                  FUNC_NODE, RELOP_NODE, ERROR_NODE, IF_NODE, ELSE_NODE, WHILE_NODE, STATEMENT_NODE, ARRAY_NODE, ACCESS_NODE}tagtype;
 
 typedef enum{CHR, ORD, SUCC, PRED, NEG}unopType;
 
@@ -55,6 +55,13 @@ typedef struct tn{
       struct tn *nextStatement;
       struct tn *expression;
     }statement_node;
+
+    struct{
+      struct tn *nextStatement;
+      struct tn *expression;
+      int low;
+      TYPE type;
+    }access_node;
 
     struct{
       ST_ID arrayName;
@@ -131,6 +138,7 @@ TN makeElseNode(TN ifNode, TN expr);
 TN makeWhileNode(TN relop,TN expr);
 TN makeStatementNode(TN root, TN expr);
 TN makeArrayNode(TN varNode, TN access);
+TN makeAccessNode(TN root, TN expr, int lowInt, TYPE inputType);
 
 //PART 2
 TN makeErrorNode();
@@ -162,3 +170,4 @@ INDEX_LIST addToArraySubList(TYPE object, INDEX_LIST oldList);
 INDEX_LIST addToUnresolvedPtrs(TYPE object, INDEX_LIST root);
 
 int getAlignmentSize(TYPE type);
+int getSize(TYPE type, int baseTypeSize);

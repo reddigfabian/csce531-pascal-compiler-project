@@ -64,8 +64,7 @@ int myDebugPart3 = 1;
 
 /*Globals*/
 int myDump = 0;
-int insideFunc = 0;
-int block;
+int block=0;
 ST_ID funcST_ID;
 INDEX_LIST rootOfUnRP;
 /*END Globals*/
@@ -806,7 +805,6 @@ function_declaration:
                           }
     any_declaration_part {if(myDebugPart2){msg("%d function_declaration:any_declaration_part---line %d",block,sc_line());}
                             b_func_prologue(st_get_id_str(funcST_ID));
-                            insideFunc = 1;
                          }
     statement_part semi  {if(myDebugPart2){msg("%d function_declaration:statement_part---line %d",block,sc_line());}
                                                                           /* statement_part semi*/
@@ -891,12 +889,11 @@ statement_part:
   ;
 
 compound_statement:
-    LEX_BEGIN {if(!insideFunc)b_func_prologue("main");}
+    LEX_BEGIN {if(block == 0)b_func_prologue("main");}//if we find a begin and are in block 0, we know we just finished the var section and start the main
     statement_sequence
     LEX_END                                           {/*everything withing begin and end, could be func/procedure def, or main*/
                                                         if(myDebugPart2){msg("%d compound_statement:BEGIN and END---line %d", block, sc_line());}
-                                                        if(!insideFunc)b_func_epilogue("main");
-                                                        insideFunc = 0;
+                                                        if(block == 1)b_func_epilogue("main");//b_func_prologue previously increased block to 1, so now we need to check for block == 1
                                                         $$ = $3;
                                                       }
   ;
@@ -945,10 +942,11 @@ structured_variable:
 
 conditional_statement:
     if_statement                                          {if(myDebugPart3){msg("%d conditional_statement:if_statement---line %d", block, sc_line());}
+                                                            st_exit_block();
                                                             if(myDebugPart3) treeNodeToString($1, 1);
                                                             int  blockNum = st_get_cur_block();
                                                             block = blockNum;
-                                                            if(blockNum == 1) genBackendAssignment($1,0,1);
+                                                            if(blockNum == 1 && $1->tag != ERROR_NODE)genBackendAssignment($1,0,1);
                                                             $$ = $1;
                                                           }
   | case_statement                                        {if(myDebugPart3){msg("%d conditional_statement:case_statement---line %d", block, sc_line());}}
@@ -956,15 +954,12 @@ conditional_statement:
 
 simple_if:
     LEX_IF {st_enter_block();} boolean_expression LEX_THEN statement           {if(myDebugPart3){msg("%d simple_if:LEX_IF and LEX_THEN---line %d", block, sc_line());}
-
-                                                              st_exit_block();
-                                                              $$ = makeIfNode($3,$5);
-                                                              /*
-                                                              void  st_enter_block(void);
-                                                              void  st_exit_block(void);
-                                                              int  st_get_cur_block(void);
-                                                              */
-                                                           }
+                                                                                  if($3->tag != ERROR_NODE){
+                                                                                    $$ = makeIfNode($3,$5);
+                                                                                  }else{
+                                                                                    $$ = $3;
+                                                                                  }
+                                                                               }
   ;
 
 if_statement:
@@ -1000,7 +995,11 @@ case_default:
 repetitive_statement:
     repeat_statement                                        {if(myDebugPart3){msg("%d repetitive_statement:repeat_statement---line %d", block, sc_line());}}
   | while_statement                                         {if(myDebugPart3){msg("%d repetitive_statement:while_statement---line %d", block, sc_line());}
+                                                              st_exit_block();
                                                               if(myDebugPart3) treeNodeToString($1, 1);
+                                                              int  blockNum = st_get_cur_block();
+                                                              block = blockNum;
+                                                              if(blockNum == 1 && $1->tag != ERROR_NODE)genBackendAssignment($1,0,1);
                                                               $$ = $1;
                                                             }
   | for_statement                                           {if(myDebugPart3){msg("%d repetitive_statement:for_statement---line %d", block, sc_line());}}
@@ -1011,9 +1010,13 @@ repeat_statement:
   ;
 
 while_statement:
-    LEX_WHILE boolean_expression LEX_DO statement               {if(myDebugPart3){msg("%d while_statement:LEX_WHILE---line %d", block, sc_line());}
-                                                                  $$ = makeWhileNode($2,$4);
-                                                                }
+    LEX_WHILE {st_enter_block();} boolean_expression LEX_DO statement               {if(myDebugPart3){msg("%d while_statement:LEX_WHILE---line %d", block, sc_line());}
+                                                                                        if($3->tag != ERROR_NODE){
+                                                                                          $$ = makeWhileNode($3,$5);
+                                                                                        }else{
+                                                                                          $$ = $3;
+                                                                                        }
+                                                                                    }
   ;
 
 for_statement:
@@ -1033,8 +1036,7 @@ simple_statement:
                                           //always call an assigment with (node, 0, 0) from gramar
                                           int blockNum = st_get_cur_block();
                                           block = blockNum;
-                                          if($1->tag != ERROR_NODE && blockNum == 1) genBackendAssignment($1, 0, 0);
-
+                                          if($1->tag != ERROR_NODE && blockNum == 1)genBackendAssignment($1, 0, 0);
                                         }
   | standard_procedure_statement        {if(myDebugPart2){msg("%d simple_statement:3---line %d", block, sc_line());}
 
@@ -1069,18 +1071,23 @@ assignment_or_call_statement:     /*tree node*/
                                                                         /*rest_of_statement can be empty, or :=*/
                                                                         TN tempTreeNode;
                                                                         if($1->tag == VAR_NODE | $1->tag == ARRAY_NODE){
-                                                                          if($2->tag == FUNC_NODE && $2->u.func_node.typeTag == TYVOID){
-                                                                            error("Cannot convert between nondata types");
-                                                                            $$ = makeErrorNode();
-                                                                          }else if($2->tag != ERROR_NODE){
-                                                                          tempTreeNode = makeAssignNode($1, $2);
-                                                                          $$ = tempTreeNode;
-                                                                        }else{
+                                                                          if($2 != NULL){
+                                                                            if($2->tag == FUNC_NODE && $2->u.func_node.typeTag == TYVOID){
+                                                                              error("Cannot convert between nondata types");
+                                                                              $$ = makeErrorNode();
+                                                                            }else if($2->tag != ERROR_NODE){
+                                                                              tempTreeNode = makeAssignNode($1, $2);
+                                                                              $$ = tempTreeNode;
+                                                                            }else{
+                                                                              error("Nonarray in array access expression.");
+                                                                              $$ = makeErrorNode();
+                                                                            }
+                                                                          }else{
                                                                             error("Expected procedure name, saw data");
-                                                                            $$ = $2;
-                                                                        }
+                                                                            $$ = makeErrorNode();
+                                                                          }
                                                                       }else if($1->tag == FUNC_NODE){
-                                                                        if($2->tag == ERROR_NODE){
+                                                                        if($2 == NULL){
                                                                           //rest of statement is empty for function calls
                                                                           $$ = $1;
                                                                         }else{ //assigning to a function name
@@ -1151,7 +1158,8 @@ variable_or_function_access_maybe_assignment:    /*tree node*/
 rest_of_statement:  /*tree node*/
     /* Empty */                                           {if(myDebugPart2){msg("%d rest_of_statement:0---EMPTY", block);}
                                                             //Procedure or function call
-                                                            $$ = makeErrorNode();
+                                                            //$$ = makeErrorNode();
+                                                            $$ = NULL;
                                                           }
   | LEX_ASSIGN expression                                 {if(myDebugPart2){msg("%d rest_of_statement:1---line %d", block, sc_line());}
                                                              $$ = $2;
@@ -1262,9 +1270,12 @@ static_expression:
 
 boolean_expression:
     expression                                            {if(myDebugPart3){msg("%d boolean_expression:expression---line %d", block, sc_line());}
-                                                            $$ = $1;
-                                                            //check and make sure its a relop node
-                                                            //else ERROR
+                                                            if($1->tag == BOOL_NODE | $1->tag == RELOP_NODE){
+                                                              $$ = $1;
+                                                            }else{
+                                                              error("Non-Boolean expression");
+                                                              $$ = makeErrorNode();
+                                                            }
                                                           }
   ;
 
@@ -1445,8 +1456,15 @@ variable_or_function_access_no_id:
                                                                                         /*something ex:  p^ := 6*/
                                                                                       }
 
-  | variable_or_function_access '[' index_expression_list ']'                         {
-                                                                                        $$ = makeArrayNode($1, $3);
+  | variable_or_function_access '[' index_expression_list ']'                         {if(myDebugPart3){msg("%d variable_or_function_access_no_id:6---line %d", block, sc_line());}
+
+                                                                                        if($1->tag == VAR_NODE && $1->u.var_node.typeTag == TYARRAY){
+                                                                                          $$ = makeArrayNode($1, $3);
+                                                                                        }else if($1->tag == ARRAY_NODE){
+                                                                                          $$ = makeArrayNode($1, $3);
+                                                                                        }else{
+                                                                                          $$ = makeErrorNode();
+                                                                                        }
                                                                                       }
 
   | variable_or_function_access_no_standard_function '(' actual_parameter_list ')'    {if(myDebugPart2){msg("%d variable_or_function_access_no_id:7---line %d", block, sc_line());}
@@ -1591,42 +1609,7 @@ set_yydebug (int value)
 #endif
 }
 
-int getSize(TYPE type, int baseTypeSize){
-  INDEX_LIST currList;
-  long low;
-  long high;
-  TYPETAG typeTag = ty_query(type);
-  TYPE tempSubRange;
-  switch(typeTag){
-    TYPE tempTYPE;
-    int indexSize;
-    case TYARRAY:
-      tempTYPE = ty_query_array(type, &currList);
-      indexSize = 0;
-      do{
-        tempSubRange = currList->type;
-        ty_query_subrange(tempSubRange, &low, &high);
-        if(indexSize == 0){
-          indexSize = high - low + 1;
-        }else{
-          indexSize = indexSize * (high - low + 1);
-        }
-        currList = currList->next;
-      }while(currList != NULL);
 
-      if(ty_query(tempTYPE) == TYARRAY){
-        return indexSize * getSize(tempTYPE, baseTypeSize);
-      }
-      return indexSize * baseTypeSize;
-
-    case TYSUBRANGE:
-      ty_query_subrange(type, &low, &high);
-      return 4; //Assumption: In Part 1 of the project we believe we are only dealing with Integer values of subranges and so we return the size value of integers
-
-   default:
-      return baseTypeSize;
-  }
-}
 
 /*
 Alignment required for and array is the same
