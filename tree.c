@@ -3,7 +3,7 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 0;
+int myDebug = 1;
 
 int errorCalled = 0;
 int inAssignment = 0;
@@ -148,12 +148,14 @@ TN makeStatementNode(TN root, TN expr){
 }//END makeStatementNode()
 
 
-  TN makeAccessNode(TN root, TN expr, int lowInt, TYPE inputType){
+  TN makeAccessNode(TN root, TN expr, long lowInt, TYPE inputType){
     TN tempTN = (TN)malloc(sizeof(treeNode));
     tempTN->tag = ACCESS_NODE;
     tempTN->u.access_node.expression = expr;
     tempTN->u.access_node.nextStatement = NULL;
     tempTN->u.access_node.type = inputType;
+    tempTN->u.access_node.low = lowInt;
+    //if(myDebug) msg("value of lowInt in makeAccessNode %d ",lowInt);
 
     if(root != NULL){
       TN lastNode = root;
@@ -169,7 +171,7 @@ TN makeStatementNode(TN root, TN expr){
       return root;
 
     }else{
-      tempTN->u.access_node.low = lowInt;
+
       return tempTN; //first time
   }
 }//END makeAccessNode
@@ -177,15 +179,20 @@ TN makeStatementNode(TN root, TN expr){
 
 
 TN makeArrayNode(TN varNode, TN access){
-  long low, high;
+  long low;
+  long high;
   INDEX_LIST currList;
 
 
   if(varNode->tag == ARRAY_NODE){
-    varNode->u.array_node.type = ty_query_array(varNode->u.array_node.type, &currList);
+    TYPE tempTYPE = ty_query_array(varNode->u.array_node.type, &currList);
+    varNode->u.array_node.type = tempTYPE;
+    TYPE subType = currList->type;
+    ty_query_subrange(subType, &low, &high);
     if(myDebug) if(varNode->u.array_node.type == NULL) msg("found null for tyquery 1");
     varNode->u.array_node.typeTag = ty_query(varNode->u.array_node.type);
-    varNode->u.array_node.access_node = makeAccessNode(varNode->u.array_node.access_node, access, varNode->u.array_node.low, varNode->u.array_node.type);
+    if(myDebug) msg("next setting low to %d",low);
+    varNode->u.array_node.access_node = makeAccessNode(varNode->u.array_node.access_node, access,low, varNode->u.array_node.type);
     return varNode; //this is really an array node, deal with it
   }else{
     TN tempTN = (TN)malloc(sizeof(treeNode));
@@ -203,6 +210,7 @@ TN makeArrayNode(TN varNode, TN access){
       //if(tempTN->u.array_node.typeTag == TYARRAY) msg("TYARRAY in make");
       TYPE subType = currList->type;
       ty_query_subrange(subType, &low, &high);
+      if(myDebug) msg("first setting low to %d",low);
       tempTN->u.array_node.access_node = makeAccessNode(NULL, access, low, tempTN->u.array_node.type);
       tempTN->u.array_node.low = low;
       tempTN->u.array_node.high = high;
@@ -504,9 +512,11 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
       }
 
     }case ACCESS_NODE:{
+      //if(myDebug) treeNodeToString(startNode, 1);
       TYPETAG tempTYPETAG = genBackendAssignment(startNode->u.access_node.expression,1,genBackend);
 
-      if(genBackend) b_push_const_int(startNode->u.array_node.low);
+      //if(myDebug) msg("pushing %d for the low in access", startNode->u.access_node.low);
+      if(genBackend) b_push_const_int(startNode->u.access_node.low);
       if(genBackend) b_arith_rel_op(B_SUB , TYSIGNEDLONGINT);
       int tempAlignInt = getAlignmentSize(startNode->u.access_node.type);
       if(genBackend) b_ptr_arith_op(B_ADD, TYSIGNEDLONGINT, getSize(startNode->u.access_node.type, tempAlignInt));

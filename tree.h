@@ -59,7 +59,7 @@ typedef struct tn{
     struct{
       struct tn *nextStatement;
       struct tn *expression;
-      int low;
+      long low;
       TYPE type;
     }access_node;
 
@@ -138,7 +138,7 @@ TN makeElseNode(TN ifNode, TN expr);
 TN makeWhileNode(TN relop,TN expr);
 TN makeStatementNode(TN root, TN expr);
 TN makeArrayNode(TN varNode, TN access);
-TN makeAccessNode(TN root, TN expr, int lowInt, TYPE inputType);
+TN makeAccessNode(TN root, TN expr, long lowInt, TYPE inputType);
 
 //PART 2
 TN makeErrorNode();

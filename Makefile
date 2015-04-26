@@ -130,5 +130,12 @@ testSol:
 	-cat aaaSOLout.txt > $(FILEOUT)
 	-rm aaaSOLout.txt
 
+checkDiff:
+	-make testOur
+	-cat $(FILEOUT) > tempOurs.txt
+	-make testSol
+	-cat $(FILEOUT) > tempHis.txt
+	-diff --ignore-all-space tempOurs.txt tempHis.txt | grep -v -E ".LC[0-9]+" > $(FILEOUT)
+
 error:
 	-./ppc3 < $(ERRORIN) > $(FILEOUT) 2> $(ERROROUT)
