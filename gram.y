@@ -58,8 +58,8 @@ void yyerror(const char *);
 
 //Debugers
 int myDebugPart1 = 0;
-int myDebugPart2 = 1;
-int myDebugPart3 = 1;
+int myDebugPart2 = 0;
+int myDebugPart3 = 0;
 
 
 /*Globals*/
@@ -1079,7 +1079,7 @@ assignment_or_call_statement:     /*tree node*/
                                                                               tempTreeNode = makeAssignNode($1, $2);
                                                                               $$ = tempTreeNode;
                                                                             }else{
-                                                                              error("Nonarray in array access expression.");
+                                                                              error("Nonarray in array access expression");
                                                                               $$ = makeErrorNode();
                                                                             }
                                                                           }else{

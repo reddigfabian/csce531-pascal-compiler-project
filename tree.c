@@ -3,7 +3,7 @@
 #include "tree.h"
 #include "types.h"
 
-int myDebug = 1;
+int myDebug = 0;
 
 int errorCalled = 0;
 int inAssignment = 0;
@@ -183,7 +183,7 @@ TN makeArrayNode(TN varNode, TN access){
 
   if(varNode->tag == ARRAY_NODE){
     varNode->u.array_node.type = ty_query_array(varNode->u.array_node.type, &currList);
-    if(varNode->u.array_node.type == NULL) msg("found null for tyquery 1");
+    if(myDebug) if(varNode->u.array_node.type == NULL) msg("found null for tyquery 1");
     varNode->u.array_node.typeTag = ty_query(varNode->u.array_node.type);
     varNode->u.array_node.access_node = makeAccessNode(varNode->u.array_node.access_node, access, varNode->u.array_node.low, varNode->u.array_node.type);
     return varNode; //this is really an array node, deal with it
@@ -198,7 +198,7 @@ TN makeArrayNode(TN varNode, TN access){
       tempTN->u.array_node.DRtag = varNode->u.var_node.DRtag;
       TYPE tempTYPE = ty_query_array(varNode->u.var_node.type, &currList);
       tempTN->u.array_node.type = tempTYPE;
-      if(tempTN->u.array_node.type == NULL) msg("found null for tyquery 2");
+      if(myDebug) if(tempTN->u.array_node.type == NULL) msg("found null for tyquery 2");
       tempTN->u.array_node.typeTag = ty_query(tempTN->u.array_node.type);
       //if(tempTN->u.array_node.typeTag == TYARRAY) msg("TYARRAY in make");
       TYPE subType = currList->type;
@@ -210,7 +210,6 @@ TN makeArrayNode(TN varNode, TN access){
     }else{
       bug("Variable node for array node was not installed.");
     }
-    treeNodeToString(tempTN,1);
     return tempTN;
 
   }
@@ -527,12 +526,12 @@ TYPETAG genBackendAssignment(TN startNode, int fromExpr, int genBackend){
         if(genBackend) b_push_ext_addr(tempIdString);
         //holder from cut
         TYPETAG tempErrorCheck = genBackendAssignment(startNode->u.array_node.access_node, 1, genBackend);
-        if(myDebug) msgn("tempErrorCheck OF ARRAY_NODE: "); ty_print_typetag(tempErrorCheck); msg("");
+        if(myDebug){ msgn("tempErrorCheck OF ARRAY_NODE: "); ty_print_typetag(tempErrorCheck); msg("");}
         if(tempErrorCheck != TYSIGNEDLONGINT){
           error("Incompatible index type in array access");
           tempTypeTag = TYERROR;
         }
-        if(myDebug) msgn("TYPETAG OF ARRAY_NODE: "); ty_print_typetag(tempTypeTag); msg("");
+        if(myDebug){ msgn("TYPETAG OF ARRAY_NODE: "); ty_print_typetag(tempTypeTag); msg("");}
         if(genBackend) b_deref(tempTypeTag);
         if(tempTypeTag == TYFLOAT){
           if(genBackend)b_convert(TYFLOAT, TYDOUBLE);
