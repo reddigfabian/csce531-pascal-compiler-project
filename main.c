@@ -2,6 +2,7 @@
 #include "types.h"
 #include "symtab.h"
 
+
 #include <stdio.h>
 
 FILE *errfp;		/* file to which message.c will write */
